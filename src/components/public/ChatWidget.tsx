@@ -169,9 +169,10 @@ export function ChatWidget() {
       {/* Panel abierto */}
       {open && (
         <div
-          className="fixed bottom-6 right-6 z-50 flex h-[calc(100vh-3rem)] max-h-[520px] w-[calc(100vw-3rem)] max-w-[380px] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
+          className="no-print fixed bottom-6 right-6 z-50 flex h-[calc(100vh-3rem)] max-h-[520px] w-[calc(100vw-3rem)] max-w-[380px] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
           role="dialog"
           aria-label="Chat con Alquibot"
+          aria-modal="false"
         >
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-border bg-slate-800 px-4 py-3 text-white">
