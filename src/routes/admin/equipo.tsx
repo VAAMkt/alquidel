@@ -57,7 +57,14 @@ function EquipoPage() {
 
   const { data: meCheck, isLoading: checkingAdmin } = useQuery({
     queryKey: ["admin", "me-is-admin"],
-    queryFn: () => adminCheckFn({}),
+    queryFn: async () => {
+      try {
+        return await adminCheckFn({});
+      } catch {
+        return { isAdmin: false };
+      }
+    },
+    retry: false,
   });
 
   const { data: team, isLoading } = useQuery({
