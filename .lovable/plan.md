@@ -1,70 +1,48 @@
-# Stabilizar edición de propiedades y navegación del panel admin
+## Plan de mejoras
 
-## Diagnóstico
+### 1. Imagen de fondo en el Hero del Home
 
-### Problema 1 — El botón "Editar propiedad" no hace nada
+Usar la imagen ya existente `src/assets/hero-bogota.jpg` como fondo de la sección hero (donde está el título "Encuentra la propiedad de tus sueños en Colombia" y el buscador).
 
-En TanStack Router con archivos planos, `propiedades.tsx` y `propiedades.$id.editar.tsx` forman una relación **padre/hijo**. El padre se convierte en un *layout* y debe renderizar `<Outlet />` para mostrar la ruta hija. Hoy, `src/routes/admin/propiedades.tsx` exporta `PropiedadesAdmin` (la tabla del listado) directamente como `component`, sin `<Outlet />`. Resultado: al navegar a `/admin/propiedades/{id}/editar` la URL cambia, pero la tabla del listado sigue mostrándose y el formulario hijo nunca aparece. El usuario percibe que "no pasa nada".
+- Importar la imagen como módulo ES en `src/routes/index.tsx`.
+- Aplicarla con `background-image` en la sección `<section>` del hero.
+- Agregar una capa blanca semitransparente (overlay `bg-background/80` con un degradado suave hacia abajo) para preservar contraste del título, subtítulo y tarjeta de buscador sin quitar protagonismo a la imagen.
+- Mantener intactos los textos, badges y el card del buscador (legibilidad garantizada).
+- Usar `og:image` con la misma imagen en el `head()` del Home para mejorar el preview al compartir.
 
-El mismo bug afecta a:
-- `/admin/propiedades/nueva` (no abre el formulario)
-- `/admin/blog/{id}/editar` y `/admin/blog/nuevo` (mismo patrón con `blog.tsx`)
-- `/admin/leads/{id}` (mismo patrón con `leads.tsx`)
+### 2. Carga rápida de "Propiedades destacadas"
 
-### Problema 2 — Cambiar entre módulos del admin tarda varios segundos
+Hoy el bloque depende de un `useQuery` que solo se ejecuta tras hidratar en el cliente, lo que produce el retraso visible. Cambios:
 
-Cada navegación dispara nuevas peticiones porque hay queries que corren en paralelo y duplicadas:
+- Añadir un `loader` al route `/` que pre-cargue (`ensureQueryData`) las propiedades destacadas vía TanStack Query, de modo que vengan listas desde SSR y aparezcan instantáneamente.
+- Reutilizar exactamente el mismo `queryKey` en el componente para que `useQuery` lea de caché sin re-pedir.
+- Hacer el query del fallback (6 más recientes) también precargable y dispararlo en paralelo solo si destacadas viene vacío.
+- Aumentar `staleTime` a 5 minutos para esta vista (el catálogo cambia poco) y desactivar refetch al enfocar la ventana.
+- Reducir el SELECT a las columnas estrictamente necesarias (ya está optimizado, se mantiene).
+- Bajar el placeholder skeleton a la misma cantidad esperada (3) en pantallas pequeñas para evitar parpadeo.
 
-- `dashboard.tsx` recalcula 4 conteos (`HEAD count=exact` sobre `properties` y `leads`) cada vez que se entra.
-- `AdminSidebar` además consulta el conteo de leads nuevos cada 30 s y vuelve a hacerlo cada navegación.
-- `useIsAdmin` se vuelve a montar (cache de 5 min ya bien).
-- `staleTime` por defecto del router es 0, así que cada navegación re-corre el loader incluso si los datos están frescos.
+### 3. Flujo de login funcional y con feedback claro
 
-En la red se ve `HEAD .../leads?status=eq.nuevo` repitiéndose cada ~30 s (sidebar) y bloqueando visualmente la transición porque la tabla del dashboard usa `useQuery` sin estado en suspenso.
+Diagnóstico actual: tras `signInWithPassword` se confía en el listener `onAuthStateChange` para navegar, pero ese listener se monta en el mismo efecto y a veces el evento `SIGNED_IN` no llega antes de que el usuario perciba que "no pasó nada". Además, no hay redirección si el listener falla y los toasts se muestran muy brevemente.
 
-## Cambios
+Cambios:
 
-### A. Convertir páginas de lista en rutas índice (corrige edición)
+- Tras `signInWithPassword` exitoso, navegar inmediatamente con `navigate({ to: redirect ?? "/admin/dashboard", replace: true })` sin esperar al listener (el listener se mantiene como respaldo).
+- Validar que `search.redirect` sea un path interno (empieza con `/`); si es URL absoluta o externa, ignorarla y usar `/admin/dashboard`.
+- Mostrar `toast.success("Bienvenido")` con duración suficiente y reemplazar el toast en error con mensajes en español ("Email o contraseña incorrectos", "Verifica tu email antes de ingresar", etc.).
+- Mostrar el estado de carga en el botón ("Ingresando…") y deshabilitar el form mientras se autentica (ya está, se refuerza).
+- En el `Navbar` público, si la sesión ya está activa, cambiar "Acceder" por "Ir al panel" enlazando a `/admin/dashboard`, para evitar el ciclo de ir a `/login` solo para ser redirigido.
+- En `/admin` (`beforeLoad`), garantizar que el `redirect` a `/login` use solo el `pathname` (no `location.href`), para que al iniciar sesión el redirect funcione correctamente.
 
-Renombrar/convertir los siguientes archivos a su variante `.index.tsx` para que dejen de actuar como layout y permitan que las rutas hijas rendericen libremente:
+### Archivos a modificar
 
-```text
-src/routes/admin/propiedades.tsx        → src/routes/admin/propiedades.index.tsx
-src/routes/admin/blog.tsx               → src/routes/admin/blog.index.tsx
-src/routes/admin/leads.tsx              → src/routes/admin/leads.index.tsx
-```
+- `src/routes/index.tsx` — fondo del hero + loader de destacadas.
+- `src/routes/login.tsx` — navegación inmediata, validación de `redirect`, mensajes claros.
+- `src/routes/admin.tsx` — pasar `pathname` (no `href`) en el redirect.
+- `src/components/layout/PublicNavbar.tsx` — botón "Acceder" / "Ir al panel" según sesión.
 
-Cada archivo cambia su `createFileRoute("/admin/propiedades")` por `createFileRoute("/admin/propiedades/")` (path con barra final) — esa es la convención de TanStack para rutas índice planas.
+### Resultado esperado
 
-Esto restablece:
-- `/admin/propiedades/{id}/editar` → renderiza `EditarPropiedadPage`
-- `/admin/propiedades/nueva` → renderiza el formulario nuevo
-- `/admin/blog/{id}/editar`, `/admin/blog/nuevo`
-- `/admin/leads/{id}`
-
-No se requiere tocar `routeTree.gen.ts` (se regenera solo).
-
-### B. Acelerar navegación entre módulos
-
-1. **Subir `staleTime` a 60 s en queries del dashboard** (`dashboard-stats-v2`, `dashboard-recent-leads`) para que volver a entrar reuse caché en lugar de re-consultar.
-2. **Aumentar el `refetchInterval` del badge de leads en `AdminSidebar` de 30 s a 60 s** y añadir `staleTime: 30_000` para evitar refetch al cambiar de ruta.
-3. **Quitar `enabled: isReady` redundante en `dashboard.tsx`**: el layout `/admin` ya garantiza sesión vía `beforeLoad`. Reemplazar por una sola comprobación `enabled: !!session?.user`. Esto evita un render extra "vacío" mientras `useAuth` se rehidrata.
-4. **Ya no se llama a `getAdminStatus` server fn** (resuelto en sesión anterior); confirmar que `useIsAdmin` sigue con `staleTime: 5 * 60_000` (ya está).
-
-### C. Mejora menor de UX al editar
-
-En `propiedades.$id.editar.tsx`, envolver el formulario en un fallback de carga mínimo (Suspense ya gestionado por `useSuspenseQuery` + loader, pero confirmamos que `notFoundComponent` y el loader devuelvan el dato antes de pintar).
-
-## Archivos a editar
-
-- `src/routes/admin/propiedades.tsx` → renombrar a `src/routes/admin/propiedades.index.tsx` y cambiar el path a `/admin/propiedades/`
-- `src/routes/admin/blog.tsx` → renombrar a `src/routes/admin/blog.index.tsx` y cambiar el path a `/admin/blog/`
-- `src/routes/admin/leads.tsx` → renombrar a `src/routes/admin/leads.index.tsx` y cambiar el path a `/admin/leads/`
-- `src/routes/admin/dashboard.tsx` → ajustar `staleTime` y `enabled` de las queries
-- `src/components/layout/AdminSidebar.tsx` → ajustar `refetchInterval` y `staleTime` del badge
-
-## Validación esperada
-
-- Hacer clic en el lápiz de cualquier propiedad abre `/admin/propiedades/{id}/editar` y muestra el formulario con los datos cargados.
-- "Nueva propiedad", "Nuevo post", "Editar post" y el detalle de un lead funcionan igual.
-- Cambiar entre Dashboard, Propiedades, Leads y Blog se siente inmediato (los datos se sirven desde caché si tienen menos de 60 s).
+- Hero con imagen de Bogotá detrás, textos y buscador perfectamente legibles.
+- "Propiedades destacadas" aparecen sin retraso perceptible.
+- Login muestra toast de éxito y redirige al instante a `/admin/dashboard` (o al destino solicitado). Si ya hay sesión, el navbar lleva directo al panel.
