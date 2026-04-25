@@ -23,6 +23,7 @@ import {
   Printer,
   Share2,
 } from "lucide-react";
+import { CalendarCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
