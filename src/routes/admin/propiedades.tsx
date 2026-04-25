@@ -31,7 +31,7 @@ type PropertyStatus = Database["public"]["Enums"]["property_status"];
 const STATUS_OPTIONS: PropertyStatus[] = ["disponible", "vendido", "arrendado", "reservado"];
 const PER_PAGE = 12;
 
-export const Route = createFileRoute("/_admin/propiedades")({
+export const Route = createFileRoute("/admin/propiedades")({
   component: PropiedadesAdmin,
 });
 

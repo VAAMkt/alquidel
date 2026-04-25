@@ -4,7 +4,7 @@ import { Building2, Users, Star, Inbox } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_admin/dashboard")({
+export const Route = createFileRoute("/admin/dashboard")({
   component: DashboardPage,
 });
 

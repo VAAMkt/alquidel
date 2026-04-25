@@ -15,7 +15,7 @@ const propertyQuery = (id: string) =>
     },
   });
 
-export const Route = createFileRoute("/_admin/propiedades/$id/editar")({
+export const Route = createFileRoute("/admin/propiedades/$id/editar")({
   loader: ({ context: { queryClient }, params: { id } }) =>
     queryClient.ensureQueryData(propertyQuery(id)),
   component: EditarPropiedadPage,

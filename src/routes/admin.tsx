@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AdminSidebar } from "../components/layout/AdminSidebar";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_admin")({
+export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ location }) => {
     const { data } = await supabase.auth.getSession();
     if (!data.session) {

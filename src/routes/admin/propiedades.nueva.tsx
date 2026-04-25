@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { PropertyForm } from "@/components/admin/PropertyForm";
 
-export const Route = createFileRoute("/_admin/propiedades/nueva")({
+export const Route = createFileRoute("/admin/propiedades/nueva")({
   component: NuevaPropiedadPage,
 });
 
