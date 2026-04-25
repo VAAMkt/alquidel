@@ -24,7 +24,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { inviteTeamMember } from "@/server/team.functions";
-import { useAuth } from "@/hooks/useAuth";
 
 const schema = z.object({
   email: z.string().email("Email inválido").max(320),
@@ -35,7 +34,6 @@ const schema = z.object({
 export function InviteMemberDialog() {
   const qc = useQueryClient();
   const inviteFn = useServerFn(inviteTeamMember);
-  const { session } = useAuth();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
