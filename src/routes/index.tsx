@@ -222,7 +222,9 @@ function HomePage() {
         </div>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {showcase && showcase.length > 0 ? (
+          {isLoadingShowcase ? (
+            Array.from({ length: 3 }).map((_, i) => <PropertyCardSkeleton key={i} />)
+          ) : showcase && showcase.length > 0 ? (
             showcase.map((p) => (
               <PropertyCard
                 key={p.id}
@@ -251,6 +253,9 @@ function HomePage() {
             </div>
           )}
         </div>
+
+        {/* Vistas recientes */}
+        <RecentViews />
       </section>
 
       {/* CONFIANZA */}
