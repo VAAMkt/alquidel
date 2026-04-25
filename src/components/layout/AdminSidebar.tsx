@@ -4,6 +4,8 @@ import {
   LayoutDashboard,
   Building2,
   Users,
+  FileText,
+  Settings,
   LogOut,
 } from "lucide-react";
 import {
@@ -26,6 +28,8 @@ const items = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, badgeKey: null },
   { title: "Propiedades", url: "/admin/propiedades", icon: Building2, badgeKey: null },
   { title: "Leads", url: "/admin/leads", icon: Users, badgeKey: "newLeads" },
+  { title: "Blog", url: "/admin/blog", icon: FileText, badgeKey: null },
+  { title: "Configuración", url: "/admin/configuracion", icon: Settings, badgeKey: null },
 ] as const;
 
 export function AdminSidebar() {
