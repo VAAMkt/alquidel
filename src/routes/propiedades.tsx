@@ -345,7 +345,22 @@ function PropiedadesPage() {
           <aside className="hidden lg:block">
             <Card className="sticky top-20 rounded-xl border-border p-6">
               <h2 className="text-sm font-semibold tracking-tight text-foreground">Filtros</h2>
-              <div className="mt-5">{FiltersPanel}</div>
+              <div className="mt-5">
+                <ClientOnly
+                  fallback={
+                    <div className="space-y-4" aria-hidden="true">
+                      <div className="h-4 w-24 rounded bg-muted" />
+                      <div className="h-8 w-full rounded bg-muted/60" />
+                      <div className="h-8 w-full rounded bg-muted/60" />
+                      <div className="h-8 w-full rounded bg-muted/60" />
+                      <div className="h-4 w-20 rounded bg-muted" />
+                      <div className="h-8 w-full rounded bg-muted/60" />
+                    </div>
+                  }
+                >
+                  {FiltersPanel}
+                </ClientOnly>
+              </div>
             </Card>
           </aside>
 
@@ -355,6 +370,14 @@ function PropiedadesPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 {/* Botón filtros móvil */}
+                <ClientOnly
+                  fallback={
+                    <Button variant="outline" size="sm" className="lg:hidden" disabled>
+                      <SlidersHorizontal className="mr-1.5 h-4 w-4" />
+                      Filtros
+                    </Button>
+                  }
+                >
                 <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
                   <SheetTrigger asChild>
                     <Button variant="outline" size="sm" className="lg:hidden">
@@ -374,6 +397,7 @@ function PropiedadesPage() {
                     <div className="mt-6">{FiltersPanel}</div>
                   </SheetContent>
                 </Sheet>
+                </ClientOnly>
 
                 <p className="text-sm text-muted-foreground">
                   {isLoading
@@ -382,17 +406,28 @@ function PropiedadesPage() {
                 </p>
               </div>
 
-              <Select value={search.sort} onValueChange={(v) => setSearch({ sort: v as typeof DEFAULTS.sort })}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recientes">Más recientes</SelectItem>
-                  <SelectItem value="precio-asc">Precio ascendente</SelectItem>
-                  <SelectItem value="precio-desc">Precio descendente</SelectItem>
-                  <SelectItem value="destacados">Destacados primero</SelectItem>
-                </SelectContent>
-              </Select>
+              <ClientOnly
+                fallback={
+                  <div
+                    className="flex h-9 w-[200px] items-center rounded-md border border-input bg-background px-3 text-sm text-muted-foreground"
+                    aria-hidden="true"
+                  >
+                    Más recientes
+                  </div>
+                }
+              >
+                <Select value={search.sort} onValueChange={(v) => setSearch({ sort: v as typeof DEFAULTS.sort })}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recientes">Más recientes</SelectItem>
+                    <SelectItem value="precio-asc">Precio ascendente</SelectItem>
+                    <SelectItem value="precio-desc">Precio descendente</SelectItem>
+                    <SelectItem value="destacados">Destacados primero</SelectItem>
+                  </SelectContent>
+                </Select>
+              </ClientOnly>
             </div>
 
             {/* Grid */}
