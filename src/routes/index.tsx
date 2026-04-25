@@ -187,42 +187,75 @@ function HomePage() {
           {/* Buscador */}
           <Card className="mx-auto mt-10 max-w-4xl rounded-2xl border-border bg-background/95 p-3 shadow-sm backdrop-blur sm:p-4">
             <div className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
-              <Select value={op} onValueChange={(v) => setOp(v as typeof op)}>
-                <SelectTrigger className="h-12 rounded-lg border-border">
-                  <SelectValue placeholder="Operación" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todas las operaciones</SelectItem>
-                  <SelectItem value="venta">Venta</SelectItem>
-                  <SelectItem value="arriendo">Arriendo</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={tipo} onValueChange={setTipo}>
-                <SelectTrigger className="h-12 rounded-lg border-border capitalize">
-                  <SelectValue placeholder="Tipo de inmueble" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos los inmuebles</SelectItem>
-                  {PROPERTY_TYPES.map((t) => (
-                    <SelectItem key={t} value={t} className="capitalize">
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={ciudad} onValueChange={setCiudad}>
-                <SelectTrigger className="h-12 rounded-lg border-border">
-                  <SelectValue placeholder="Ciudad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todas">Todas las ciudades</SelectItem>
-                  {CITIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ClientOnly
+                fallback={
+                  <div
+                    className="flex h-12 items-center rounded-lg border border-border bg-background px-3 text-sm text-muted-foreground"
+                    aria-hidden="true"
+                  >
+                    Operación
+                  </div>
+                }
+              >
+                <Select value={op} onValueChange={(v) => setOp(v as typeof op)}>
+                  <SelectTrigger className="h-12 rounded-lg border-border">
+                    <SelectValue placeholder="Operación" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todas las operaciones</SelectItem>
+                    <SelectItem value="venta">Venta</SelectItem>
+                    <SelectItem value="arriendo">Arriendo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </ClientOnly>
+              <ClientOnly
+                fallback={
+                  <div
+                    className="flex h-12 items-center rounded-lg border border-border bg-background px-3 text-sm text-muted-foreground"
+                    aria-hidden="true"
+                  >
+                    Tipo de inmueble
+                  </div>
+                }
+              >
+                <Select value={tipo} onValueChange={setTipo}>
+                  <SelectTrigger className="h-12 rounded-lg border-border capitalize">
+                    <SelectValue placeholder="Tipo de inmueble" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos los inmuebles</SelectItem>
+                    {PROPERTY_TYPES.map((t) => (
+                      <SelectItem key={t} value={t} className="capitalize">
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </ClientOnly>
+              <ClientOnly
+                fallback={
+                  <div
+                    className="flex h-12 items-center rounded-lg border border-border bg-background px-3 text-sm text-muted-foreground"
+                    aria-hidden="true"
+                  >
+                    Ciudad
+                  </div>
+                }
+              >
+                <Select value={ciudad} onValueChange={setCiudad}>
+                  <SelectTrigger className="h-12 rounded-lg border-border">
+                    <SelectValue placeholder="Ciudad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas las ciudades</SelectItem>
+                    {CITIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </ClientOnly>
               <Button
                 size="lg"
                 onClick={handleSearch}
