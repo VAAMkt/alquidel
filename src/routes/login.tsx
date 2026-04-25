@@ -1,0 +1,100 @@
+import { createFileRoute, useNavigate, redirect, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { z } from "zod";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+
+export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
+  beforeLoad: async ({ search }) => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      throw redirect({ to: search.redirect ?? "/admin/dashboard" });
+    }
+  },
+  head: () => ({
+    meta: [
+      { title: "Acceso de agentes · ALQUIDEL" },
+      { name: "description", content: "Acceso para agentes inmobiliarios de ALQUIDEL." },
+    ],
+  }),
+  component: LoginPage,
+});
+
+const schema = z.object({
+  email: z.string().trim().email("Email inválido"),
+  password: z.string().min(6, "Mínimo 6 caracteres"),
+});
+
+function LoginPage() {
+  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const [loading, setLoading] = useState(false);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const parsed = schema.safeParse({
+      email: fd.get("email"),
+      password: fd.get("password"),
+    });
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? "Datos inválidos");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword(parsed.data);
+    setLoading(false);
+    if (error) {
+      toast.error("Credenciales incorrectas");
+      return;
+    }
+    toast.success("Bienvenido");
+    navigate({ to: search.redirect ?? "/admin/dashboard" });
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-secondary/40 px-4">
+      <div className="w-full max-w-md rounded-lg border border-border bg-background p-8 shadow-sm">
+        <Link to="/" className="mb-8 inline-flex items-baseline gap-1">
+          <span className="text-lg font-semibold tracking-[0.2em] text-foreground">
+            ALQUIDEL
+          </span>
+          <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+        </Link>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Acceso de agentes
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ingresa con tu cuenta corporativa para gestionar propiedades y leads.
+        </p>
+
+        <form onSubmit={onSubmit} className="mt-8 space-y-5">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" required className="mt-1.5" autoComplete="email" />
+          </div>
+          <div>
+            <Label htmlFor="password">Contraseña</Label>
+            <Input id="password" name="password" type="password" required className="mt-1.5" autoComplete="current-password" />
+          </div>
+          <Button type="submit" disabled={loading} className="w-full rounded-lg" size="lg">
+            {loading ? "Ingresando…" : "Ingresar"}
+          </Button>
+        </form>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          ¿Eres cliente?{" "}
+          <Link to="/" className="text-foreground hover:underline">
+            Vuelve al inicio
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
