@@ -166,7 +166,7 @@ function PropiedadesPage() {
 
   function setSearch(patch: Partial<typeof DEFAULTS>) {
     navigate({
-      search: (prev) => ({
+      search: (prev: any) => ({
         ...prev,
         ...patch,
         page: patch.page ?? 1,
