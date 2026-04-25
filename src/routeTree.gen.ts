@@ -11,8 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PropiedadesRouteImport } from './routes/propiedades'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminDashboardRouteImport } from './routes/_admin/dashboard'
+import { Route as AdminPropiedadesRouteImport } from './routes/admin/propiedades'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as AdminPropiedadesNuevaRouteImport } from './routes/admin/propiedades.nueva'
+import { Route as AdminPropiedadesIdEditarRouteImport } from './routes/admin/propiedades.$id.editar'
 
 const PropiedadesRoute = PropiedadesRouteImport.update({
   id: '/propiedades',
@@ -24,49 +28,107 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminDashboardRoute = AdminDashboardRouteImport.update({
-  id: '/_admin/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
+const AdminPropiedadesRoute = AdminPropiedadesRouteImport.update({
+  id: '/propiedades',
+  path: '/propiedades',
+  getParentRoute: () => AdminRoute,
 } as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPropiedadesNuevaRoute = AdminPropiedadesNuevaRouteImport.update({
+  id: '/nueva',
+  path: '/nueva',
+  getParentRoute: () => AdminPropiedadesRoute,
+} as any)
+const AdminPropiedadesIdEditarRoute =
+  AdminPropiedadesIdEditarRouteImport.update({
+    id: '/$id/editar',
+    path: '/$id/editar',
+    getParentRoute: () => AdminPropiedadesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/propiedades': typeof PropiedadesRoute
-  '/dashboard': typeof AdminDashboardRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
+  '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/propiedades': typeof PropiedadesRoute
-  '/dashboard': typeof AdminDashboardRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
+  '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/propiedades': typeof PropiedadesRoute
-  '/_admin/dashboard': typeof AdminDashboardRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
+  '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/propiedades' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/propiedades'
+    | '/admin/dashboard'
+    | '/admin/propiedades'
+    | '/admin/propiedades/nueva'
+    | '/admin/propiedades/$id/editar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/propiedades' | '/dashboard'
-  id: '__root__' | '/' | '/login' | '/propiedades' | '/_admin/dashboard'
+  to:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/propiedades'
+    | '/admin/dashboard'
+    | '/admin/propiedades'
+    | '/admin/propiedades/nueva'
+    | '/admin/propiedades/$id/editar'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/propiedades'
+    | '/admin/dashboard'
+    | '/admin/propiedades'
+    | '/admin/propiedades/nueva'
+    | '/admin/propiedades/$id/editar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
   PropiedadesRoute: typeof PropiedadesRoute
-  AdminDashboardRoute: typeof AdminDashboardRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,6 +147,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -92,22 +161,77 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_admin/dashboard': {
-      id: '/_admin/dashboard'
+    '/admin/propiedades': {
+      id: '/admin/propiedades'
+      path: '/propiedades'
+      fullPath: '/admin/propiedades'
+      preLoaderRoute: typeof AdminPropiedadesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
       path: '/dashboard'
-      fullPath: '/dashboard'
+      fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminDashboardRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/propiedades/nueva': {
+      id: '/admin/propiedades/nueva'
+      path: '/nueva'
+      fullPath: '/admin/propiedades/nueva'
+      preLoaderRoute: typeof AdminPropiedadesNuevaRouteImport
+      parentRoute: typeof AdminPropiedadesRoute
+    }
+    '/admin/propiedades/$id/editar': {
+      id: '/admin/propiedades/$id/editar'
+      path: '/$id/editar'
+      fullPath: '/admin/propiedades/$id/editar'
+      preLoaderRoute: typeof AdminPropiedadesIdEditarRouteImport
+      parentRoute: typeof AdminPropiedadesRoute
     }
   }
 }
 
+interface AdminPropiedadesRouteChildren {
+  AdminPropiedadesNuevaRoute: typeof AdminPropiedadesNuevaRoute
+  AdminPropiedadesIdEditarRoute: typeof AdminPropiedadesIdEditarRoute
+}
+
+const AdminPropiedadesRouteChildren: AdminPropiedadesRouteChildren = {
+  AdminPropiedadesNuevaRoute: AdminPropiedadesNuevaRoute,
+  AdminPropiedadesIdEditarRoute: AdminPropiedadesIdEditarRoute,
+}
+
+const AdminPropiedadesRouteWithChildren =
+  AdminPropiedadesRoute._addFileChildren(AdminPropiedadesRouteChildren)
+
+interface AdminRouteChildren {
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminPropiedadesRoute: typeof AdminPropiedadesRouteWithChildren
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminPropiedadesRoute: AdminPropiedadesRouteWithChildren,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
   PropiedadesRoute: PropiedadesRoute,
-  AdminDashboardRoute: AdminDashboardRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
