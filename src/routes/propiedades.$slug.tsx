@@ -20,6 +20,8 @@ import {
   Maximize,
   MessageCircle,
   Phone,
+  Printer,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,10 +44,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import { Breadcrumbs } from "@/components/public/Breadcrumbs";
+import { PropertyImagePlaceholder } from "@/components/public/PropertyImagePlaceholder";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCOP, formatArea } from "@/lib/format";
 import { COMPANY } from "@/lib/company";
-import { whatsappUrl, propertyWhatsappMessage } from "@/lib/whatsapp";
+import { whatsappUrl, propertyWhatsappMessage, shareWhatsappUrl } from "@/lib/whatsapp";
+import { useEffect } from "react";
+import { useRecentViews } from "@/hooks/useRecentViews";
 
 async function fetchPropertyBySlug(slug: string) {
   const { data, error } = await supabase
@@ -112,6 +118,9 @@ export const Route = createFileRoute("/propiedades/$slug")({
     };
     return {
       meta: baseMeta,
+      links: [
+        { rel: "canonical", href: `https://alquidel.lovable.app/propiedades/${p.slug}` },
+      ],
       scripts: [
         {
           type: "application/ld+json",
