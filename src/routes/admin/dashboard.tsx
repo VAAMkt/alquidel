@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import {
   SourceBadge,
   StatusBadge,
@@ -25,6 +26,11 @@ export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard · ALQUIDEL" }] }),
   component: DashboardPage,
 });
+
+type LeadRow = Database["public"]["Tables"]["leads"]["Row"];
+type LeadWithProperty = LeadRow & {
+  properties: { slug: string; title: string } | null;
+};
 
 function StatCard({
   label,
@@ -160,9 +166,7 @@ function DashboardPage() {
                 </TableRow>
               ) : (
                 recentLeads!.map((lead) => {
-                  const property = (lead as any).properties as
-                    | { slug: string; title: string }
-                    | null;
+                  const property = (lead as LeadWithProperty).properties;
                   return (
                     <TableRow key={lead.id}>
                       <TableCell>

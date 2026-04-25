@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import {
   LEAD_STATUSES,
   LEAD_STATUS_LABELS,
@@ -42,6 +43,18 @@ export const Route = createFileRoute("/admin/leads/$id")({
   }),
   component: LeadDetailPage,
 });
+
+type LeadRow = Database["public"]["Tables"]["leads"]["Row"];
+type LeadWithProperty = LeadRow & {
+  properties: {
+    id: string;
+    slug: string;
+    title: string;
+    city: string;
+    neighborhood: string | null;
+    price: number;
+  } | null;
+};
 
 function LeadDetailPage() {
   const { id } = Route.useParams();
@@ -147,9 +160,7 @@ function LeadDetailPage() {
     );
   }
 
-  const property = (lead as any).properties as
-    | { id: string; slug: string; title: string; city: string; neighborhood: string | null; price: number }
-    | null;
+  const property = (lead as LeadWithProperty).properties;
 
   const noteHistory = (lead.notes ?? "")
     .split("\n---\n")
