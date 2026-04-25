@@ -198,7 +198,7 @@ const statusBadge: Record<string, string> = {
 };
 
 function PropertyDetail() {
-  const { property: p } = Route.useLoaderData();
+  const { property: p, similar } = Route.useLoaderData();
   const router = useRouter();
   const [activeImg, setActiveImg] = useState(0);
   const { push: pushRecent } = useRecentViews();
