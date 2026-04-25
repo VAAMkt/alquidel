@@ -173,8 +173,22 @@ function PropertyDetail() {
   const { property: p } = Route.useLoaderData();
   const router = useRouter();
   const [activeImg, setActiveImg] = useState(0);
+  const { push: pushRecent } = useRecentViews();
+
+  useEffect(() => {
+    if (p?.slug) pushRecent(p.slug);
+  }, [p?.slug, pushRecent]);
 
   const waLink = whatsappUrl(propertyWhatsappMessage(p.title));
+  const shareUrl =
+    typeof window !== "undefined"
+      ? window.location.href
+      : `https://alquidel.lovable.app/propiedades/${p.slug}`;
+  const shareWa = shareWhatsappUrl(p.title, shareUrl);
+
+  function handlePrint() {
+    if (typeof window !== "undefined") window.print();
+  }
 
   // Lead form state
   const [form, setForm] = useState({
