@@ -5,6 +5,7 @@ import { whatsappUrl } from "@/lib/whatsapp";
 
 const NAV = [
   { to: "/propiedades", label: "Propiedades" },
+  { to: "/blog", label: "Blog" },
   { to: "/nosotros", label: "Nosotros" },
   { to: "/contacto", label: "Contacto" },
 ] as const;
