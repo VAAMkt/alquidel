@@ -1,10 +1,10 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { Shield, ShieldCheck, Trash2, Users, Loader2 } from "lucide-react";
+import { AlertTriangle, Shield, ShieldCheck, Trash2, Users, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +46,34 @@ export const Route = createFileRoute("/admin/equipo")({
   },
   head: () => ({ meta: [{ title: "Equipo · ALQUIDEL" }] }),
   component: EquipoPage,
+  errorComponent: EquipoErrorComponent,
 });
+
+function EquipoErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
+  return (
+    <Card className="mx-auto max-w-lg p-8 text-center">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+        <AlertTriangle className="h-6 w-6 text-destructive" />
+      </div>
+      <h2 className="text-lg font-semibold">No pudimos cargar el equipo</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {error?.message || "Ocurrió un error inesperado al inicializar el módulo."}
+      </p>
+      <div className="mt-6 flex justify-center gap-2">
+        <Button
+          variant="outline"
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
+        >
+          Reintentar
+        </Button>
+      </div>
+    </Card>
+  );
+}
 
 function EquipoPage() {
   const qc = useQueryClient();
@@ -59,6 +86,7 @@ function EquipoPage() {
     queryKey: ["admin", "team"],
     queryFn: () => listFn(),
     enabled: isAdmin,
+    retry: false,
   });
 
   const setAdmin = useMutation({
