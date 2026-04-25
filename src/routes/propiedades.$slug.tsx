@@ -250,14 +250,37 @@ function PropertyDetail() {
   return (
     <PublicLayout>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <Breadcrumbs
+          items={[
+            { label: "Propiedades", to: "/propiedades" },
+            { label: p.title },
+          ]}
+        />
         <button
           type="button"
           onClick={() => router.history.back()}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="no-print mt-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver
         </button>
+
+        {/* Acciones rápidas: compartir e imprimir */}
+        <div className="no-print mt-4 flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a
+              href={shareWa}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Compartir por WhatsApp"
+            >
+              <Share2 className="mr-1.5 h-4 w-4" /> Compartir por WhatsApp
+            </a>
+          </Button>
+          <Button variant="outline" size="sm" onClick={handlePrint} aria-label="Imprimir ficha">
+            <Printer className="mr-1.5 h-4 w-4" /> Imprimir ficha
+          </Button>
+        </div>
 
         <div className="mt-6 grid gap-8 lg:grid-cols-3">
           {/* IZQUIERDA */}
