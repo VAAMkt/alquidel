@@ -201,11 +201,11 @@ export const amIAdmin = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const userId = await getUserIdFromAccessToken(data.accessToken);
-    const { data } = await supabaseAdmin
+    const { data: roleRow } = await supabaseAdmin
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
       .eq("role", "admin")
       .maybeSingle();
-    return { isAdmin: !!data };
+    return { isAdmin: !!roleRow };
   });
