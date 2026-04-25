@@ -218,7 +218,13 @@ function PropertyDetail() {
         status: "nuevo",
         property_id: p.id,
       });
-      if (error) throw error;
+      if (error) {
+        console.error("[propiedad] Error guardando lead:", error);
+        throw new Error(
+          error.message ||
+            "No pudimos enviar tu consulta. Intenta de nuevo o escríbenos por WhatsApp.",
+        );
+      }
     },
     onSuccess: () => {
       toast.success("¡Consulta enviada! Te contactaremos pronto.");

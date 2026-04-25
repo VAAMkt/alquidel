@@ -1,48 +1,58 @@
-## Plan de mejoras
+## Problema
 
-### 1. Imagen de fondo en el Hero del Home
+Los leads enviados desde el formulario de contacto **no se guardan en la base de datos**. La tabla `leads` está completamente vacía (0 filas), confirmando que ninguna inserción está pasando.
 
-Usar la imagen ya existente `src/assets/hero-bogota.jpg` como fondo de la sección hero (donde está el título "Encuentra la propiedad de tus sueños en Colombia" y el buscador).
+### Causa raíz
 
-- Importar la imagen como módulo ES en `src/routes/index.tsx`.
-- Aplicarla con `background-image` en la sección `<section>` del hero.
-- Agregar una capa blanca semitransparente (overlay `bg-background/80` con un degradado suave hacia abajo) para preservar contraste del título, subtítulo y tarjeta de buscador sin quitar protagonismo a la imagen.
-- Mantener intactos los textos, badges y el card del buscador (legibilidad garantizada).
-- Usar `og:image` con la misma imagen en el `head()` del Home para mejorar el preview al compartir.
+Las políticas RLS de la tabla `leads` tienen un hueco para usuarios **autenticados** que envían `source = 'formulario'`:
 
-### 2. Carga rápida de "Propiedades destacadas"
+| Política | Rol | Condición |
+|---|---|---|
+| `Cualquiera puede crear un lead validado` | `public` (anónimo) | source ∈ ('formulario','chat','whatsapp') |
+| `Staff puede crear leads manuales` | `authenticated` | source ∈ (...,'manual') **y** `is_staff(auth.uid())` |
 
-Hoy el bloque depende de un `useQuery` que solo se ejecuta tras hidratar en el cliente, lo que produce el retraso visible. Cambios:
+Cuando un usuario logueado (como tú, admin) envía el formulario público con `source = 'formulario'`:
+- La política `public` **no aplica** porque ya no eres anónimo.
+- La política `staff` **no aplica** porque PostgREST evalúa primero la condición `source = 'manual'`. Aunque eres staff, el source es 'formulario', así que falla.
 
-- Añadir un `loader` al route `/` que pre-cargue (`ensureQueryData`) las propiedades destacadas vía TanStack Query, de modo que vengan listas desde SSR y aparezcan instantáneamente.
-- Reutilizar exactamente el mismo `queryKey` en el componente para que `useQuery` lea de caché sin re-pedir.
-- Hacer el query del fallback (6 más recientes) también precargable y dispararlo en paralelo solo si destacadas viene vacío.
-- Aumentar `staleTime` a 5 minutos para esta vista (el catálogo cambia poco) y desactivar refetch al enfocar la ventana.
-- Reducir el SELECT a las columnas estrictamente necesarias (ya está optimizado, se mantiene).
-- Bajar el placeholder skeleton a la misma cantidad esperada (3) en pantallas pequeñas para evitar parpadeo.
+Resultado: la inserción es bloqueada silenciosamente por RLS y el toast de éxito no se muestra (o el error se pierde). Los visitantes anónimos sí podrían insertar, pero como tú probaste estando logueado, falló.
 
-### 3. Flujo de login funcional y con feedback claro
+## Solución
 
-Diagnóstico actual: tras `signInWithPassword` se confía en el listener `onAuthStateChange` para navegar, pero ese listener se monta en el mismo efecto y a veces el evento `SIGNED_IN` no llega antes de que el usuario perciba que "no pasó nada". Además, no hay redirección si el listener falla y los toasts se muestran muy brevemente.
+Agregar una política RLS adicional que permita a **cualquier usuario autenticado** crear leads con sources públicos (`formulario`, `chat`, `whatsapp`), aplicando las mismas validaciones de longitud/formato que la política pública.
 
-Cambios:
+### Cambios
 
-- Tras `signInWithPassword` exitoso, navegar inmediatamente con `navigate({ to: redirect ?? "/admin/dashboard", replace: true })` sin esperar al listener (el listener se mantiene como respaldo).
-- Validar que `search.redirect` sea un path interno (empieza con `/`); si es URL absoluta o externa, ignorarla y usar `/admin/dashboard`.
-- Mostrar `toast.success("Bienvenido")` con duración suficiente y reemplazar el toast en error con mensajes en español ("Email o contraseña incorrectos", "Verifica tu email antes de ingresar", etc.).
-- Mostrar el estado de carga en el botón ("Ingresando…") y deshabilitar el form mientras se autentica (ya está, se refuerza).
-- En el `Navbar` público, si la sesión ya está activa, cambiar "Acceder" por "Ir al panel" enlazando a `/admin/dashboard`, para evitar el ciclo de ir a `/login` solo para ser redirigido.
-- En `/admin` (`beforeLoad`), garantizar que el `redirect` a `/login` use solo el `pathname` (no `location.href`), para que al iniciar sesión el redirect funcione correctamente.
+1. **Migración SQL** — agregar nueva política en `leads`:
+   ```sql
+   CREATE POLICY "Autenticados pueden crear leads públicos"
+   ON public.leads
+   FOR INSERT
+   TO authenticated
+   WITH CHECK (
+     length(trim(name)) BETWEEN 1 AND 200
+     AND email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+     AND length(email) <= 320
+     AND length(coalesce(message,'')) <= 2000
+     AND source IN ('formulario','chat','whatsapp')
+   );
+   ```
 
-### Archivos a modificar
+2. **`src/routes/contacto.tsx`** — mejorar manejo de errores:
+   - Mostrar el mensaje real de Supabase en el toast cuando `error` no sea null (hoy se lanza pero el `.message` de PostgREST puede ser críptico).
+   - Loggear `error` en consola para diagnóstico futuro.
 
-- `src/routes/index.tsx` — fondo del hero + loader de destacadas.
-- `src/routes/login.tsx` — navegación inmediata, validación de `redirect`, mensajes claros.
-- `src/routes/admin.tsx` — pasar `pathname` (no `href`) en el redirect.
-- `src/components/layout/PublicNavbar.tsx` — botón "Acceder" / "Ir al panel" según sesión.
+3. **`src/routes/propiedades.$slug.tsx`** (línea 212) — mismo patrón de manejo de error, ya que usa la misma inserción.
 
-### Resultado esperado
+### Verificación
 
-- Hero con imagen de Bogotá detrás, textos y buscador perfectamente legibles.
-- "Propiedades destacadas" aparecen sin retraso perceptible.
-- Login muestra toast de éxito y redirige al instante a `/admin/dashboard` (o al destino solicitado). Si ya hay sesión, el navbar lleva directo al panel.
+Después del cambio probar:
+- Enviar formulario en `/contacto` estando logueado como admin → debe aparecer en `/admin/leads`.
+- Enviar formulario en `/contacto` desde ventana incógnita (anónimo) → también debe funcionar (la política pública sigue intacta).
+- Enviar interés en una página de propiedad → debe registrarse con `source = 'formulario'` y `property_id` ligado.
+
+## Resumen técnico
+
+- **Tipo de cambio**: 1 migración SQL (nueva policy) + 2 ediciones menores de manejo de errores en frontend.
+- **Sin breaking changes**: las políticas existentes se conservan.
+- **Sin riesgo de seguridad**: la nueva política aplica las mismas validaciones de input que la política pública y restringe `source` a los valores permitidos.
