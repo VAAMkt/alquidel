@@ -1,44 +1,31 @@
-import { createFileRoute, Outlet, redirect, useRouter, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouter, useNavigate, useLocation, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "../components/layout/AdminSidebar";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: async ({ location }) => {
-    try {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        throw redirect({
-          to: "/login",
-          search: { redirect: location.pathname },
-        });
-      }
-    } catch (err) {
-      // Re-lanzar redirects de TanStack Router intactos
-      if (err && typeof err === "object" && "isRedirect" in (err as any)) throw err;
-      // En caso de fallo inesperado al consultar la sesión, redirigir a login
-      throw redirect({ to: "/login", search: { redirect: location.pathname } });
-    }
-  },
   component: AdminLayout,
   errorComponent: AdminErrorComponent,
 });
 
 function AdminLayout() {
-  const { session, loading } = useAuth();
+  const { isAuthLoading, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!isAuthLoading && !isAuthenticated) {
+      navigate({
+        to: "/login",
+        search: { redirect: location.pathname },
+        replace: true,
+      });
+    }
+  }, [isAuthLoading, isAuthenticated, navigate, location.pathname]);
 
-  if (!session) {
-    // Render mínimo mientras el redirect de beforeLoad se aplica
+  if (isAuthLoading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
