@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PropiedadesRouteImport } from './routes/propiedades'
 import { Route as NosotrosRouteImport } from './routes/nosotros'
 import { Route as LoginRouteImport } from './routes/login'
@@ -28,6 +29,11 @@ import { Route as AdminLeadsIdRouteImport } from './routes/admin/leads.$id'
 import { Route as AdminBlogNuevoRouteImport } from './routes/admin/blog.nuevo'
 import { Route as AdminPropiedadesIdEditarRouteImport } from './routes/admin/propiedades.$id.editar'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PropiedadesRoute = PropiedadesRouteImport.update({
   id: '/propiedades',
   path: '/propiedades',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nosotros'
     | '/propiedades'
+    | '/sitemap.xml'
     | '/admin/blog'
     | '/admin/configuracion'
     | '/admin/dashboard'
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nosotros'
     | '/propiedades'
+    | '/sitemap.xml'
     | '/admin/blog'
     | '/admin/configuracion'
     | '/admin/dashboard'
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nosotros'
     | '/propiedades'
+    | '/sitemap.xml'
     | '/admin/blog'
     | '/admin/configuracion'
     | '/admin/dashboard'
@@ -252,10 +264,18 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   NosotrosRoute: typeof NosotrosRoute
   PropiedadesRoute: typeof PropiedadesRouteWithChildren
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/propiedades': {
       id: '/propiedades'
       path: '/propiedades'
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   NosotrosRoute: NosotrosRoute,
   PropiedadesRoute: PropiedadesRouteWithChildren,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
