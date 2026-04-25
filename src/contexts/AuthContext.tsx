@@ -80,8 +80,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuthContext(): AuthContextValue {
   const ctx = useContext(AuthContext);
+  // Fallback seguro para SSR o árboles sin provider: evita crashear el render.
+  // El provider real toma el control en cuanto está disponible (cliente).
   if (!ctx) {
-    throw new Error("useAuthContext debe usarse dentro de <AuthProvider>");
+    return {
+      session: null,
+      user: null,
+      isAuthLoading: true,
+      isAuthenticated: false,
+      signOut: async () => {
+        await supabase.auth.signOut();
+      },
+    };
   }
   return ctx;
 }
