@@ -132,7 +132,7 @@ function PropiedadesPage() {
       let q = supabase
         .from("properties")
         .select(
-          "id, slug, title, type, property_type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured",
+          "id, slug, title, type, property_type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured, created_at",
           { count: "exact" },
         )
         .eq("status", "disponible");
@@ -440,6 +440,7 @@ function PropiedadesPage() {
                       neighborhood: p.neighborhood,
                       images: p.images,
                       is_featured: p.is_featured,
+                      created_at: p.created_at,
                     }}
                   />
                 ))
