@@ -1,135 +1,242 @@
-# ALQUIDEL — Plataforma Inmobiliaria Premium (Bootstrap)
 
-Plataforma inmobiliaria mixta (venta + arriendo) enfocada en Bogotá, COP, m². Esta entrega inicializa el proyecto: base de datos, autenticación, layouts y navegación operativa. El catálogo público y el CRM completos se construyen en iteraciones siguientes.
+# Sitio público Alquidel — Home, Catálogo, Detalle, Nosotros, Contacto
 
-## 1. Sistema de diseño
+## Estado verificado
 
-Paleta premium tipo The Agency / Compass:
+- `/` y `/propiedades` existen como placeholders genéricos ("Bogotá premium", stats inventados +150/12/98%) → reemplazar por completo con datos y copy reales de Alquidel.
+- `/contacto` y `/blog` están enlazadas en navbar/footer pero **no existen como archivos** → hay que crear `/contacto` desde cero (el prompt dice "actualizar existente", pero el archivo no está). `/blog` la dejamos como link removido o placeholder mínimo — confirmaré con la decisión por defecto: removerla del navbar/footer hasta que exista contenido real.
+- `/propiedades/:slug` (detalle) no existe → ruta nueva.
+- `/nosotros` no existe → ruta nueva, agregar al navbar.
+- shadcn ya tiene `accordion`, `slider`, `sheet`, `checkbox`, `tabs` instalados.
 
-- Fondo: blanco puro
-- Texto principal: zinc-900
-- Acentos secundarios: slate-700
-- Detalle dorado (lujo): amber-500
-- Tipografía: sans-serif limpia (Inter), tracking ajustado en titulares
-- Mobile-first, bordes `rounded-lg`, generoso whitespace
-- Tokens definidos en `src/styles.css` vía variables CSS oklch
+---
 
-## 2. Base de datos (Supabase)
+## 1. Datos compartidos: constantes de empresa
 
-Migración inicial con tres tablas + enums + RLS:
+Crear `src/lib/company.ts` con datos reales (nombre, dirección Calle 138 #74-51, teléfonos, email `comercialalquidel@gmail.com`, URL WhatsApp `https://wa.me/573214910400`, misión/visión/quiénes somos). Usar desde Footer, Home, Nosotros, Contacto, Detalle.
 
-**Enums**
+Crear `src/lib/whatsapp.ts` con helper `whatsappUrl(message: string)` que devuelve la URL con texto pre-encoded.
 
-- `property_type_enum`: apartamento, casa, local, oficina, lote, bodega
-- `listing_type_enum`: venta, arriendo
-- `property_status_enum`: disponible, vendido, arrendado, reservado
-- `lead_status_enum`: nuevo, contactado, interesado, cerrado, descartado
-- `app_role`: admin, agente
+---
 
-**Tabla `properties**` — todos los campos solicitados (title, description, type, property_type, price COP, area_m2, bedrooms, bathrooms, city default 'Bogotá', neighborhood, address, status, is_featured, images[], amenities[], created_at, slug único).
+## 2. Card reutilizable de propiedad
 
-**Tabla `leads**` — name, email, phone, message, status, property_id (FK), source, notes, assigned_to (FK auth.users), created_at.
+Crear `src/components/public/PropertyCard.tsx` con la card que hoy está duplicada en `/` y `/propiedades`:
+- Imagen principal (placeholder Building2 si vacío)
+- Badge venta (slate) / arriendo (amber)
+- Precio `formatCOP`, título, barrio + ciudad, área, hab, baños
+- Wrapper en `<Link to="/propiedades/$slug" params={{ slug }}>` para que toda la card sea clickable
 
-**Tabla `agents**` — id (FK auth.users PK), full_name, email, phone, role.
+---
 
-**Roles & seguridad** — Siguiendo la regla de roles separados, se usa la columna `role` en `agents` solo para el perfil del staff. Para chequeos de privilegio se crea una tabla `user_roles` + función `has_role()` SECURITY DEFINER.
+## 3. Layout público — actualizar navbar y footer
 
-**RLS**
+`PublicNavbar.tsx`:
+- Reemplazar links: **Propiedades · Nosotros · Contacto** (sacar Blog hasta que exista la sección).
+- Botón derecha: "Acceder" + CTA primario "WhatsApp" verde con ícono MessageCircle.
 
-- `properties`: SELECT público, INSERT/UPDATE/DELETE solo agentes/admin
-- `leads`: solo agentes/admin pueden ver; INSERT público (formulario)
-- `agents`: usuario lee su propio registro; admin lee todos
-- `user_roles`: lectura propia; gestión solo admin
+`PublicFooter.tsx`:
+- Reemplazar tagline genérico por copy real de Alquidel.
+- Columna "Contacto" con dirección real, teléfonos (321 491 0400 / 601 583 6744), email real, link WhatsApp.
+- Sacar link a `/blog`.
 
-**Storage** — Bucket público `property-images` con políticas: lectura pública, escritura para staff autenticado.
+---
 
-**Trigger** — `handle_new_user()` crea fila en `agents` con rol `agente` por defecto al registrarse.
+## 4. Home `/` — reemplazo total
 
-## 3. Autenticación
+Mantener el archivo, reemplazar contenido:
 
-- Cliente Supabase en `src/integrations/supabase/client.ts` (publishable key) y `client.server.ts` (service role).
-- `useAuth` hook con `onAuthStateChange` + `getSession` (en ese orden).
-- Ruta `/login` pública: email + password, validación zod, toast de error/éxito.
-- Layout protegido `_admin` con `beforeLoad` que redirige a `/login` si no hay sesión, preservando `redirect` en search params.
-- Tras login exitoso → `/admin/dashboard`.
-- Botón "Cerrar sesión" en sidebar admin.
+**Hero (sin imagen — gradiente blanco→zinc-50):**
+- Eliminar import de `hero-bogota.jpg` y el `<img>` de fondo.
+- Headline: "Encuentra la propiedad de tus sueños en Colombia"
+- Subhead: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades."
+- **Card-buscador** (3 selects + botón) sobrepuesto al gradiente:
+  - Operación: Todas / Venta / Arriendo
+  - Tipo de inmueble: Todos / apartamento / casa / local / oficina / lote / bodega
+  - Ciudad: Todas / Bogotá / Medellín / Cali / Barranquilla / Cartagena / Bucaramanga / Pereira / Manizales
+  - Botón "Buscar" → `navigate({ to: "/propiedades", search: { tipo, propertyType, ciudad } })` solo con campos no-default
 
-> Nota: no se incluye registro público (signup) — los agentes se crean desde Supabase o, en una iteración futura, desde Configuración. Si se necesita signup abierto, se agrega después.
+**Propiedades destacadas:** query real
+- `select(... ).eq("is_featured", true).eq("status","disponible").order("created_at", { ascending: false }).limit(6)`
+- Si `data.length === 0`, refetch sin filtro de `is_featured` (top 6 más recientes disponibles)
+- Grid con `<PropertyCard>`
 
-## 4. Estructura de rutas
+**Sección confianza (datos reales):**
+- 3 cards: "8+ Propiedades exclusivas" / "Bogotá y Colombia" / "Asesoría personalizada"
+- Iconos lucide: Home, MapPin, Headset
 
-```text
-src/routes/
-  __root.tsx                 # shell + QueryClientProvider + Toaster
-  index.tsx                  # Home pública (hero + propiedades destacadas placeholder)
-  propiedades.tsx            # Listado público (placeholder con grid)
-  blog.tsx                   # Placeholder
-  contacto.tsx               # Formulario que crea lead
-  login.tsx                  # Login agentes
-  _admin.tsx                 # Layout protegido (sidebar + outlet)
-  _admin/dashboard.tsx       # KPIs básicos (conteos)
-  _admin/propiedades.tsx     # Tabla placeholder
-  _admin/leads.tsx           # Tabla placeholder
-  _admin/blog.tsx            # Placeholder
-  _admin/configuracion.tsx   # Perfil del agente
+**¿Por qué Alquidel?** 3 columnas:
+- "Experiencia": referencia a misión real
+- "Servicio integral": referencia a quiénes somos
+- "Clientes de por vida": tagline directo de la misión real
+
+**SEO `head()`** ya específico al home.
+
+---
+
+## 5. Catálogo `/propiedades` — reemplazo total con filtros en URL
+
+**Search params con `validateSearch + zodValidator + fallback`:**
+
+```
+operacion: "todos" | "venta" | "arriendo"  default "todos"
+tipos:     ("apartamento"|"casa"|"local"|"oficina"|"lote"|"bodega")[]  default []
+ciudad:    string  default "todas"
+precioMax: number  default 5_000_000_000  (paso 100M)
+habMin:    0|1|2|3|4  default 0
+sort:      "recientes"|"precio-asc"|"precio-desc"|"destacados"  default "recientes"
+page:      number  default 1
 ```
 
-## 5. Layouts
+**Layout:**
+- Desktop: sidebar izquierda 280px sticky con filtros + grid derecha 3 col
+- Mobile: botón "Filtros" arriba que abre `<Sheet side="left">` con los mismos controles
 
-**Layout público** (en `__root.tsx` cuando ruta no es admin/login):
+**Sidebar de filtros:**
+- RadioGroup operación (todos/venta/arriendo)
+- Checkbox group tipos (multiselect, escribe en `tipos` array de la URL)
+- Select ciudad
+- `<Slider>` precio máximo, min 100M max 5.000M step 100M; label muestra `formatCOP(value)`
+- Botones pill habitaciones: 0 / 1 / 2 / 3 / 4+
+- Select sort
+- Botón "Limpiar filtros" → `navigate({ search: defaults })`
 
-- Navbar fija translúcida con backdrop-blur
-- Logo "ALQUIDEL" (wordmark, tracking ancho, punto dorado amber-500)
-- Links: Propiedades, Blog, Contacto
-- CTA derecha: botón "Ver propiedades" (slate-700 → hover amber-500)
-- Footer minimalista
+**Query y filtrado:**
+- Una sola query `select * from properties where status='disponible'` cacheada por React Query.
+- Filtrado/ordenamiento/paginación en cliente con `useMemo` (la base es pequeña, evitamos query por filtro).
+- Sort `destacados`: `is_featured DESC, created_at DESC`.
 
-**Layout admin** (`_admin.tsx`):
+**Grid:** 12 por página, 3/2/1 columnas. Cards = `<PropertyCard>`.
 
-- Sidebar shadcn colapsable (`collapsible="icon"`) con íconos lucide:
-  - Dashboard (LayoutDashboard)
-  - Propiedades (Building2)
-  - Leads (Users)
-  - Blog (FileText)
-  - Configuración (Settings)
-- Header con `SidebarTrigger` siempre visible + nombre del agente + botón logout
-- Resaltado de ruta activa
+**Estado vacío:** mensaje + botón "Limpiar filtros".
 
-## 6. Páginas iniciales (contenido real, no placeholder)
+**Paginación:** Anterior/Siguiente + indicador "Página X de Y".
 
-- **Home (`/`)**: hero "Encuentra tu próximo hogar en Bogotá", buscador básico (tipo, operación, presupuesto), sección "Propiedades destacadas" leyendo `is_featured = true`, sección de confianza.
-- **Propiedades**: grid leyendo de Supabase con filtros por tipo y operación (consulta real vía TanStack Query).
-- **Contacto**: formulario validado con zod → INSERT en `leads` (source='formulario').
-- **Dashboard admin**: tarjetas con conteos de propiedades disponibles, leads nuevos, propiedades destacadas.
+**SEO `head()`** específico al catálogo.
 
-## 7. Detalles técnicos
+---
 
-- TanStack Router file-based, contexto con `queryClient` + `auth`.
-- TanStack Query con `QueryClient` creado dentro de `getRouter` (no singleton).
-- Validación con zod en formularios (login, contacto).
-- Toaster con sonner (ya instalado).
-- Variables de entorno: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` para cliente; `SUPABASE_SERVICE_ROLE_KEY` para servidor (no se usa aún en este bootstrap).
-- Tipos generados de Supabase en `src/integrations/supabase/types.ts`.
-- Helper `formatCOP()` en `src/lib/format.ts` para precios (`Intl.NumberFormat es-CO`) y `formatArea()` para m².
-- Cada ruta pública define su propio `head()` con título y descripción específicos para SEO.
+## 6. Detalle `/propiedades/:slug` — ruta nueva
 
-## 8. Lo que NO incluye este bootstrap
+Archivo: `src/routes/propiedades.$slug.tsx`
 
-Para mantener el alcance acotado, las siguientes piezas quedan listas para una iteración siguiente:
+**Loader:**
+```ts
+loader: ({ params, context: { queryClient } }) =>
+  queryClient.ensureQueryData(propertyBySlugQueryOptions(params.slug))
+```
+Si no existe → `throw notFound()`.
+`notFoundComponent` y `errorComponent` obligatorios.
 
-- Página de detalle de propiedad (`/propiedades/$slug`) completa con galería
-- CRUD completo de propiedades en admin (crear/editar con upload de imágenes)
-- Pipeline visual de leads (kanban)
-- Módulo de blog completo
-- Integración WhatsApp / chat
-- Filtros avanzados (mapa, rangos de precio con sliders)
+**`head({ loaderData })` dinámico:**
+- title: `${title} | Alquidel Bienes Raíces`
+- description: primeros 155 chars de `description`
+- og:title, og:description, og:type=article
+- og:image y twitter:image: `images[0]` si existe (omitir si no — sin imagen genérica)
 
-Estas se priorizan después de validar el bootstrap.  
-  
-Agregar al plan: incluir el helper formatCOP() desde el inicio 
+**Layout dos columnas (lg:grid-cols-3, contenido col-span-2 + sidebar col-span-1):**
 
-con separador de miles colombiano (punto) y símbolo $ al frente.
+**Columna izquierda:**
+- Galería: `useState<number>(0)` para índice activo; imagen grande aspect 4/3 + fila de miniaturas debajo (click → cambia activo). Si vacío: placeholder Building2 grande.
+- Header: badge operación (slate/amber), badge estado, título grande, precio grande `formatCOP`.
+- Chips de datos: área `formatArea`, hab, baños, ciudad (con íconos Maximize, Bed, Bath, MapPin).
+- Bloque descripción.
+- Grid amenidades 2-3 col: ícono Check + label.
+- Box ubicación: ícono MapPin + "Sector: {neighborhood}, {city}" (sin mapa).
+- **Calculadora hipotecaria en `<Accordion type="single" collapsible>`:**
+  - Inputs locales con `useState`: `valor` (default = price), `enganchePct` (slider 10-50, default 30), `tasa` (input numérico, default 11), `plazoAnios` (select 5/10/15/20).
+  - Cálculo derivado:
+    ```
+    monto = valor * (1 - enganchePct/100)
+    i = (tasa/100) / 12
+    n = plazoAnios * 12
+    cuota = monto * i / (1 - (1+i)^-n)   // amortización francesa
+    ```
+  - Output: dos cards mostrando "Monto financiado" y "Cuota mensual" con `formatCOP`.
 
-Ejemplo: $1.250.000.000. Esto debe usarse en TODAS las vistas 
+**Columna derecha (sticky lg:top-20):**
+- **Card formulario de contacto:**
+  - Validación zod (name >=1 / email válido / message <=2000 / phone opcional)
+  - Mensaje pre-llenado: `"Hola, me interesa la propiedad: ${title}"`
+  - Submit → `supabase.from("leads").insert({ name, email, phone, message, source: "formulario", property_id: id, status: "nuevo" })`
+  - Toast éxito: "¡Consulta enviada! Te contactaremos pronto." + reset form
+  - Toast error con mensaje de RLS si falla
+- **Botón WhatsApp:** verde-600, ícono MessageCircle, link a `whatsappUrl("Hola, me interesa la propiedad: " + title)`
+- **Card info Alquidel:** teléfonos, email, dirección reales
 
-donde aparezca precio, desde el primer render.
+**Botón flotante móvil:**
+- `fixed bottom-4 inset-x-4 z-30 lg:hidden`
+- Pill verde-600 ancho completo, ícono MessageCircle, link WhatsApp con título de la propiedad
+
+---
+
+## 7. Página `/nosotros` — ruta nueva
+
+Archivo: `src/routes/nosotros.tsx`
+
+- Hero: tagline "Encuentra la propiedad de tus sueños en Colombia", subtítulo de bienvenida
+- Sección "Quiénes somos": párrafo real completo
+- Misión / Visión: 2 cards lado a lado con íconos (Target / Eye)
+- Datos en cifras: 3 stats reales (8+ propiedades, X años, X ciudades)
+- CTA final: "Ver propiedades" → `/propiedades`
+- `head()` específico
+
+Agregar link **Nosotros** al navbar (entre Propiedades y Contacto, ya que removimos Blog).
+
+---
+
+## 8. Página `/contacto` — crear (no existe)
+
+Archivo: `src/routes/contacto.tsx`
+
+Layout dos columnas:
+- **Izquierda - Datos reales:**
+  - Card con dirección (MapPin): "Calle 138 #74-51, Oficina 09, Bogotá"
+  - Card teléfonos (Phone): "+57 321 491 0400" y "PBX (601) 583 6744"
+  - Card email (Mail): "comercialalquidel@gmail.com"
+  - Botón WhatsApp grande verde
+- **Derecha - Formulario:**
+  - Campos: nombre*, email*, teléfono, mensaje*
+  - Validación zod
+  - Submit → `supabase.from("leads").insert({ ..., source: "formulario", status: "nuevo", property_id: null })`
+  - Toast éxito + reset
+
+`head()` específico.
+
+---
+
+## 9. SEO checklist
+
+- Cada ruta nueva (`/`, `/propiedades`, `/propiedades/$slug`, `/nosotros`, `/contacto`) define su propio `head()` con title + description + og:title + og:description únicos.
+- Solo el detalle agrega og:image (desde `images[0]`).
+- Removemos el og:image global de la home (apuntaba a `hero-bogota.jpg` que ya no usaremos).
+
+---
+
+## Estructura técnica
+
+```text
+src/
+├─ lib/
+│  ├─ company.ts           NUEVO  — datos reales Alquidel
+│  └─ whatsapp.ts          NUEVO  — helper URL WhatsApp
+├─ components/
+│  ├─ public/
+│  │  └─ PropertyCard.tsx  NUEVO  — card reutilizable
+│  └─ layout/
+│     ├─ PublicNavbar.tsx  EDIT   — nav: Propiedades/Nosotros/Contacto + WA CTA
+│     └─ PublicFooter.tsx  EDIT   — datos reales
+└─ routes/
+   ├─ index.tsx            REEMPLAZO — hero+buscador+destacadas+confianza
+   ├─ propiedades.tsx      REEMPLAZO — sidebar filtros URL + grid
+   ├─ propiedades.$slug.tsx NUEVO   — galería+detalle+calc+lead form
+   ├─ nosotros.tsx         NUEVO   — quiénes/misión/visión
+   └─ contacto.tsx         NUEVO   — datos reales + form
+```
+
+## Notas de ejecución
+
+- Confirmé RLS: `properties` SELECT público y `leads` INSERT público con validación de `name/email/source` → el formulario funciona sin auth.
+- Source válido para leads: `"formulario"` (validado por la policy).
+- Asset `src/assets/hero-bogota.jpg` deja de usarse en home (no eliminar; solo dejar de importar).
+- TanStack Router exige que cada `<Link to="...">` apunte a una ruta que exista en `routeTree.gen.ts` — por eso removemos `to="/blog"` del navbar/footer en este turno.
