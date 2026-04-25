@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { Bath, Bed, Building2, MapPin, Maximize } from "lucide-react";
+import { Bath, Bed, Building2, GitCompare, Heart, MapPin, Maximize } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatCOP, formatArea } from "@/lib/format";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { useCompare } from "@/contexts/CompareContext";
+import { cn } from "@/lib/utils";
 
 export interface PropertyCardData {
   id: string;
@@ -21,6 +24,16 @@ export interface PropertyCardData {
 
 export function PropertyCard({ p }: { p: PropertyCardData }) {
   const cover = p.images?.[0];
+  const { isFavorite, toggle: toggleFav } = useFavorites();
+  const { isInCompare, toggle: toggleCmp } = useCompare();
+  const fav = isFavorite(p.id);
+  const cmp = isInCompare(p.id);
+
+  function stop(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
   return (
     <Link
       to="/propiedades/$slug"
@@ -56,6 +69,30 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
                 Destacada
               </Badge>
             )}
+          </div>
+          <div className="absolute right-3 top-3 flex flex-col gap-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+            <button
+              type="button"
+              onClick={(e) => { stop(e); toggleFav(p.id); }}
+              aria-label={fav ? "Quitar de favoritos" : "Guardar en favoritos"}
+              className={cn(
+                "inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-colors hover:bg-background",
+                fav ? "text-rose-500" : "text-foreground",
+              )}
+            >
+              <Heart className={cn("h-4 w-4", fav && "fill-current")} />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { stop(e); toggleCmp(p); }}
+              aria-label={cmp ? "Quitar de comparación" : "Agregar a comparación"}
+              className={cn(
+                "inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-colors hover:bg-background",
+                cmp ? "text-slate-900" : "text-foreground",
+              )}
+            >
+              <GitCompare className={cn("h-4 w-4", cmp && "fill-current")} />
+            </button>
           </div>
         </div>
         <div className="space-y-3 p-5">
