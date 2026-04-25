@@ -53,6 +53,8 @@ function PropiedadesAdmin() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "properties"],
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")

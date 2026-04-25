@@ -88,6 +88,8 @@ function LeadsListPage() {
         .gte("created_at", since.toISOString());
       return count ?? 0;
     },
+    staleTime: 15_000,
+    gcTime: 5 * 60_000,
     refetchInterval: 60_000,
   });
 
@@ -111,6 +113,8 @@ function LeadsListPage() {
       );
       return result;
     },
+    staleTime: 15_000,
+    gcTime: 5 * 60_000,
     refetchInterval: 30_000,
   });
 
@@ -145,6 +149,8 @@ function LeadsListPage() {
       if (error) throw error;
       return { rows: data ?? [], total: count ?? 0 };
     },
+    staleTime: 15_000,
+    gcTime: 5 * 60_000,
   });
 
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));

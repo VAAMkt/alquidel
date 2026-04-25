@@ -67,6 +67,8 @@ function AdminBlogPage() {
       if (error) throw error;
       return { rows: data ?? [], total: count ?? 0 };
     },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
   });
 
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
