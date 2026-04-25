@@ -1,48 +1,79 @@
 import { Link } from "@tanstack/react-router";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { COMPANY } from "@/lib/company";
+import { whatsappUrl } from "@/lib/whatsapp";
 
 export function PublicFooter() {
   return (
     <footer className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-4">
-          <div>
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 md:grid-cols-4">
+          <div className="md:col-span-1">
             <div className="inline-flex items-baseline gap-1">
               <span className="text-lg font-semibold tracking-[0.2em] text-foreground">
                 ALQUIDEL
               </span>
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Inmobiliaria premium en Bogotá. Venta y arriendo de propiedades
-              seleccionadas.
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {COMPANY.about}
             </p>
           </div>
+
           <div>
             <h4 className="text-sm font-semibold text-foreground">Navegación</h4>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li><Link to="/propiedades" className="hover:text-foreground">Propiedades</Link></li>
-              <li><Link to="/blog" className="hover:text-foreground">Blog</Link></li>
+              <li><Link to="/nosotros" className="hover:text-foreground">Nosotros</Link></li>
               <li><Link to="/contacto" className="hover:text-foreground">Contacto</Link></li>
+              <li><Link to="/login" className="hover:text-foreground">Acceso asesores</Link></li>
             </ul>
           </div>
+
           <div>
             <h4 className="text-sm font-semibold text-foreground">Operaciones</h4>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>Venta de inmuebles</li>
               <li>Arriendo residencial</li>
               <li>Arriendo comercial</li>
+              <li>Asesoría personalizada</li>
             </ul>
           </div>
+
           <div>
             <h4 className="text-sm font-semibold text-foreground">Contacto</h4>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li>Bogotá, Colombia</li>
-              <li>contacto@alquidel.co</li>
+            <ul className="mt-3 space-y-3 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{COMPANY.address}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0" />
+                <div className="space-y-0.5">
+                  <a href={COMPANY.phoneHref} className="block hover:text-foreground">{COMPANY.phone}</a>
+                  <a href={COMPANY.pbxHref} className="block hover:text-foreground">PBX {COMPANY.pbx}</a>
+                </div>
+              </li>
+              <li className="flex items-start gap-2">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0" />
+                <a href={COMPANY.emailHref} className="hover:text-foreground">{COMPANY.email}</a>
+              </li>
+              <li className="flex items-start gap-2">
+                <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <a
+                  href={whatsappUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground"
+                >
+                  Escríbenos por WhatsApp
+                </a>
+              </li>
             </ul>
           </div>
         </div>
         <div className="mt-12 border-t border-border pt-6 text-xs text-muted-foreground">
-          © {new Date().getFullYear()} ALQUIDEL. Todos los derechos reservados.
+          © {new Date().getFullYear()} {COMPANY.name}. Todos los derechos reservados.
         </div>
       </div>
     </footer>
