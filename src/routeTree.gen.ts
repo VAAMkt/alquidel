@@ -28,6 +28,7 @@ import { Route as AdminPropiedadesNuevaRouteImport } from './routes/admin/propie
 import { Route as AdminLeadsIdRouteImport } from './routes/admin/leads.$id'
 import { Route as AdminBlogNuevoRouteImport } from './routes/admin/blog.nuevo'
 import { Route as AdminPropiedadesIdEditarRouteImport } from './routes/admin/propiedades.$id.editar'
+import { Route as AdminBlogIdEditarRouteImport } from './routes/admin/blog.$id.editar'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -125,6 +126,11 @@ const AdminPropiedadesIdEditarRoute =
     path: '/$id/editar',
     getParentRoute: () => AdminPropiedadesRoute,
   } as any)
+const AdminBlogIdEditarRoute = AdminBlogIdEditarRouteImport.update({
+  id: '/$id/editar',
+  path: '/$id/editar',
+  getParentRoute: () => AdminBlogRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/blog/$id/editar': typeof AdminBlogIdEditarRoute
   '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
 export interface FileRoutesByTo {
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/blog/$id/editar': typeof AdminBlogIdEditarRoute
   '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
 export interface FileRoutesById {
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/blog/$id/editar': typeof AdminBlogIdEditarRoute
   '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
 export interface FileRouteTypes {
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
+    | '/admin/blog/$id/editar'
     | '/admin/propiedades/$id/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
+    | '/admin/blog/$id/editar'
     | '/admin/propiedades/$id/editar'
   id:
     | '__root__'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
+    | '/admin/blog/$id/editar'
     | '/admin/propiedades/$id/editar'
   fileRoutesById: FileRoutesById
 }
@@ -402,15 +414,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPropiedadesIdEditarRouteImport
       parentRoute: typeof AdminPropiedadesRoute
     }
+    '/admin/blog/$id/editar': {
+      id: '/admin/blog/$id/editar'
+      path: '/$id/editar'
+      fullPath: '/admin/blog/$id/editar'
+      preLoaderRoute: typeof AdminBlogIdEditarRouteImport
+      parentRoute: typeof AdminBlogRoute
+    }
   }
 }
 
 interface AdminBlogRouteChildren {
   AdminBlogNuevoRoute: typeof AdminBlogNuevoRoute
+  AdminBlogIdEditarRoute: typeof AdminBlogIdEditarRoute
 }
 
 const AdminBlogRouteChildren: AdminBlogRouteChildren = {
   AdminBlogNuevoRoute: AdminBlogNuevoRoute,
+  AdminBlogIdEditarRoute: AdminBlogIdEditarRoute,
 }
 
 const AdminBlogRouteWithChildren = AdminBlogRoute._addFileChildren(
