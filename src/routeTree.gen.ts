@@ -13,7 +13,9 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PropiedadesRouteImport } from './routes/propiedades'
 import { Route as NosotrosRouteImport } from './routes/nosotros'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as ContactoRouteImport } from './routes/contacto'
+import { Route as CompararRouteImport } from './routes/comparar'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -50,9 +52,19 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactoRoute = ContactoRouteImport.update({
   id: '/contacto',
   path: '/contacto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompararRoute = CompararRouteImport.update({
+  id: '/comparar',
+  path: '/comparar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRoute = BlogRouteImport.update({
@@ -136,7 +148,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/comparar': typeof CompararRoute
   '/contacto': typeof ContactoRoute
+  '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
@@ -158,7 +172,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/comparar': typeof CompararRoute
   '/contacto': typeof ContactoRoute
+  '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
@@ -181,7 +197,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/comparar': typeof CompararRoute
   '/contacto': typeof ContactoRoute
+  '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
@@ -205,7 +223,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/blog'
+    | '/comparar'
     | '/contacto'
+    | '/favoritos'
     | '/login'
     | '/nosotros'
     | '/propiedades'
@@ -227,7 +247,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/blog'
+    | '/comparar'
     | '/contacto'
+    | '/favoritos'
     | '/login'
     | '/nosotros'
     | '/propiedades'
@@ -249,7 +271,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/blog'
+    | '/comparar'
     | '/contacto'
+    | '/favoritos'
     | '/login'
     | '/nosotros'
     | '/propiedades'
@@ -272,7 +296,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
+  CompararRoute: typeof CompararRoute
   ContactoRoute: typeof ContactoRoute
+  FavoritosRoute: typeof FavoritosRoute
   LoginRoute: typeof LoginRoute
   NosotrosRoute: typeof NosotrosRoute
   PropiedadesRoute: typeof PropiedadesRouteWithChildren
@@ -309,11 +335,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contacto': {
       id: '/contacto'
       path: '/contacto'
       fullPath: '/contacto'
       preLoaderRoute: typeof ContactoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comparar': {
+      id: '/comparar'
+      path: '/comparar'
+      fullPath: '/comparar'
+      preLoaderRoute: typeof CompararRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog': {
@@ -507,7 +547,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
+  CompararRoute: CompararRoute,
   ContactoRoute: ContactoRoute,
+  FavoritosRoute: FavoritosRoute,
   LoginRoute: LoginRoute,
   NosotrosRoute: NosotrosRoute,
   PropiedadesRoute: PropiedadesRouteWithChildren,
