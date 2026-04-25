@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { fallback, zodValidator } from "@tanstack/zod-adapter";
 import { formatDistanceToNow } from "date-fns";
@@ -178,19 +179,7 @@ function LeadsListPage() {
 
       {/* Filtros */}
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[260px] flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre o email…"
-            className="pl-9"
-            defaultValue={search.q}
-            onChange={(e) => {
-              const val = e.target.value;
-              const handle = setTimeout(() => setSearch({ q: val }), 300);
-              return () => clearTimeout(handle);
-            }}
-          />
-        </div>
+        <SearchInput value={search.q} onChange={(q) => setSearch({ q })} />
         <Select
           value={search.source}
           onValueChange={(v) => setSearch({ source: v })}
@@ -339,6 +328,30 @@ function LeadsListPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+
+function SearchInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [local, setLocal] = useState(value);
+  useEffect(() => setLocal(value), [value]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (local !== value) onChange(local);
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [local]);
+  return (
+    <div className="relative min-w-[260px] flex-1">
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        placeholder="Buscar por nombre o email…"
+        className="pl-9"
+        value={local}
+        onChange={(e) => setLocal(e.target.value)}
+      />
     </div>
   );
 }
