@@ -27,6 +27,7 @@ import { signOut } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { amIAdmin } from "@/server/team.functions";
+import { useAuth } from "@/hooks/useAuth";
 
 const items = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, badgeKey: null },
@@ -41,11 +42,20 @@ export function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const adminCheckFn = useServerFn(amIAdmin);
+  const { session, loading: authLoading } = useAuth();
 
   const { data: meCheck } = useQuery({
     queryKey: ["admin", "me-is-admin"],
-    queryFn: () => adminCheckFn({}),
+    queryFn: async () => {
+      try {
+        return await adminCheckFn({});
+      } catch {
+        return { isAdmin: false };
+      }
+    },
+    enabled: !authLoading && !!session,
     staleTime: 5 * 60_000,
+    retry: false,
   });
 
   const { data: newLeadsCount } = useQuery({
