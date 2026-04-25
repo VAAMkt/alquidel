@@ -217,6 +217,7 @@ export const deleteTeamMember = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 // ¿Soy admin?
 // ---------------------------------------------------------------------------
+// Invalida cache HMR previa que no exportaba `getAdminStatus`.
 export const getAdminStatus = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z.object({ accessToken: AccessTokenSchema }).parse(input),
