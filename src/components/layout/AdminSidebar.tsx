@@ -26,7 +26,7 @@ import {
 import { signOut } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { amIAdmin } from "@/server/team.functions";
+import { getAdminStatus } from "@/server/team.functions";
 import { useAuth } from "@/hooks/useAuth";
 
 const items = [
@@ -41,7 +41,7 @@ const items = [
 export function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const adminCheckFn = useServerFn(amIAdmin);
+  const adminCheckFn = useServerFn(getAdminStatus);
   const { session, loading: authLoading } = useAuth();
   const accessToken = session?.access_token;
 
