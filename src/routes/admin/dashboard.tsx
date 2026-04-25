@@ -52,12 +52,13 @@ function StatCard({
 }
 
 function DashboardPage() {
-  const { session, loading: authLoading } = useAuth();
-  const isReady = !authLoading && !!session;
+  const { session } = useAuth();
+  const isReady = !!session?.user;
 
   const { data: stats } = useQuery({
     queryKey: ["admin", "dashboard-stats-v2"],
     enabled: isReady,
+    staleTime: 60_000,
     queryFn: async () => {
       const monthStart = new Date();
       monthStart.setDate(1);
@@ -81,6 +82,7 @@ function DashboardPage() {
   const { data: recentLeads } = useQuery({
     queryKey: ["admin", "dashboard-recent-leads"],
     enabled: isReady,
+    staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")

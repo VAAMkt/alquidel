@@ -51,7 +51,9 @@ export function AdminSidebar() {
       return count ?? 0;
     },
     enabled: isAuthenticated,
-    refetchInterval: 30_000,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const handleLogout = async () => {
