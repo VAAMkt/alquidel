@@ -11,8 +11,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { CompareProvider } from "@/contexts/CompareContext";
+import { installServerFnAuthFetch } from "@/integrations/supabase/server-fn-fetch";
 
 import appCss from "../styles.css?url";
+
+// Install the fetch interceptor as soon as this module loads in the browser
+// so that every server-fn call carries the current Supabase JWT.
+installServerFnAuthFetch();
 
 interface RouterContext {
   queryClient: QueryClient;
