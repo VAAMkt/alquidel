@@ -8,6 +8,7 @@ import {
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
+import { PublicLayout } from "@/components/layout/PublicLayout";
 
 import appCss from "../styles.css?url";
 
@@ -17,23 +18,33 @@ interface RouterContext {
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+    <PublicLayout>
+      <section className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-4 py-24 text-center">
+        <p className="text-sm font-medium uppercase tracking-[0.3em] text-muted-foreground">
+          Error 404
         </p>
-        <div className="mt-6">
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+          Esta página no existe
+        </h1>
+        <p className="mt-4 max-w-md text-base text-muted-foreground">
+          Puede que la propiedad fue retirada o la URL cambió.
+        </p>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            Volver al inicio
+          </Link>
+          <Link
+            to="/propiedades"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-border px-6 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            Ver propiedades
           </Link>
         </div>
-      </div>
-    </div>
+      </section>
+    </PublicLayout>
   );
 }
 

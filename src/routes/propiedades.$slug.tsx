@@ -80,7 +80,45 @@ export const Route = createFileRoute("/propiedades/$slug")({
         { name: "twitter:image", content: p.images[0] },
       );
     }
-    return { meta: baseMeta };
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "RealEstateListing",
+      name: p.title,
+      description: p.description ?? "",
+      url: `/propiedades/${p.slug}`,
+      image: p.images ?? [],
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: p.city,
+        addressCountry: "CO",
+        streetAddress: p.address ?? p.neighborhood ?? undefined,
+      },
+      floorSize: {
+        "@type": "QuantitativeValue",
+        value: p.area_m2,
+        unitCode: "MTK",
+      },
+      numberOfBedrooms: p.bedrooms,
+      numberOfBathroomsTotal: p.bathrooms,
+      offers: {
+        "@type": "Offer",
+        price: p.price,
+        priceCurrency: "COP",
+        availability:
+          p.status === "disponible"
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+      },
+    };
+    return {
+      meta: baseMeta,
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(jsonLd),
+        },
+      ],
+    };
   },
   errorComponent: ({ error }) => (
     <PublicLayout>

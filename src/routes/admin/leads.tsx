@@ -130,7 +130,7 @@ function LeadsListPage() {
 
   const setSearch = (patch: Record<string, any>) =>
     navigate({
-      search: (prev) => ({
+      search: (prev: any) => ({
         ...prev,
         ...patch,
         page: typeof patch.page === "number" ? patch.page : 1,
