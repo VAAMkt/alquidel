@@ -62,7 +62,13 @@ function ContactoPage() {
         status: "nuevo",
         property_id: null,
       });
-      if (error) throw error;
+      if (error) {
+        console.error("[contacto] Error guardando lead:", error);
+        throw new Error(
+          error.message ||
+            "No pudimos enviar tu mensaje. Intenta de nuevo o escríbenos por WhatsApp.",
+        );
+      }
     },
     onSuccess: () => {
       toast.success("¡Gracias! Te contactaremos pronto.");
