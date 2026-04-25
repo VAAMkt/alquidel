@@ -11,7 +11,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { CompareProvider } from "@/contexts/CompareContext";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { installServerFnAuthFetch } from "@/integrations/supabase/server-fn-fetch";
 
 import appCss from "../styles.css?url";
@@ -80,8 +79,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: "description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
       { property: "og:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
       { name: "twitter:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/70f0e713-88c7-40bb-b1dc-9c98de1e0fee/id-preview-2d105826--f91f64c7-ad7e-47ad-9166-c0ddacd2464a.lovable.app-1777139596373.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/70f0e713-88c7-40bb-b1dc-9c98de1e0fee/id-preview-2d105826--f91f64c7-ad7e-47ad-9166-c0ddacd2464a.lovable.app-1777139596373.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
     ],
     links: [
       {
@@ -113,14 +112,12 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <FavoritesProvider>
-          <CompareProvider>
-            <Outlet />
-            <Toaster richColors position="top-right" />
-          </CompareProvider>
-        </FavoritesProvider>
-      </AuthProvider>
+      <FavoritesProvider>
+        <CompareProvider>
+          <Outlet />
+          <Toaster richColors position="top-right" />
+        </CompareProvider>
+      </FavoritesProvider>
     </QueryClientProvider>
   );
 }
