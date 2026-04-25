@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   LayoutDashboard,
   Building2,
@@ -8,6 +9,7 @@ import {
   Settings,
   LogOut,
   Bell,
+  UsersRound,
 } from "lucide-react";
 import {
   Sidebar,
@@ -24,6 +26,7 @@ import {
 import { signOut } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { amIAdmin } from "@/server/team.functions";
 
 const items = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, badgeKey: null },
@@ -37,6 +40,13 @@ const items = [
 export function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const adminCheckFn = useServerFn(amIAdmin);
+
+  const { data: meCheck } = useQuery({
+    queryKey: ["admin", "me-is-admin"],
+    queryFn: () => adminCheckFn({}),
+    staleTime: 5 * 60_000,
+  });
 
   const { data: newLeadsCount } = useQuery({
     queryKey: ["admin", "leads", "new-count"],
@@ -92,6 +102,22 @@ export function AdminSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+              {meCheck?.isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname.startsWith("/admin/equipo")}
+                    tooltip="Equipo"
+                  >
+                    <Link to="/admin/equipo" className="flex items-center justify-between w-full">
+                      <span className="flex items-center gap-2">
+                        <UsersRound className="h-4 w-4" />
+                        <span>Equipo</span>
+                      </span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
