@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Plus, Search, Pencil, Trash2, Star, Building2, ChevronLeft, ChevronRight,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,20 @@ function PropiedadesAdmin() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const currentPage = Math.min(page, totalPages);
   const pageItems = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+
+  const hasActiveFilters =
+    search.trim() !== "" ||
+    filterType !== "all" ||
+    filterStatus !== "all" ||
+    filterCity !== "all";
+
+  const clearFilters = () => {
+    setSearch("");
+    setFilterType("all");
+    setFilterStatus("all");
+    setFilterCity("all");
+    setPage(1);
+  };
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<Property> }) => {
@@ -175,6 +190,18 @@ function PropiedadesAdmin() {
             </SelectContent>
           </Select>
         </div>
+        {hasActiveFilters && (
+          <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+            <p className="text-xs text-muted-foreground">
+              Mostrando <span className="font-medium text-foreground">{filtered.length}</span> de{" "}
+              <span className="font-medium text-foreground">{data?.length ?? 0}</span> propiedades
+            </p>
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <X className="mr-1 h-3.5 w-3.5" />
+              Limpiar filtros
+            </Button>
+          </div>
+        )}
       </Card>
 
       <Card className="mt-4 overflow-hidden rounded-lg border-border p-0">
