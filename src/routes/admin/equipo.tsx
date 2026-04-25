@@ -34,7 +34,6 @@ import {
   setTeamMemberAdmin,
 } from "@/server/team.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export const Route = createFileRoute("/admin/equipo")({
@@ -54,19 +53,17 @@ function EquipoPage() {
   const listFn = useServerFn(listTeam);
   const setAdminFn = useServerFn(setTeamMemberAdmin);
   const deleteFn = useServerFn(deleteTeamMember);
-  const { session } = useAuth();
-  const accessToken = session?.access_token;
   const { isAdmin, isLoading: checkingAdmin } = useIsAdmin();
 
   const { data: team, isLoading } = useQuery({
     queryKey: ["admin", "team"],
-    queryFn: () => listFn({ data: { accessToken: accessToken! } }),
-    enabled: !!accessToken && isAdmin,
+    queryFn: () => listFn(),
+    enabled: isAdmin,
   });
 
   const setAdmin = useMutation({
     mutationFn: (input: { userId: string; makeAdmin: boolean }) =>
-      setAdminFn({ data: { ...input, accessToken: accessToken! } }),
+      setAdminFn({ data: input }),
     onSuccess: () => {
       toast.success("Rol actualizado");
       qc.invalidateQueries({ queryKey: ["admin", "team"] });
@@ -75,7 +72,7 @@ function EquipoPage() {
   });
 
   const remove = useMutation({
-    mutationFn: (userId: string) => deleteFn({ data: { userId, accessToken: accessToken! } }),
+    mutationFn: (userId: string) => deleteFn({ data: { userId } }),
     onSuccess: () => {
       toast.success("Miembro eliminado");
       qc.invalidateQueries({ queryKey: ["admin", "team"] });
