@@ -19,6 +19,7 @@ import { Route as PropiedadesSlugRouteImport } from './routes/propiedades.$slug'
 import { Route as AdminPropiedadesRouteImport } from './routes/admin/propiedades'
 import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as AdminConfiguracionRouteImport } from './routes/admin/configuracion'
 import { Route as AdminPropiedadesNuevaRouteImport } from './routes/admin/propiedades.nueva'
 import { Route as AdminLeadsIdRouteImport } from './routes/admin/leads.$id'
 import { Route as AdminPropiedadesIdEditarRouteImport } from './routes/admin/propiedades.$id.editar'
@@ -73,6 +74,11 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminConfiguracionRoute = AdminConfiguracionRouteImport.update({
+  id: '/configuracion',
+  path: '/configuracion',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPropiedadesNuevaRoute = AdminPropiedadesNuevaRouteImport.update({
   id: '/nueva',
   path: '/nueva',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
+  '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/leads': typeof AdminLeadsRouteWithChildren
   '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
+  '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/leads': typeof AdminLeadsRouteWithChildren
   '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
+  '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/leads': typeof AdminLeadsRouteWithChildren
   '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nosotros'
     | '/propiedades'
+    | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/leads'
     | '/admin/propiedades'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nosotros'
     | '/propiedades'
+    | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/leads'
     | '/admin/propiedades'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nosotros'
     | '/propiedades'
+    | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/leads'
     | '/admin/propiedades'
@@ -265,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/configuracion': {
+      id: '/admin/configuracion'
+      path: '/configuracion'
+      fullPath: '/admin/configuracion'
+      preLoaderRoute: typeof AdminConfiguracionRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/propiedades/nueva': {
       id: '/admin/propiedades/nueva'
       path: '/nueva'
@@ -315,12 +334,14 @@ const AdminPropiedadesRouteWithChildren =
   AdminPropiedadesRoute._addFileChildren(AdminPropiedadesRouteChildren)
 
 interface AdminRouteChildren {
+  AdminConfiguracionRoute: typeof AdminConfiguracionRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminLeadsRoute: typeof AdminLeadsRouteWithChildren
   AdminPropiedadesRoute: typeof AdminPropiedadesRouteWithChildren
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminConfiguracionRoute: AdminConfiguracionRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminLeadsRoute: AdminLeadsRouteWithChildren,
   AdminPropiedadesRoute: AdminPropiedadesRouteWithChildren,
@@ -351,3 +372,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
