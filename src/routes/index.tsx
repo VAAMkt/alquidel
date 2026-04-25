@@ -24,7 +24,7 @@ import {
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
-import { RecentViews } from "@/components/public/RecentViews";
+import { RecentViews } from "../components/public/RecentViews";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
 
