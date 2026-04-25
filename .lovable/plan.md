@@ -1,87 +1,50 @@
-## Problema
+## Diagnóstico
 
-La invitación por email de Lovable Cloud llega al usuario, pero el flujo para que él/ella elija contraseña no está funcionando correctamente (probablemente por la configuración del enlace de redirección o por el flujo de "set password" que no está implementado en la app). Resultado: la invitación queda en limbo.
+El módulo Equipo se rompe con el error de Vite:
 
-## Solución propuesta
+> `The requested module '/src/server/team.functions.ts?t=…' does not provide an export …`
 
-Reemplazar el flujo de "Invitar por email" por **creación directa del usuario desde el panel de Equipo**, donde el admin define la contraseña inicial y se la comunica al miembro por el canal que prefiera (WhatsApp, llamada, etc.). El miembro entra a `/login`, usa email + contraseña que le dio el admin y listo.
+Tras revisar `src/server/team.functions.ts`, `src/components/admin/InviteMemberDialog.tsx`, `src/routes/admin/equipo.tsx` y la guía oficial de `tss-serverfn-split`, la causa raíz es un **anti-patrón documentado**:
 
-Esto es más simple, más rápido y elimina la dependencia del email de invitación.
+`team.functions.ts` define **helpers y constantes hermanos** (`assertAdmin`, `RoleSchema`) en el mismo archivo donde viven los `createServerFn(...)`. El plugin Vite `tss-serverfn-split` divide el archivo en variantes cliente/servidor y, al hacerlo, los handlers terminan referenciando símbolos que ya no existen en su nuevo módulo (de ahí "does not provide an export"). Es exactamente el caso descrito en el knowledge interno:
 
-## Cambios
+> "If you see `ReferenceError` from `_serverFn` + `?tss-serverfn-split`, first check for sibling helper/config usage in `.functions.ts`. Move helper/config logic to imported modules."
 
-### 1. Server function — reemplazar `inviteTeamMember` por `createTeamMember`
+Adicionalmente, importar `client.server.ts` (server-only) directamente desde el archivo `.functions.ts` aumenta la probabilidad de que el splitter falle dependiendo de la combinación de exports/HMR. La práctica recomendada es mantener `.functions.ts` como una capa delgada que sólo declara `createServerFn(...)` e importa todo lo demás.
 
-Archivo: `src/server/team.functions.ts`
+## Solución
 
-Cambiar la implementación para usar `supabaseAdmin.auth.admin.createUser()` en lugar de `inviteUserByEmail()`:
+1. **Crear `src/server/team.server.ts`** (módulo server-only) con:
+   - `RoleSchema` (zod enum)
+   - `assertAdmin(userId)` que usa `supabaseAdmin`
+   - Funciones puras de negocio: `listTeamImpl`, `createTeamMemberImpl`, `setTeamMemberAdminImpl`, `deleteTeamMemberImpl` (reciben `userId` autenticado y los datos validados)
+   - Importa `supabaseAdmin` desde `@/integrations/supabase/client.server` (ya server-only)
 
-- Recibe: `email`, `password` (mín 8 caracteres), `fullName`, `phone` (opcional), `role` (`admin` | `agente`)
-- Crea el usuario con `email_confirm: true` (queda confirmado de inmediato, puede entrar al instante)
-- El trigger `handle_new_user()` ya existente crea automáticamente la fila en `agents` y le asigna rol `agente`
-- Si el rol elegido es `admin`, agrega también el rol `admin` a `user_roles`
-- Si se proporcionó `phone`, actualiza `agents.phone`
+2. **Reescribir `src/server/team.functions.ts`** para que sea un wrapper delgado:
+   - Sólo importa `createServerFn`, `requireSupabaseAuth`, `z` y los helpers desde `./team.server`
+   - Cada `createServerFn(...).inputValidator(...).handler(...)` simplemente delega a la función `*Impl` correspondiente
+   - Ya no contiene helpers ni constantes a nivel de módulo más allá de la declaración de los servidores
 
-### 2. Diálogo del frontend — agregar campos de contraseña y teléfono
+3. **Endurecer el frontend** (`src/routes/admin/equipo.tsx`) para que un fallo del módulo no muestre la pantalla genérica "Something went wrong":
+   - Añadir un `errorComponent` propio en la ruta `/admin/equipo` que muestre el mensaje real y un botón de reintento
+   - Asegurar que el `useQuery` use `retry: false` y que el estado de error se muestre dentro de la card en vez de propagar al error boundary global
 
-Archivo: `src/components/admin/InviteMemberDialog.tsx` (renombrar internamente a `CreateMemberDialog` o mantener nombre del componente)
+4. **Validación de `phone` opcional**: actualmente `z.string().trim().max(40).optional().or(z.literal(""))`. Cambiarlo a `z.string().trim().max(40).optional()` y normalizar `""` a `undefined` antes de enviarlo, para evitar issues sutiles con la validación cuando el campo se deja vacío.
 
-- Agregar campo **Contraseña** (tipo `password`, mínimo 8 caracteres) con botón de "mostrar/ocultar" y un botón "Generar contraseña segura" que llene el campo con una random de 12 caracteres
-- Agregar campo **Teléfono** (opcional)
-- Cambiar título: "Crear nuevo miembro" / descripción: "El miembro podrá acceder de inmediato con el email y contraseña que definas. Compártele estos datos por un canal seguro."
-- Botón: "Crear miembro" en lugar de "Enviar invitación"
-- Tras crear con éxito, mostrar toast con instrucción: "Miembro creado. Comparte la contraseña con {email} de forma segura."
+5. **Smoke test manual**: tras los cambios, navegar a `/admin/equipo` autenticado como admin, crear un miembro de prueba con email/contraseña/nombre y verificar que:
+   - El diálogo se cierra correctamente
+   - El nuevo miembro aparece en la tabla
+   - El nuevo usuario puede iniciar sesión inmediatamente
 
-### 3. UI menor en `equipo.tsx`
+## Archivos afectados
 
-Sin cambios funcionales; el componente sigue invocando `<InviteMemberDialog />` (mantenemos el nombre del archivo para no tocar imports).
+- **Crear**: `src/server/team.server.ts`
+- **Reemplazar contenido**: `src/server/team.functions.ts` (wrapper delgado)
+- **Editar**: `src/routes/admin/equipo.tsx` (errorComponent local + manejo de error en query)
+- **Editar**: `src/components/admin/InviteMemberDialog.tsx` (normalización de phone opcional)
 
-## Detalles técnicos
+No se requieren cambios de base de datos ni de RLS — la migración previa que añadió las políticas y la función `handle_new_user` siguen siendo válidas.
 
-```ts
-// team.functions.ts (extracto)
-export const createTeamMember = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({
-      email: z.string().email().max(320),
-      password: z.string().min(8).max(72),
-      fullName: z.string().trim().min(2).max(120),
-      phone: z.string().trim().max(40).optional().or(z.literal("")),
-      role: z.enum(["admin", "agente"]),
-    }).parse(input),
-  )
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+## Por qué esto evita el bug a futuro
 
-    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: data.password,
-      email_confirm: true,
-      user_metadata: { full_name: data.fullName },
-    });
-    if (error) throw new Error(error.message);
-    const userId = created.user!.id;
-
-    // Trigger handle_new_user() ya creó agents + rol 'agente'.
-    if (data.phone && data.phone.trim()) {
-      await supabaseAdmin.from("agents")
-        .update({ phone: data.phone.trim() })
-        .eq("id", userId);
-    }
-    if (data.role === "admin") {
-      const { error: rErr } = await supabaseAdmin
-        .from("user_roles")
-        .insert({ user_id: userId, role: "admin" });
-      if (rErr && !rErr.message.includes("duplicate")) throw new Error(rErr.message);
-    }
-    return { ok: true, userId };
-  });
-```
-
-## Resumen
-
-- 1 server function reescrito (`inviteTeamMember` → `createTeamMember`)
-- 1 diálogo actualizado con 2 nuevos campos (contraseña + teléfono) y generador de contraseña
-- Sin migraciones SQL — la lógica de roles y `agents` ya está cubierta por el trigger existente
-- Sin breaking changes en la tabla — solo cambia cómo se crean los usuarios desde el panel
+Cumplir la regla "`*.functions.ts` es sólo wrappers de `createServerFn`" elimina la categoría completa de errores de splitter, que es la responsable de los crashes intermitentes que has visto en el módulo Equipo desde hace varios turnos. Combinado con el `errorComponent` de ruta, incluso si en el futuro otro módulo presenta un fallo de splitter o RPC, la página seguirá siendo navegable y el error visible quedará acotado al panel afectado.
