@@ -623,6 +623,23 @@ function PropertyDetail() {
             </div>
           </aside>
         </div>
+
+        {/* Propiedades similares */}
+        {similar.length > 0 && (
+          <section className="mt-16">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+              Propiedades similares
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Otras opciones en {p.city} para {p.type === "venta" ? "compra" : "arriendo"}.
+            </p>
+            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {similar.map((s) => (
+                <PropertyCard key={s.id} p={s} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* FAB móvil WhatsApp */}
