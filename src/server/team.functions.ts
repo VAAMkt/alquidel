@@ -36,6 +36,28 @@ async function getUserIdFromAccessToken(accessToken: string) {
   return data.user.id;
 }
 
+async function resolveAdminStatus(accessToken: string) {
+  try {
+    const userId = await getUserIdFromAccessToken(accessToken);
+    const { data: roleRow, error } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (error) {
+      console.error("resolveAdminStatus role lookup failed", error.message);
+      return { isAdmin: false, fallback: true };
+    }
+
+    return { isAdmin: !!roleRow, fallback: false };
+  } catch (error) {
+    console.error("resolveAdminStatus failed", error);
+    return { isAdmin: false, fallback: true };
+  }
+}
+
 /** Verifica que el userId tenga rol admin (usando supabaseAdmin para bypass RLS). */
 async function assertAdmin(userId: string) {
   const { data, error } = await supabaseAdmin
@@ -199,24 +221,10 @@ export const getAdminStatus = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z.object({ accessToken: AccessTokenSchema }).parse(input),
   )
-  .handler(async ({ data }) => {
-    try {
-      const userId = await getUserIdFromAccessToken(data.accessToken);
-      const { data: roleRow, error } = await supabaseAdmin
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle();
+  .handler(async ({ data }) => resolveAdminStatus(data.accessToken));
 
-      if (error) {
-        console.error("getAdminStatus role lookup failed", error.message);
-        return { isAdmin: false, fallback: true };
-      }
-
-      return { isAdmin: !!roleRow, fallback: false };
-    } catch (error) {
-      console.error("getAdminStatus failed", error);
-      return { isAdmin: false, fallback: true };
-    }
-  });
+export const amIAdmin = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ accessToken: AccessTokenSchema }).parse(input),
+  )
+  .handler(async ({ data }) => resolveAdminStatus(data.accessToken));
