@@ -1,40 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const RoleSchema = z.enum(["admin", "agente"]);
-const AccessTokenSchema = z.string().min(20, "Sesión inválida");
-
-async function getUserIdFromAccessToken(accessToken: string) {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
-
-  if (!supabaseUrl || !publishableKey) {
-    throw new Error("La configuración de autenticación no está disponible.");
-  }
-
-  const authClient = createClient<Database>(supabaseUrl, publishableKey, {
-    auth: {
-      storage: undefined,
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-    global: {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  });
-
-  const { data, error } = await authClient.auth.getUser(accessToken);
-  if (error || !data.user?.id) {
-    throw new Error("Tu sesión expiró. Inicia sesión de nuevo.");
-  }
-
-  return data.user.id;
-}
 
 /** Verifica que el userId tenga rol admin (usando supabaseAdmin para bypass RLS). */
 async function assertAdmin(userId: string) {
@@ -52,12 +21,9 @@ async function assertAdmin(userId: string) {
 // Listar equipo
 // ---------------------------------------------------------------------------
 export const listTeam = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) =>
-    z.object({ accessToken: AccessTokenSchema }).parse(input),
-  )
-  .handler(async ({ data }) => {
-    const userId = await getUserIdFromAccessToken(data.accessToken);
-    await assertAdmin(userId);
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
 
     const { data: agents, error: aErr } = await supabaseAdmin
       .from("agents")
@@ -88,19 +54,18 @@ export const listTeam = createServerFn({ method: "POST" })
 // Invitar miembro
 // ---------------------------------------------------------------------------
 export const inviteTeamMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
-        accessToken: AccessTokenSchema,
         email: z.string().email().max(320),
         fullName: z.string().trim().min(2).max(120),
         role: RoleSchema,
       })
       .parse(input),
   )
-  .handler(async ({ data }) => {
-    const userId = await getUserIdFromAccessToken(data.accessToken);
-    await assertAdmin(userId);
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
 
     const { data: invite, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       data.email,
@@ -130,18 +95,17 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
 // Cambiar rol
 // ---------------------------------------------------------------------------
 export const setTeamMemberAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
-        accessToken: AccessTokenSchema,
         userId: z.string().uuid(),
         makeAdmin: z.boolean(),
       })
       .parse(input),
   )
-  .handler(async ({ data }) => {
-    const userId = await getUserIdFromAccessToken(data.accessToken);
-    await assertAdmin(userId);
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
 
     if (data.makeAdmin) {
       const { error } = await supabaseAdmin
@@ -171,19 +135,18 @@ export const setTeamMemberAdmin = createServerFn({ method: "POST" })
 // Eliminar miembro
 // ---------------------------------------------------------------------------
 export const deleteTeamMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
-        accessToken: AccessTokenSchema,
         userId: z.string().uuid(),
       })
       .parse(input),
   )
-  .handler(async ({ data }) => {
-    const userId = await getUserIdFromAccessToken(data.accessToken);
-    await assertAdmin(userId);
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
 
-    if (data.userId === userId) {
+    if (data.userId === context.userId) {
       throw new Error("No puedes eliminar tu propia cuenta desde aquí.");
     }
 
