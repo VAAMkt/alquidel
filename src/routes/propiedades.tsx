@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import {
@@ -112,59 +112,63 @@ function PropiedadesPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["properties", "public-all"],
+    queryKey: [
+      "properties",
+      "public",
+      search.operacion,
+      [...search.tipos].sort().join(","),
+      search.ciudad,
+      search.precioMax,
+      search.habMin,
+      search.sort,
+      search.page,
+    ],
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = (search.page - 1) * PER_PAGE;
+      const to = from + PER_PAGE - 1;
+
+      let q = supabase
         .from("properties")
         .select(
-          "id, slug, title, type, property_type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured, created_at",
+          "id, slug, title, type, property_type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured",
+          { count: "exact" },
         )
         .eq("status", "disponible");
+
+      if (search.operacion !== "todos") q = q.eq("type", search.operacion);
+      if (search.tipos.length > 0) q = q.in("property_type", search.tipos);
+      if (search.ciudad !== "todas") q = q.eq("city", search.ciudad);
+      if (search.precioMax < PRICE_MAX_DEFAULT) q = q.lte("price", search.precioMax);
+      if (search.habMin > 0) q = q.gte("bedrooms", search.habMin);
+
+      switch (search.sort) {
+        case "precio-asc":
+          q = q.order("price", { ascending: true });
+          break;
+        case "precio-desc":
+          q = q.order("price", { ascending: false });
+          break;
+        case "destacados":
+          q = q
+            .order("is_featured", { ascending: false })
+            .order("created_at", { ascending: false });
+          break;
+        default:
+          q = q.order("created_at", { ascending: false });
+      }
+
+      const { data, count, error } = await q.range(from, to);
       if (error) throw error;
-      return data;
+      return { rows: data ?? [], total: count ?? 0 };
     },
   });
 
-  const filtered = useMemo(() => {
-    if (!data) return [];
-    let list = data.filter((p) => {
-      if (search.operacion !== "todos" && p.type !== search.operacion) return false;
-      if (search.tipos.length > 0 && !search.tipos.includes(p.property_type as typeof PROPERTY_TYPES[number])) return false;
-      if (search.ciudad !== "todas" && p.city !== search.ciudad) return false;
-      if (Number(p.price) > search.precioMax) return false;
-      if (search.habMin > 0) {
-        if (search.habMin >= 4 ? p.bedrooms < 4 : p.bedrooms < search.habMin) return false;
-      }
-      return true;
-    });
-
-    switch (search.sort) {
-      case "precio-asc":
-        list = [...list].sort((a, b) => Number(a.price) - Number(b.price));
-        break;
-      case "precio-desc":
-        list = [...list].sort((a, b) => Number(b.price) - Number(a.price));
-        break;
-      case "destacados":
-        list = [...list].sort((a, b) => {
-          if (a.is_featured !== b.is_featured) return a.is_featured ? -1 : 1;
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
-        break;
-      default:
-        list = [...list].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-        );
-    }
-    return list;
-  }, [data, search]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
   const currentPage = Math.min(search.page, totalPages);
-  const pageItems = filtered.slice(
-    (currentPage - 1) * PER_PAGE,
-    currentPage * PER_PAGE,
-  );
+  const pageItems = data?.rows ?? [];
 
   function setSearch(patch: Partial<typeof DEFAULTS>) {
     navigate({
@@ -373,7 +377,7 @@ function PropiedadesPage() {
                 <p className="text-sm text-muted-foreground">
                   {isLoading
                     ? "Cargando…"
-                    : `${filtered.length} ${filtered.length === 1 ? "propiedad" : "propiedades"}`}
+                    : `${total} ${total === 1 ? "propiedad" : "propiedades"}`}
                 </p>
               </div>
 
@@ -436,7 +440,6 @@ function PropiedadesPage() {
                       neighborhood: p.neighborhood,
                       images: p.images,
                       is_featured: p.is_featured,
-                      created_at: p.created_at,
                     }}
                   />
                 ))
