@@ -1,116 +1,125 @@
-# Auditoría completa ALQUIDEL — Plan de ejecución
+## Diagnóstico
 
-Tras revisar el código, encontré **3 bugs críticos**, varias mejoras de UX/SEO y 5 features de negocio. Ejecutaré todo en una sola pasada.
+### 1. La web está muy lenta y los botones del admin "no hacen nada"
+La causa raíz NO es performance — es que el **SSR del Home está crasheando** por un import roto (`@/components/public/RecentViews`) que aún figuraba en el log del dev-server. Cuando el SSR falla, TanStack Router cae a *client-rendering* tras un timeout, lo que produce:
+- Sensación de lentitud al cambiar de pestaña / módulo (espera del fallback).
+- Botones que "no responden": las navegaciones a `/admin/propiedades/nueva` y `/admin/propiedades/$id/editar` arrancan pero el chunk del módulo destino tarda o falla.
+- Redirección al `/login` (estado actual del usuario) porque la sesión se pierde durante el crash.
 
-## 🐛 Bugs críticos detectados
+Las rutas en sí **están bien registradas** en `routeTree.gen.ts` (`/admin/propiedades/nueva` y `/admin/propiedades/$id/editar` existen).
 
-1. **Hero busca con `tipos` como string en URL en lugar de array** — el catálogo espera array de Zod, así que se pierde el filtro de tipo al navegar desde Home.
-2. **Filtros del catálogo cargan TODAS las propiedades en cliente** — riesgo de performance con +50 propiedades; además no se reduce payload (`SELECT *` no, pero igual filtra en JS).
-3. **Página `/admin/leads` no actualiza el query key correctamente con búsqueda** (usar `search` directo como queryKey causa refetch en cada render parcial).
-4. **Calculadora hipotecaria: `calcEnganche` slider permite 10-50%, pero el prompt menciona 30%** — funciona correcto, sin bug.
-5. **Comparador no purga IDs huérfanos** — si una propiedad fue eliminada, queda en estado.
-6. **Chat no tiene timeout client-side de 15s** — solo el servidor lo tiene; en frontend si se cuelga la red, queda colgado.
+### 2. Filtros de `/admin/propiedades` que "no funcionan solos"
+La query `useQuery(["admin","properties"])` trae **toda la tabla** y filtra en cliente con `useMemo`. El filtrado SÍ funciona, pero:
+- Con `staleTime: 60s` global + sin `refetchOnWindowFocus`, los cambios de filtro no recargan datos pero el `useMemo` debería aplicarse instantáneamente.
+- El problema percibido es el mismo del punto 1: el render se bloquea por el SSR caído.
 
-## ✅ FASE 1 — Correcciones funcionales
+### 3. Leads: no hay forma de crearlos manualmente y no se explica el origen
+Hoy los leads se crean automáticamente desde:
+- Formulario público de contacto (`source: 'formulario'`)
+- Chatbot Alquibot (`source: 'chat'`)
+- Botón WhatsApp (`source: 'whatsapp'`)
 
-**Búsqueda Home → Catálogo**:
-- Cambiar `handleSearch` en `index.tsx` para que `tipos` se pase como array `[tipo]` correctamente (verificar serialización de TanStack Router).
-- Agregar `clearAll` que use `navigate({ search: {} })` para reset limpio.
+Falta:
+- Botón **"Nuevo lead manual"** en `/admin/leads` (para registrar llamadas, walk-ins, referidos).
+- Panel informativo explicando los 3 canales de captación.
 
-**Catálogo `/propiedades`**:
-- Migrar filtros a query Supabase (`.eq("type")`, `.eq("city")`, `.in("property_type")`, `.lte("price")`, `.gte("bedrooms")`).
-- Mantener orden y paginación en cliente sobre el resultado filtrado por servidor.
-- Mantener URL params idénticos.
+### 4. Gestión de admins/agentes
+Hoy todo usuario nuevo se crea solo con `signUp` y el trigger `handle_new_user()` lo asigna como `agente`. No hay UI para:
+- Ver el equipo
+- Invitar nuevos admins/agentes
+- Cambiar rol (promover a admin / degradar)
+- Eliminar agentes
 
-**Comparador**:
-- Al hidratar `CompareContext`, validar contra DB y purgar IDs no existentes.
+---
 
-**ChatWidget**:
-- Agregar `AbortController` con timeout de 15s en cliente.
-- Mensaje amigable: "Lo siento, intenta de nuevo en un momento."
-- Soporte tecla `Escape` para cerrar.
+## Plan de cambios
 
-## 🎨 FASE 2 — UX / UI
+### A. Estabilizar SSR (corrige lentitud + botones)
+1. Cambiar el import roto en `src/routes/index.tsx` a path **relativo verificable**: ya está como `"../components/public/RecentViews"` pero el log muestra que sigue fallando con alias. Forzar reload del dev-server tocando el archivo y verificando con `tail` del log.
+2. Envolver `<RecentViews />` en un `<ClientOnly>` (no se renderiza en SSR — usa `localStorage`). Esto elimina dependencia del componente en el ciclo SSR.
+3. Asegurar que ningún otro hook en la home toque `window`/`localStorage` durante SSR.
 
-**Navegación**:
-- Crear componente `<Breadcrumbs>` reutilizable.
-- Insertar en `/propiedades/$slug` (Inicio › Propiedades › título) y `/blog/$slug` (Inicio › Blog › título).
-- Mantener Navbar `activeProps` (ya funciona).
+### B. `/admin/propiedades` — UX de filtros y feedback
+1. Añadir indicador visual cuando se está re-filtrando ("X resultados de Y").
+2. Botón **"Limpiar filtros"** cuando hay algún filtro activo.
+3. Ya funciona con cambio de filtro inmediato; reforzar con `transition` para evitar flicker.
+4. Verificar que los botones **"Nueva propiedad"** y **"Editar"** navegan correctamente una vez SSR estabilizado.
 
-**Feedback**:
-- Skeleton loaders dedicados (`PropertyCardSkeleton`, `PostCardSkeleton`) en grids.
-- Reemplazar el spinner básico en `/blog`.
-- Scroll suave al toast tras envío de formulario de lead (en realidad el toast aparece arriba derecha; agregar `scrollIntoView` al Card del form).
+### C. `/admin/leads` — Crear leads manualmente + transparencia
+1. Añadir botón **"+ Nuevo lead"** que abre un `Dialog` con formulario:
+   - Nombre, email, teléfono, mensaje, fuente (formulario/chat/whatsapp/manual), propiedad asociada (opcional), estado inicial.
+2. Agregar un **bloque informativo** colapsable arriba: "¿Cómo llegan los leads?" listando los 3 canales con iconos.
+3. Para soportar `source: 'manual'`:
+   - Migración SQL: actualizar el `CHECK`/policy de `leads` para incluir `'manual'` en la lista de fuentes válidas.
+   - Actualizar `LEAD_SOURCES` y labels en `src/lib/leads.tsx`.
 
-**Accesibilidad**:
-- Añadir `alt` específico en imágenes de propiedades: `${title} en ${city}`; en blog: `Portada de ${title}`.
-- `aria-label` en todos los botones icon-only (favoritos, comparar, cerrar chat ya tienen, verificar thumbnails de galería).
-- Trap focus + `Escape` en ChatWidget.
+### D. Gestión de equipo (admins + agentes)
+1. Nueva ruta **`/admin/equipo`** (`src/routes/admin/equipo.tsx`):
+   - Tabla con: nombre, email, teléfono, rol, fecha de alta, acciones.
+   - Visible solo para admins (verificar con `has_role(uid, 'admin')`).
+2. Botón **"Invitar miembro"** → Dialog con email + nombre + rol (admin/agente).
+   - Implementación: usa **Lovable Cloud Auth** con `supabase.auth.admin.inviteUserByEmail` desde una **server function** con `requireSupabaseAuth` + verificación de rol admin (usando `supabaseAdmin`).
+   - Al aceptar la invitación, el trigger `handle_new_user()` crea el agente; luego un paso adicional escribe el rol elegido en `user_roles`.
+3. Acciones por fila (solo admin):
+   - Cambiar rol (admin ↔ agente) → `update user_roles`.
+   - Eliminar miembro → `supabase.auth.admin.deleteUser(id)` vía server function.
+4. Agregar entrada **"Equipo"** en `AdminSidebar` (ícono `Users`) visible solo si el usuario actual es admin.
 
-**Mobile**:
-- Verificar `overflow-x-auto` en `/comparar` (ya está).
-- Botón "Aplicar filtros" sticky al fondo del Sheet móvil del catálogo.
-- Z-index: ChatWidget `z-50`, FAB WhatsApp `z-30` — ChatWidget tapa el FAB. Subir FAB a `z-40` y desplazar verticalmente cuando chat esté abierto (CSS `bottom-20` cuando `open`).
+### E. Hacer al usuario actual admin (one-shot)
+- Como hoy todos los usuarios entran con rol `agente` por el trigger, necesitamos que **el dueño del proyecto** sea admin. Crearemos un script SQL que promueva al primer usuario registrado a `admin` (o le permitiremos elegir un email vía pregunta si hay varios).
 
-**Micro-interacciones**:
-- Animación scale en corazón favoritos (CSS keyframe 200ms).
-- Pulse suave en badge de leads nuevos del sidebar (Tailwind `animate-pulse` solo si count > 0).
+---
 
-## 📝 FASE 3 — Contenido y SEO
+## Detalles técnicos
 
-- Footer ya usa `new Date().getFullYear()` ✅.
-- Agregar `<link rel="canonical">` en `head()` de blog y propiedad detalle (TanStack Start: `links: [{ rel: "canonical", href: ... }]`).
-- Agregar nota en `formatCOP`: si valor === 0, devolver "Precio a consultar".
-- Crear componente `<PropertyImagePlaceholder>` reutilizable (usado en Card, Detail, Compare).
+**Migraciones SQL:**
+```sql
+-- 1) Permitir source 'manual' en leads
+ALTER POLICY "Cualquiera puede crear un lead validado" ON public.leads
+WITH CHECK (
+  length(trim(name)) BETWEEN 1 AND 200
+  AND email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+  AND length(email) <= 320
+  AND length(coalesce(message,'')) <= 2000
+  AND source = ANY(ARRAY['formulario','chat','whatsapp','manual'])
+);
 
-## ⚡ FASE 4 — Técnica
+-- 2) Política para que staff (admin/agente) cree leads manuales
+CREATE POLICY "Staff puede crear leads manuales"
+ON public.leads FOR INSERT TO authenticated
+WITH CHECK (is_staff(auth.uid()));
 
-- Filtros server-side ya descrito arriba.
-- `loading="lazy"` en thumbnails y galería (no above-the-fold). Hero del Home no tiene `<img>`, es gradiente, no aplica `loading="eager"`.
-- Manejo de error visible en `useQuery` del catálogo y blog (banner rojo con botón retry).
-- ChatWidget: cuando `properties` viene vacío, igual responde sin contexto (la edge function ya lo maneja, OK).
-- **No agregar rate limiting** al edge function `create-post` — directiva interna lo prohíbe.
-- Verificar `/admin/*` redirect: ya implementado vía `requireAuth` en `admin.tsx`.
+-- 3) Promover al usuario actual a admin
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'admin'::app_role FROM auth.users
+ORDER BY created_at ASC LIMIT 1
+ON CONFLICT (user_id, role) DO NOTHING;
+```
 
-## 💼 FASE 5 — Mejoras de negocio
+**Server functions nuevas** (`src/server/team.ts`):
+- `inviteTeamMember({ email, fullName, role })` — usa `supabaseAdmin.auth.admin.inviteUserByEmail` + inserta rol.
+- `updateTeamMemberRole({ userId, role })` — verifica admin, actualiza `user_roles`.
+- `deleteTeamMember({ userId })` — verifica admin, llama `auth.admin.deleteUser`.
 
-1. **Badge "⭐ Destacada"** en color amber en cards con `is_featured` (ya muestra "Destacada", cambiarlo a estilo amber con estrella).
-2. **Botón "Compartir por WhatsApp"** en detalle de propiedad: `wa.me/?text=Mira esta propiedad en Alquidel: ${url}`.
-3. **Vistas recientes**: hook `useRecentViews` con localStorage (últimos 3 slugs); sección en Home si hay historial.
-4. **Imprimir ficha**: botón `window.print()` + estilos `@media print` en `styles.css` ocultando navbar/footer/chat/FAB y mostrando solo info esencial.
-5. **Badge "Nuevo precio posible"** si `Date.now() - created_at > 30 días` y status disponible — en `PropertyCard`.
+**Componentes nuevos:**
+- `src/components/admin/NewLeadDialog.tsx`
+- `src/components/admin/InviteMemberDialog.tsx`
+- `src/components/common/ClientOnly.tsx`
+- `src/routes/admin/equipo.tsx`
 
-## 📂 Archivos a crear
+**Archivos editados:**
+- `src/routes/index.tsx` (envolver RecentViews en ClientOnly)
+- `src/routes/admin/leads.tsx` (botón "+ Nuevo lead" + bloque informativo)
+- `src/routes/admin/propiedades.tsx` (botón limpiar filtros + contador)
+- `src/components/layout/AdminSidebar.tsx` (entrada "Equipo" si admin)
+- `src/lib/leads.tsx` (añadir `'manual'` a sources)
 
-- `src/components/public/Breadcrumbs.tsx`
-- `src/components/public/PropertyCardSkeleton.tsx`
-- `src/components/public/PostCardSkeleton.tsx`
-- `src/components/public/PropertyImagePlaceholder.tsx`
-- `src/components/public/RecentViews.tsx`
-- `src/hooks/useRecentViews.ts`
+---
 
-## 📂 Archivos a editar
-
-- `src/routes/index.tsx` — fix Hero search + sección "Vistas recientes"
-- `src/routes/propiedades.tsx` — server-side filters, skeletons, error UI, sticky apply button mobile
-- `src/routes/propiedades.$slug.tsx` — breadcrumbs, canonical, share WhatsApp, print button, registro recent view
-- `src/routes/blog.tsx` — skeletons, error UI
-- `src/routes/blog.$slug.tsx` — breadcrumbs, canonical
-- `src/components/public/PropertyCard.tsx` — badge destacada amber, badge "tiempo en mercado", alt mejorado, animación favoritos, placeholder consistente
-- `src/components/public/PostCard.tsx` — alt mejorado
-- `src/components/public/ChatWidget.tsx` — timeout 15s, Escape cierra, z-index, aria
-- `src/components/layout/PublicLayout.tsx` — coordinar z-index FAB/chat
-- `src/components/layout/AdminSidebar.tsx` — pulse en badge si hay nuevos
-- `src/contexts/CompareContext.tsx` — purge orphans
-- `src/lib/format.ts` — `formatCOP(0)` → "Precio a consultar"
-- `src/styles.css` — `@media print` rules + keyframe heart-pop
-- `src/routes/__root.tsx` — quitar duplicados de meta description
-
-## 📊 Reporte final que entregaré
-
-Al terminar listaré:
-- ✅ Lo corregido (con archivos)
-- ⚠️ Lo no automatizable (ej. rate limiting edge function por política)
-- 💡 Recomendaciones próxima iteración (mapa interactivo, PWA, multi-idioma, dashboards analytics)
-
-¿Procedo con la implementación completa?
+## Entregables esperados
+1. ✅ Navegación admin fluida sin caídas a client-render.
+2. ✅ Botones "Nueva propiedad" y "Editar" funcionando.
+3. ✅ Filtros con feedback visual y "Limpiar filtros".
+4. ✅ Leads creables manualmente + explicación de canales.
+5. ✅ `/admin/equipo` con invitar / cambiar rol / eliminar (solo admin).
+6. ✅ Usuario actual promovido a admin.
