@@ -34,6 +34,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
 import { AlertsModal } from "@/components/public/AlertsModal";
+import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCOP } from "@/lib/format";
 
