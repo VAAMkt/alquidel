@@ -171,8 +171,15 @@ function ContactoPage() {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   className="mt-1.5"
+                  aria-invalid={!!errors.name}
+                  aria-describedby={errors.name ? "name-error" : undefined}
+                  aria-required="true"
                 />
-                {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
+                {errors.name && (
+                  <p id="name-error" className="mt-1 text-xs text-destructive">
+                    {errors.name}
+                  </p>
+                )}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -183,8 +190,15 @@ function ContactoPage() {
                     value={form.email}
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                     className="mt-1.5"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? "email-error" : undefined}
+                    aria-required="true"
                   />
-                  {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
+                  {errors.email && (
+                    <p id="email-error" className="mt-1 text-xs text-destructive">
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="phone">Teléfono</Label>
@@ -194,7 +208,14 @@ function ContactoPage() {
                     value={form.phone}
                     onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                     className="mt-1.5"
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? "phone-error" : undefined}
                   />
+                  {errors.phone && (
+                    <p id="phone-error" className="mt-1 text-xs text-destructive">
+                      {errors.phone}
+                    </p>
+                  )}
                 </div>
               </div>
               <div>
@@ -206,8 +227,15 @@ function ContactoPage() {
                   onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
                   className="mt-1.5"
                   placeholder="¿En qué podemos ayudarte?"
+                  aria-invalid={!!errors.message}
+                  aria-describedby={errors.message ? "message-error" : undefined}
+                  aria-required="true"
                 />
-                {errors.message && <p className="mt-1 text-xs text-destructive">{errors.message}</p>}
+                {errors.message && (
+                  <p id="message-error" className="mt-1 text-xs text-destructive">
+                    {errors.message}
+                  </p>
+                )}
               </div>
               <Button type="submit" size="lg" className="w-full rounded-lg" disabled={mutation.isPending}>
                 {mutation.isPending ? "Enviando…" : (
