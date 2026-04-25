@@ -91,6 +91,60 @@ export type Database = {
           },
         ]
       }
+      posts: {
+        Row: {
+          author: string
+          category: Database["public"]["Enums"]["post_category"]
+          content: string
+          cover_image: string | null
+          created_at: string
+          excerpt: string
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          published_at: string | null
+          slug: string
+          status: Database["public"]["Enums"]["post_status"]
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string
+          category?: Database["public"]["Enums"]["post_category"]
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["post_status"]
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          category?: Database["public"]["Enums"]["post_category"]
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["post_status"]
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       properties: {
         Row: {
           address: string | null
@@ -204,6 +258,14 @@ export type Database = {
         | "cerrado"
         | "descartado"
       listing_type: "venta" | "arriendo"
+      post_category:
+        | "compra"
+        | "venta"
+        | "inversion"
+        | "consejos"
+        | "mercado"
+        | "legal"
+      post_status: "borrador" | "publicado" | "programado"
       property_status: "disponible" | "vendido" | "arrendado" | "reservado"
       property_type:
         | "apartamento"
@@ -348,6 +410,15 @@ export const Constants = {
         "descartado",
       ],
       listing_type: ["venta", "arriendo"],
+      post_category: [
+        "compra",
+        "venta",
+        "inversion",
+        "consejos",
+        "mercado",
+        "legal",
+      ],
+      post_status: ["borrador", "publicado", "programado"],
       property_status: ["disponible", "vendido", "arrendado", "reservado"],
       property_type: [
         "apartamento",
