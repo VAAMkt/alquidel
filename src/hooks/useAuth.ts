@@ -1,37 +1,38 @@
-import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 export interface AuthState {
   session: Session | null;
   user: User | null;
+  /** Alias retro-compatible de isAuthLoading. */
   loading: boolean;
+  isAuthLoading: boolean;
+  isAuthenticated: boolean;
+  signOut: () => Promise<void>;
 }
 
+/**
+ * Hook único de autenticación. Consume el AuthContext global, por lo que NO
+ * crea listeners propios ni llama a getSession por su cuenta.
+ */
 export function useAuth(): AuthState {
-  const [state, setState] = useState<AuthState>({
-    session: null,
-    user: null,
-    loading: true,
-  });
-
-  useEffect(() => {
-    // 1. Set up listener FIRST
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setState({ session, user: session?.user ?? null, loading: false });
-    });
-
-    // 2. THEN check existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setState({ session, user: session?.user ?? null, loading: false });
-    });
-
-    return () => sub.subscription.unsubscribe();
-  }, []);
-
-  return state;
+  const { session, user, isAuthLoading, isAuthenticated, signOut } = useAuthContext();
+  return {
+    session,
+    user,
+    loading: isAuthLoading,
+    isAuthLoading,
+    isAuthenticated,
+    signOut,
+  };
 }
 
+/**
+ * Helper suelto para componentes que importan signOut como función pura
+ * (p.ej. el sidebar). Llama directamente a Supabase; el AuthProvider
+ * recibirá el evento SIGNED_OUT y limpiará el estado global.
+ */
 export async function signOut() {
   await supabase.auth.signOut();
 }

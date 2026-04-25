@@ -1,65 +1,89 @@
-## Diagnóstico
+# Refactor de autenticación: una sola fuente de verdad
 
-### Diferencia entre publicado vs preview actual
+## Problema
 
-**Versión publicada (commit `71a5b26`)** — funciona:
-- Todo el código (schemas, helpers, handlers) vive en `src/server/team.functions.ts`.
-- El cliente importa solo `createTeamMember`, `listTeam`, etc. El plugin `tss-serverfn-split` reemplaza `.handler()` por un stub RPC en el bundle cliente. No hay imports a `*.server.*`, así que la regla de "import-protection" no se dispara.
+Hoy hay varias fuentes simultáneas de estado de auth, lo que provoca login lento, spinners infinitos y redirecciones inconsistentes:
 
-**Versión actual** — falla con `does not provide an export named 'createTeamMember'`:
-- En el último intento de fix se creó `src/server/team.server.ts` con `supabaseAdmin` y los schemas.
-- `team.functions.ts` ahora importa de `./team.server` (`CreateMemberSchema`, `createTeamMemberImpl`, etc.).
-- Cuando Vite arma el bundle del cliente, sigue la cadena `equipo.tsx → team.functions.ts → team.server.ts → client.server.ts`.
-- TanStack tiene una regla por defecto del import-protection plugin que bloquea `**/*.server.*` desde el entorno cliente (`getDefaultImportProtectionRules` en `start-plugin-core`).
-- El plugin de splitting (`handleCreateServerFn`) elimina los cuerpos de los handlers del cliente, pero **no elimina los imports estáticos**. Como esos imports apuntan a archivos `*.server.*`, el módulo cliente falla durante la transformación/evaluación HMR y queda sin exports — de ahí el mensaje "does not provide an export named 'createTeamMember'".
+- `useAuth` crea **un listener `onAuthStateChange` y un `getSession` por cada componente** que lo usa (PublicNavbar, dashboard, useIsAdmin, etc.).
+- `/login` registra **otro `onAuthStateChange` propio** y además navega tanto en el listener como en el `onSubmit` (doble navegación).
+- `/login`, `/admin`, `/admin/configuracion` y `/admin/equipo` llaman cada uno a `supabase.auth.getSession()` en su `beforeLoad`, sin compartir resultado.
+- `useIsAdmin` depende de `useAuth.loading`, que cambia varias veces porque el listener se reinstala por componente.
 
-En producción (build), Cloudflare bundlea el SSR y el cliente con módulos virtuales pre-resueltos en disco; si por azar el último build publicado fue antes de este refactor, sigue funcionando con la versión vieja, mientras que el dev server siempre re-transforma el archivo y revienta.
+Resultado: el token a veces aún no está hidratado cuando una ruta consulta sesión → redirige a `/login` aunque haya sesión, o `/login` muestra el formulario un instante antes de redirigir.
 
-### Conclusión
+## Solución
 
-El refactor a `team.server.ts` introdujo el bug. La estructura de un único archivo `*.functions.ts` (la del commit publicado) es la correcta para este patrón: server functions auto-contenidas, sin imports a archivos `*.server.*` desde el cliente.
+Una sola fuente de verdad: `AuthContext` global montado en `__root.tsx`. Todos los componentes y guards de ruta consumen ese contexto.
 
-## Plan de corrección
+### 1. Crear `src/contexts/AuthContext.tsx`
 
-1. **Consolidar** todo el código del equipo en `src/server/team.functions.ts`:
-   - Schemas Zod (`CreateMemberSchema`, `SetAdminSchema`, `DeleteMemberSchema`, `RoleSchema`).
-   - Helper `assertAdmin`.
-   - Handlers de `listTeam`, `createTeamMember`, `setTeamMemberAdmin`, `deleteTeamMember` con la lógica completa dentro del `.handler()`.
-   - Mantener `import { supabaseAdmin } from "@/integrations/supabase/client.server"` — esto es seguro porque el archivo NO se llama `*.server.*` y el splitter elimina el cuerpo del handler antes de llegar al bundle cliente. (Es exactamente lo que hace la versión publicada que funciona.)
+- Estado: `{ session, user, isAuthLoading, isAuthenticated }`, inicial `isAuthLoading = true`.
+- `useEffect` único al montar:
+  - Suscribirse PRIMERO a `supabase.auth.onAuthStateChange` con manejo por evento:
+    - `INITIAL_SESSION` → setear `session`/`user` y `isAuthLoading = false`.
+    - `SIGNED_IN` → setear `session`/`user`, `isAuthLoading = false`.
+    - `SIGNED_OUT` → limpiar `session`/`user`, `isAuthLoading = false`.
+    - `TOKEN_REFRESHED` → actualizar `session` silenciosamente.
+    - `USER_UPDATED` → actualizar `user`.
+  - Después llamar `supabase.auth.getSession()` como respaldo (por si `INITIAL_SESSION` no llega), y siempre que termine forzar `isAuthLoading = false`.
+  - Cleanup: `subscription.unsubscribe()`.
+- Exponer `signOut()` que llama `supabase.auth.signOut()` (la navegación la hace quien lo invoca).
+- `<AuthProvider>` envuelve la app dentro de `RootComponent` en `src/routes/__root.tsx` (entre `QueryClientProvider` y `FavoritesProvider`).
 
-2. **Eliminar** `src/server/team.server.ts` (queda obsoleto).
+### 2. Refactorizar `src/hooks/useAuth.ts`
 
-3. **No tocar**:
-   - `src/components/admin/InviteMemberDialog.tsx` — sigue importando `createTeamMember` desde `team.functions`.
-   - `src/routes/admin/equipo.tsx` — mantiene `errorComponent` y la verificación de admin.
-   - El middleware `requireSupabaseAuth`.
+- Borrar todo el `useEffect` con listeners y `getSession`.
+- `useAuth()` → `useContext(AuthContext)`. Lanzar error si se usa fuera del provider.
+- Exporta: `{ session, user, isAuthLoading, isAuthenticated, signOut }`.
+- Mantener compatibilidad: dejar también `loading` como alias de `isAuthLoading` para no romper consumidores actuales (`PublicNavbar`, `dashboard`, `admin.tsx`).
+- Mantener export nombrado `signOut` que reenvía al del contexto vía `supabase.auth.signOut()` directo (para `AdminSidebar` que lo importa como función suelta).
 
-4. **Validación**:
-   - Recargar `/admin/equipo` y confirmar que la tabla del equipo carga sin el error.
-   - Probar crear un nuevo miembro desde el diálogo "Crear miembro".
+### 3. Refactorizar `src/hooks/useIsAdmin.ts`
 
-## Por qué funciona este patrón
+- Consumir `useAuth()` del nuevo contexto (sin cambios de API). Sigue usando `useQuery` para leer `user_roles`. Quitar `console.warn`.
 
-- El plugin `handleCreateServerFn` detecta `createServerFn(...).handler(fn)` y, en el bundle cliente, reemplaza `fn` por `createClientRpc(functionId)`. El cuerpo del handler (que usa `supabaseAdmin` y los schemas) desaparece del cliente.
-- Los `import` de `client.server.ts` quedan como código muerto y Vite los tree-shakea o los marca como side-effect-free, pero como `client.server.ts` accede a `process.env` solo dentro del Proxy/getter, el simple import no rompe nada en el navegador.
-- La diferencia clave: importar `client.server.ts` directamente está permitido (no es `**/*.server.*` por convención de TanStack — la regla aplica a sufijo `.server.` en el nombre, y `client.server.ts` sí coincide). Aquí TanStack tiene un comportamiento sutil: el match es por glob `**/*.server.*` y `client.server.ts` matchea, pero el splitter procesa primero `*.functions.ts` y elimina los handlers antes que el import-protection inspeccione la cadena. Como los imports quedan, en teoría debería fallar igual…
+### 4. `src/routes/login.tsx`
 
-   Por eso, **además** de consolidar el código, se reemplaza el import directo por uno que use `eval`/dynamic-import dentro del handler, garantizando que ningún `import` estático estático apunte a archivos `*.server.*` en el bundle cliente:
+- Quitar el `onAuthStateChange` local y el `useEffect` asociado.
+- Quitar `supabase.auth.getSession()` del `beforeLoad` (el guard de redirección lo hace el componente con el contexto, evitando race con la hidratación inicial).
+- Componente:
+  - `isAuthLoading` → spinner centrado.
+  - `isAuthenticated` → `navigate({ to: search.redirect ?? "/admin/dashboard", replace: true })` dentro de un `useEffect` (una sola vez).
+  - Si no, mostrar formulario.
+- `onSubmit`: tras `signInWithPassword` exitoso, NO navegar manualmente; el `useEffect` anterior detectará `isAuthenticated` y redirigirá una sola vez. Quitar cualquier `setTimeout`.
+- Sanitización de `redirect`: ya existe en `validateSearch`; reforzar a solo `/admin/...` para evitar loops.
 
-   ```ts
-   // Dentro de cada .handler():
-   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-   ```
+### 5. `src/routes/admin.tsx`
 
-   Esto sí es bullet-proof: el import dinámico solo se evalúa en el servidor (en el cliente el handler entero fue reemplazado por el RPC stub).
+- Quitar `getSession()` y la lógica de `beforeLoad` (o dejar `beforeLoad` vacío). El gate vive en el componente con el contexto.
+- En `AdminLayout`:
+  - `isAuthLoading` → spinner.
+  - `!isAuthenticated` → `useEffect` que llama `navigate({ to: "/login", search: { redirect: location.pathname }, replace: true })` una vez. Mientras tanto, render spinner.
+  - `isAuthenticated` → render normal con `<Outlet />`.
 
-## Archivos a modificar
+### 6. Limpieza adicional
 
-- `src/server/team.functions.ts` (reescribir como archivo único auto-contenido, con `await import("@/integrations/supabase/client.server")` dentro de cada handler).
-- `src/server/team.server.ts` (eliminar).
+- `src/routes/admin/configuracion.tsx` y `src/routes/admin/equipo.tsx`: eliminar `supabase.auth.getSession()` de sus `beforeLoad`. Si necesitan gate de admin, usar `useIsAdmin()` en el componente (equipo ya lo hace) y dejar el guard de sesión al layout `/admin`.
+- Quitar `console.log`/`console.error` del flujo de auth en producción (`login.tsx`, `useIsAdmin.ts`). Mantener errores que muestran toast.
+- No tocar `setTimeout` no relacionados con auth (`leads.index.tsx`, `ChatWidget.tsx`).
+- No modificar `src/integrations/supabase/server-fn-fetch.ts` (el `getSession` ahí es para inyectar el JWT en cada server fn, es correcto).
+
+## Archivos modificados
+
+- **Nuevo**: `src/contexts/AuthContext.tsx`
+- **Editar**:
+  - `src/routes/__root.tsx` (envolver con `AuthProvider`)
+  - `src/hooks/useAuth.ts` (consumir contexto)
+  - `src/hooks/useIsAdmin.ts` (limpiar warn)
+  - `src/routes/login.tsx` (quitar listener/`getSession` local, navegación única)
+  - `src/routes/admin.tsx` (quitar `getSession` en `beforeLoad`, gate por contexto)
+  - `src/routes/admin/configuracion.tsx` (quitar `getSession` de `beforeLoad`)
+  - `src/routes/admin/equipo.tsx` (quitar `getSession` de `beforeLoad`)
 
 ## Resultado esperado
 
-- `/admin/equipo` carga la tabla sin el error de "does not provide an export named 'createTeamMember'".
-- "Crear miembro" sigue funcionando como en la versión publicada.
-- El módulo deja de romperse al hacer HMR.
+- Refresh con sesión activa → nunca aparece login.
+- `/login` con sesión activa → redirige inmediatamente sin parpadeo del formulario.
+- Login exitoso → una única navegación a `/admin/dashboard`.
+- Logout → sale de `/admin` inmediatamente, sin loops.
+- Sin spinners infinitos. Comportamiento idéntico desktop/móvil.

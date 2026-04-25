@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const schema = z.object({
   full_name: z.string().trim().min(2, "Nombre mínimo 2 caracteres").max(120),
@@ -20,17 +21,14 @@ const schema = z.object({
     .or(z.literal("")),
 });
 
-async function fetchAgent() {
-  const { data: sess } = await supabase.auth.getSession();
-  const userId = sess.session?.user.id;
-  if (!userId) throw new Error("No session");
+async function fetchAgent(userId: string, email: string) {
   const { data, error } = await supabase
     .from("agents")
     .select("*")
     .eq("id", userId)
     .maybeSingle();
   if (error) throw error;
-  return { agent: data, email: sess.session?.user.email ?? "" };
+  return { agent: data, email };
 }
 
 export const Route = createFileRoute("/admin/configuracion")({
@@ -39,9 +37,12 @@ export const Route = createFileRoute("/admin/configuracion")({
 
 function ConfiguracionPage() {
   const qc = useQueryClient();
+  const { user } = useAuth();
+  const userId = user?.id;
   const { data, isLoading } = useQuery({
-    queryKey: ["admin", "agent", "me"],
-    queryFn: fetchAgent,
+    queryKey: ["admin", "agent", "me", userId],
+    enabled: !!userId,
+    queryFn: () => fetchAgent(userId!, user?.email ?? ""),
   });
 
   const [fullName, setFullName] = useState("");

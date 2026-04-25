@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { CompareProvider } from "@/contexts/CompareContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { installServerFnAuthFetch } from "@/integrations/supabase/server-fn-fetch";
 
 import appCss from "../styles.css?url";
@@ -112,12 +113,14 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <FavoritesProvider>
-        <CompareProvider>
-          <Outlet />
-          <Toaster richColors position="top-right" />
-        </CompareProvider>
-      </FavoritesProvider>
+      <AuthProvider>
+        <FavoritesProvider>
+          <CompareProvider>
+            <Outlet />
+            <Toaster richColors position="top-right" />
+          </CompareProvider>
+        </FavoritesProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
