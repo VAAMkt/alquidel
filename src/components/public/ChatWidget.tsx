@@ -84,12 +84,17 @@ export function ChatWidget() {
     setIsSending(true);
     setLeadCaptured(false);
 
+    // Timeout cliente: 15s. Si la red se cuelga, mostramos mensaje amigable.
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15_000);
+
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-alquidel`;
       // Enviar todo el historial excepto el último mensaje de usuario (lo manda como `message`)
       const history = nextHistory.slice(0, -1);
       const resp = await fetch(url, {
         method: "POST",
+        signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
@@ -104,16 +109,22 @@ export function ChatWidget() {
       const captured: boolean = !!data?.lead_captured;
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
       setLeadCaptured(captured);
-    } catch (e) {
+    } catch (e: unknown) {
+      const aborted =
+        (e instanceof DOMException && e.name === "AbortError") ||
+        (typeof e === "object" && e !== null && "name" in e && (e as any).name === "AbortError");
+      const errorMsg = aborted
+        ? "Lo siento, intenta de nuevo en un momento."
+        : "Ocurrió un error al contactar al asistente. Por favor escríbenos al WhatsApp 321 491 0400.";
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content:
-            "Ocurrió un error al contactar al asistente. Por favor escríbenos al WhatsApp 321 491 0400.",
+          content: errorMsg,
         },
       ]);
     } finally {
+      window.clearTimeout(timeoutId);
       setIsSending(false);
     }
   }
@@ -125,6 +136,16 @@ export function ChatWidget() {
     }
   }
 
+  // Escape global cierra el chat
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <>
       {/* Botón flotante */}
@@ -133,7 +154,7 @@ export function ChatWidget() {
           type="button"
           onClick={openChat}
           aria-label="Abrir chat con Alquibot"
-          className="group fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-white shadow-lg transition-transform hover:scale-105 hover:bg-slate-900"
+          className="no-print group fixed bottom-6 right-6 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-white shadow-lg transition-transform hover:scale-105 hover:bg-slate-900"
           title="¿En qué te ayudamos?"
         >
           <MessageCircle className="h-6 w-6" />
