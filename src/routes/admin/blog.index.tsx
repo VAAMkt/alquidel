@@ -57,7 +57,7 @@ function AdminBlogPage() {
       const to = from + PAGE_SIZE - 1;
       let q = supabase
         .from("posts")
-        .select("*", { count: "exact" })
+        .select("id, title, category, status, published_at, cover_image", { count: "exact" })
         .order("created_at", { ascending: false })
         .range(from, to);
       if (search.status !== "todos") q = q.eq("status", search.status as PostStatus);

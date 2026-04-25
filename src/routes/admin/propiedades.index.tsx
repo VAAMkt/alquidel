@@ -56,7 +56,7 @@ function PropiedadesAdmin() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("*")
+        .select("id, title, type, status, price, city, neighborhood, address, images, is_featured, created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Property[];
