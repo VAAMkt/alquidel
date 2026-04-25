@@ -109,7 +109,7 @@ export const Route = createFileRoute("/propiedades/")({
 
 function PropiedadesPage() {
   const search = Route.useSearch();
-  const navigate = useNavigate({ from: "/propiedades" });
+  const navigate = useNavigate({ from: "/propiedades/" });
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery({
