@@ -245,7 +245,7 @@ function PropiedadesAdmin() {
                 <TableRow key={p.id} className="group">
                   <TableCell>
                     {p.images?.[0] ? (
-                      <img src={p.images[0]} alt={p.title} className="h-12 w-12 rounded-md object-cover" />
+                      <img src={p.images[0]} alt={p.title} loading="lazy" decoding="async" className="h-12 w-12 rounded-md object-cover" />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted">
                         <Building2 className="h-5 w-5 text-muted-foreground" />

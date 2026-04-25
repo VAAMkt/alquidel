@@ -179,6 +179,8 @@ function AdminBlogPage() {
                         <img
                           src={p.cover_image}
                           alt=""
+                          loading="lazy"
+                          decoding="async"
                           className="h-10 w-14 rounded object-cover"
                         />
                       )}
