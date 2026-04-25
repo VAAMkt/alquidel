@@ -46,6 +46,7 @@ import {
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Breadcrumbs } from "@/components/public/Breadcrumbs";
 import { PropertyImagePlaceholder } from "@/components/public/PropertyImagePlaceholder";
+import { PropertyCard, type PropertyCardData } from "@/components/public/PropertyCard";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCOP, formatArea, displayPrice } from "@/lib/format";
 import { COMPANY } from "@/lib/company";
@@ -63,11 +64,38 @@ async function fetchPropertyBySlug(slug: string) {
   return data;
 }
 
+async function fetchSimilarProperties(opts: {
+  city: string;
+  type: "venta" | "arriendo";
+  excludeId: string;
+}): Promise<PropertyCardData[]> {
+  const { data, error } = await supabase
+    .from("properties")
+    .select(
+      "id, slug, title, type, price, area_m2, bedrooms, bathrooms, city, neighborhood, images, is_featured, created_at",
+    )
+    .eq("city", opts.city)
+    .eq("type", opts.type)
+    .neq("id", opts.excludeId)
+    .order("created_at", { ascending: false })
+    .limit(3);
+  if (error) {
+    console.error("[propiedad] Error cargando similares:", error);
+    return [];
+  }
+  return (data ?? []) as PropertyCardData[];
+}
+
 export const Route = createFileRoute("/propiedades/$slug")({
   loader: async ({ params }) => {
     const property = await fetchPropertyBySlug(params.slug);
     if (!property) throw notFound();
-    return { property };
+    const similar = await fetchSimilarProperties({
+      city: property.city,
+      type: property.type as "venta" | "arriendo",
+      excludeId: property.id,
+    });
+    return { property, similar };
   },
   head: ({ loaderData }) => {
     if (!loaderData?.property) return { meta: [{ title: "Propiedad | Alquidel" }] };
