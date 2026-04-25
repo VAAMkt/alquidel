@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -43,17 +43,9 @@ import {
   listTeam,
   setTeamMemberAdmin,
 } from "@/server/team.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export const Route = createFileRoute("/admin/equipo")({
-  beforeLoad: async () => {
-    // Verificación adicional: solo admins acceden
-    const { data: sess } = await supabase.auth.getSession();
-    if (!sess.session) {
-      throw redirect({ to: "/login", search: { redirect: "/admin/equipo" } });
-    }
-  },
   head: () => ({ meta: [{ title: "Equipo · ALQUIDEL" }] }),
   component: EquipoPage,
   errorComponent: EquipoErrorComponent,
