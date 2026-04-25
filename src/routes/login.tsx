@@ -1,24 +1,20 @@
-import { createFileRoute, useNavigate, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>) => {
     const r = typeof search.redirect === "string" ? search.redirect : undefined;
-    // Solo aceptar paths internos (no URLs absolutas) para evitar open-redirects
-    const safe = r && r.startsWith("/") && !r.startsWith("//") ? r : undefined;
+    // Solo aceptar paths internos a /admin para evitar open-redirects y loops
+    const safe = r && r.startsWith("/admin") && !r.startsWith("//") ? r : undefined;
     return safe ? { redirect: safe } : {};
-  },
-  beforeLoad: async ({ search }) => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
-      throw redirect({ to: search.redirect ?? "/admin/dashboard" });
-    }
   },
   head: () => ({
     meta: [
@@ -37,6 +33,7 @@ const schema = z.object({
 function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
+  const { isAuthLoading, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
 
   // Limpiar email/password de la URL si llegaron por un submit GET accidental
@@ -49,21 +46,15 @@ function LoginPage() {
     }
   }, []);
 
-  // Respaldo: si por alguna razón el submit no navega, el listener lo hace
+  // Una sola fuente de verdad: cuando el contexto detecte sesión, redirigir.
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        navigate({
-          to: search.redirect ?? "/admin/dashboard",
-          replace: true,
-        });
-      }
-    });
-    return () => {
-      sub.subscription.unsubscribe();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!isAuthLoading && isAuthenticated) {
+      navigate({
+        to: search.redirect ?? "/admin/dashboard",
+        replace: true,
+      });
+    }
+  }, [isAuthLoading, isAuthenticated, navigate, search.redirect]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -96,15 +87,23 @@ function LoginPage() {
         return;
       }
       toast.success("Bienvenido");
-      // Navegar de inmediato (no esperar al listener)
-      const target = search.redirect ?? "/admin/dashboard";
-      navigate({ to: target, replace: true });
-    } catch (err) {
-      console.error("[login] submit error", err);
+      // No navegar aquí: el AuthProvider emitirá SIGNED_IN, isAuthenticated
+      // pasará a true y el useEffect de arriba redirigirá una sola vez.
+    } catch {
       toast.error("Ocurrió un error al iniciar sesión");
     } finally {
       setLoading(false);
     }
+  }
+
+  // Mientras el contexto resuelve la sesión inicial, no mostrar el formulario
+  // para evitar el flash en refresh con sesión activa.
+  if (isAuthLoading || isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary/40">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
