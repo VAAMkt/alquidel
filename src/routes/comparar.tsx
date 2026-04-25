@@ -80,6 +80,8 @@ function CompararPage() {
                             <img
                               src={p.images[0]}
                               alt={p.title}
+                              loading="lazy"
+                              decoding="async"
                               className="h-full w-full object-cover"
                             />
                           ) : (

@@ -53,10 +53,12 @@ function PropiedadesAdmin() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "properties"],
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("*")
+        .select("id, title, type, status, price, city, neighborhood, address, images, is_featured, created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Property[];
@@ -245,7 +247,7 @@ function PropiedadesAdmin() {
                 <TableRow key={p.id} className="group">
                   <TableCell>
                     {p.images?.[0] ? (
-                      <img src={p.images[0]} alt={p.title} className="h-12 w-12 rounded-md object-cover" />
+                      <img src={p.images[0]} alt={p.title} loading="lazy" decoding="async" className="h-12 w-12 rounded-md object-cover" />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted">
                         <Building2 className="h-5 w-5 text-muted-foreground" />

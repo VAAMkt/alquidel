@@ -57,7 +57,7 @@ function AdminBlogPage() {
       const to = from + PAGE_SIZE - 1;
       let q = supabase
         .from("posts")
-        .select("*", { count: "exact" })
+        .select("id, title, category, status, published_at, cover_image", { count: "exact" })
         .order("created_at", { ascending: false })
         .range(from, to);
       if (search.status !== "todos") q = q.eq("status", search.status as PostStatus);
@@ -67,6 +67,8 @@ function AdminBlogPage() {
       if (error) throw error;
       return { rows: data ?? [], total: count ?? 0 };
     },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
   });
 
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
@@ -179,6 +181,8 @@ function AdminBlogPage() {
                         <img
                           src={p.cover_image}
                           alt=""
+                          loading="lazy"
+                          decoding="async"
                           className="h-10 w-14 rounded object-cover"
                         />
                       )}

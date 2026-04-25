@@ -147,6 +147,9 @@ function PostPage() {
           <img
             src={post.cover_image}
             alt={post.title}
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
             className="mt-8 aspect-[16/9] w-full rounded-2xl object-cover"
           />
         )}

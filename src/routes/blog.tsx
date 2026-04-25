@@ -56,7 +56,7 @@ function BlogPage() {
       const to = from + PER_PAGE - 1;
       let q = supabase
         .from("posts")
-        .select("*", { count: "exact" })
+        .select("id, slug, title, excerpt, cover_image, category, status, author, published_at, tags", { count: "exact" })
         .eq("status", "publicado")
         .order("published_at", { ascending: false })
         .range(from, to);
