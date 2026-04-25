@@ -51,15 +51,17 @@ export const listTeam = createServerFn({ method: "POST" })
   });
 
 // ---------------------------------------------------------------------------
-// Invitar miembro
+// Crear miembro (con contraseña inicial definida por el admin)
 // ---------------------------------------------------------------------------
-export const inviteTeamMember = createServerFn({ method: "POST" })
+export const createTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
         email: z.string().email().max(320),
+        password: z.string().min(8).max(72),
         fullName: z.string().trim().min(2).max(120),
+        phone: z.string().trim().max(40).optional().or(z.literal("")),
         role: RoleSchema,
       })
       .parse(input),
@@ -67,17 +69,26 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
 
-    const { data: invite, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-      data.email,
-      {
-        data: { full_name: data.fullName },
-      },
-    );
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName },
+    });
     if (error) throw new Error(error.message);
-    const newUserId = invite.user?.id;
-    if (!newUserId) throw new Error("No se pudo invitar al usuario.");
+    const newUserId = created.user?.id;
+    if (!newUserId) throw new Error("No se pudo crear el usuario.");
 
     // El trigger handle_new_user() ya creó la fila en agents y un rol 'agente'.
+    // Si se proporcionó teléfono, lo guardamos en agents.
+    if (data.phone && data.phone.trim()) {
+      const { error: pErr } = await supabaseAdmin
+        .from("agents")
+        .update({ phone: data.phone.trim() })
+        .eq("id", newUserId);
+      if (pErr) console.warn("[createTeamMember] no se pudo guardar phone:", pErr.message);
+    }
+
     // Si pidieron admin, agregamos también ese rol.
     if (data.role === "admin") {
       const { error: rErr } = await supabaseAdmin
