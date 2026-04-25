@@ -29,8 +29,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { InviteMemberDialog } from "@/components/admin/InviteMemberDialog";
 import {
-  amIAdmin,
   deleteTeamMember,
+  getAdminStatus,
   listTeam,
   setTeamMemberAdmin,
 } from "@/server/team.functions";
@@ -52,7 +52,7 @@ export const Route = createFileRoute("/admin/equipo")({
 function EquipoPage() {
   const qc = useQueryClient();
   const listFn = useServerFn(listTeam);
-  const adminCheckFn = useServerFn(amIAdmin);
+  const adminCheckFn = useServerFn(getAdminStatus);
   const setAdminFn = useServerFn(setTeamMemberAdmin);
   const deleteFn = useServerFn(deleteTeamMember);
   const { session, loading: authLoading } = useAuth();
