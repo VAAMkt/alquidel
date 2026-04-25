@@ -1,59 +1,70 @@
-## Plan
+# Stabilizar edición de propiedades y navegación del panel admin
 
-1. Stabilize the authentication bootstrap
-- Add a single auth-readiness layer so the app waits for session restoration before rendering protected admin content or firing protected queries.
-- Update the `/admin` layout to show a controlled loading state while auth is resolving, redirect unauthenticated users to `/login`, and stop rendering the admin shell prematurely.
-- Keep the login redirect flow consistent: unauthenticated `/admin` requests go to `/login?redirect=...`, and successful login lands on the requested admin page or `/admin/dashboard`.
+## Diagnóstico
 
-2. Remove the fragile admin-status dependency that is breaking the shell
-- Stop relying on `getAdminStatus` inside the sidebar/render path, since that transformed server-function export is the direct source of the current module crash.
-- Replace the sidebar and admin-role checks with a client-safe role query against the backend, gated by auth readiness and existing RLS.
-- Keep privileged team actions on the server, but isolate them so a broken admin-check import cannot take down the whole dashboard.
+### Problema 1 — El botón "Editar propiedad" no hace nada
 
-3. Harden route and module permissions
-- Apply a clear role model across admin routes:
-  - `/admin/*` requires authenticated staff
-  - `/admin/equipo` requires admin
-- Prevent dashboard and module queries from running until the user is authenticated and authorized.
-- For unauthorized users, show a controlled access-denied state or redirect instead of letting queries fail into the global error boundary.
+En TanStack Router con archivos planos, `propiedades.tsx` y `propiedades.$id.editar.tsx` forman una relación **padre/hijo**. El padre se convierte en un *layout* y debe renderizar `<Outlet />` para mostrar la ruta hija. Hoy, `src/routes/admin/propiedades.tsx` exporta `PropiedadesAdmin` (la tabla del listado) directamente como `component`, sin `<Outlet />`. Resultado: al navegar a `/admin/propiedades/{id}/editar` la URL cambia, pero la tabla del listado sigue mostrándose y el formulario hijo nunca aparece. El usuario percibe que "no pasa nada".
 
-4. Make admin pages fail safely instead of blanking out
-- Add route-level error handling for the admin area so one bad query/import does not collapse the whole panel.
-- Guard sidebar badges, dashboard stats, and module data loads with `enabled` conditions tied to auth + role state.
-- Remove any remaining direct dependencies on unstable exports from `src/server/team.functions.ts` in always-rendered components.
+El mismo bug afecta a:
+- `/admin/propiedades/nueva` (no abre el formulario)
+- `/admin/blog/{id}/editar` y `/admin/blog/nuevo` (mismo patrón con `blog.tsx`)
+- `/admin/leads/{id}` (mismo patrón con `leads.tsx`)
 
-5. Verify backend permissions match the UI flow
-- Re-check the current RLS setup for `user_roles`, `agents`, `leads`, `properties`, and `property_alerts`.
-- Use the existing policies where possible rather than changing schema unnecessarily: the current role table and access rules are mostly correct, but the frontend is consuming them unsafely.
-- Only introduce a migration if I find a real policy gap during implementation.
+### Problema 2 — Cambiar entre módulos del admin tarda varios segundos
 
-6. End-to-end verification
-- Confirm `/admin` without session redirects to `/login`.
-- Confirm login completes and lands on `/admin/dashboard` with no white screen.
-- Confirm dashboard data loads only after auth is ready.
-- Confirm non-admin staff can use normal admin modules but not `Equipo`.
-- Confirm admin users can access `Equipo` and team actions still work.
+Cada navegación dispara nuevas peticiones porque hay queries que corren en paralelo y duplicadas:
 
-## What appears to be wrong now
-- The admin shell is crashing because `AdminSidebar` imports `getAdminStatus` from `src/server/team.functions.ts`, and the browser is receiving a transformed module that does not currently expose that export.
-- Separately, several admin pages assume auth/role state is ready immediately, so protected queries can run too early and hit permission or session timing issues.
-- The backend role model is present, but the frontend guard flow is not robust enough, so permission checks are causing app rupture instead of controlled redirects/states.
+- `dashboard.tsx` recalcula 4 conteos (`HEAD count=exact` sobre `properties` y `leads`) cada vez que se entra.
+- `AdminSidebar` además consulta el conteo de leads nuevos cada 30 s y vuelve a hacerlo cada navegación.
+- `useIsAdmin` se vuelve a montar (cache de 5 min ya bien).
+- `staleTime` por defecto del router es 0, así que cada navegación re-corre el loader incluso si los datos están frescos.
 
-## Technical details
-- Files likely involved:
-  - `src/hooks/useAuth.ts`
-  - `src/routes/login.tsx`
-  - `src/routes/admin.tsx`
-  - `src/components/layout/AdminSidebar.tsx`
-  - `src/routes/admin/dashboard.tsx`
-  - `src/routes/admin/equipo.tsx`
-  - `src/server/team.functions.ts`
-- Preferred implementation direction:
-  - use a shared auth-ready pattern
-  - query the current user’s role from `user_roles` on the client for UI gating
-  - reserve server functions for privileged mutations/list operations
-  - avoid making the sidebar depend on a server-function export that can fail module resolution
-- Database review result so far:
-  - `user_roles` is correctly separated from `agents`
-  - existing RLS already allows users to read their own roles and admins to manage roles
-  - current breakage looks primarily like frontend auth/permission orchestration, not a missing table design
+En la red se ve `HEAD .../leads?status=eq.nuevo` repitiéndose cada ~30 s (sidebar) y bloqueando visualmente la transición porque la tabla del dashboard usa `useQuery` sin estado en suspenso.
+
+## Cambios
+
+### A. Convertir páginas de lista en rutas índice (corrige edición)
+
+Renombrar/convertir los siguientes archivos a su variante `.index.tsx` para que dejen de actuar como layout y permitan que las rutas hijas rendericen libremente:
+
+```text
+src/routes/admin/propiedades.tsx        → src/routes/admin/propiedades.index.tsx
+src/routes/admin/blog.tsx               → src/routes/admin/blog.index.tsx
+src/routes/admin/leads.tsx              → src/routes/admin/leads.index.tsx
+```
+
+Cada archivo cambia su `createFileRoute("/admin/propiedades")` por `createFileRoute("/admin/propiedades/")` (path con barra final) — esa es la convención de TanStack para rutas índice planas.
+
+Esto restablece:
+- `/admin/propiedades/{id}/editar` → renderiza `EditarPropiedadPage`
+- `/admin/propiedades/nueva` → renderiza el formulario nuevo
+- `/admin/blog/{id}/editar`, `/admin/blog/nuevo`
+- `/admin/leads/{id}`
+
+No se requiere tocar `routeTree.gen.ts` (se regenera solo).
+
+### B. Acelerar navegación entre módulos
+
+1. **Subir `staleTime` a 60 s en queries del dashboard** (`dashboard-stats-v2`, `dashboard-recent-leads`) para que volver a entrar reuse caché en lugar de re-consultar.
+2. **Aumentar el `refetchInterval` del badge de leads en `AdminSidebar` de 30 s a 60 s** y añadir `staleTime: 30_000` para evitar refetch al cambiar de ruta.
+3. **Quitar `enabled: isReady` redundante en `dashboard.tsx`**: el layout `/admin` ya garantiza sesión vía `beforeLoad`. Reemplazar por una sola comprobación `enabled: !!session?.user`. Esto evita un render extra "vacío" mientras `useAuth` se rehidrata.
+4. **Ya no se llama a `getAdminStatus` server fn** (resuelto en sesión anterior); confirmar que `useIsAdmin` sigue con `staleTime: 5 * 60_000` (ya está).
+
+### C. Mejora menor de UX al editar
+
+En `propiedades.$id.editar.tsx`, envolver el formulario en un fallback de carga mínimo (Suspense ya gestionado por `useSuspenseQuery` + loader, pero confirmamos que `notFoundComponent` y el loader devuelvan el dato antes de pintar).
+
+## Archivos a editar
+
+- `src/routes/admin/propiedades.tsx` → renombrar a `src/routes/admin/propiedades.index.tsx` y cambiar el path a `/admin/propiedades/`
+- `src/routes/admin/blog.tsx` → renombrar a `src/routes/admin/blog.index.tsx` y cambiar el path a `/admin/blog/`
+- `src/routes/admin/leads.tsx` → renombrar a `src/routes/admin/leads.index.tsx` y cambiar el path a `/admin/leads/`
+- `src/routes/admin/dashboard.tsx` → ajustar `staleTime` y `enabled` de las queries
+- `src/components/layout/AdminSidebar.tsx` → ajustar `refetchInterval` y `staleTime` del badge
+
+## Validación esperada
+
+- Hacer clic en el lápiz de cualquier propiedad abre `/admin/propiedades/{id}/editar` y muestra el formulario con los datos cargados.
+- "Nueva propiedad", "Nuevo post", "Editar post" y el detalle de un lead funcionan igual.
+- Cambiar entre Dashboard, Propiedades, Leads y Blog se siente inmediato (los datos se sirven desde caché si tienen menos de 60 s).

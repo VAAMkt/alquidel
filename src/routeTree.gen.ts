@@ -22,13 +22,13 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropiedadesSlugRouteImport } from './routes/propiedades.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
-import { Route as AdminPropiedadesRouteImport } from './routes/admin/propiedades'
-import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminEquipoRouteImport } from './routes/admin/equipo'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminConfiguracionRouteImport } from './routes/admin/configuracion'
-import { Route as AdminBlogRouteImport } from './routes/admin/blog'
 import { Route as AdminAlertasRouteImport } from './routes/admin/alertas'
+import { Route as AdminPropiedadesIndexRouteImport } from './routes/admin/propiedades.index'
+import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads.index'
+import { Route as AdminBlogIndexRouteImport } from './routes/admin/blog.index'
 import { Route as AdminPropiedadesNuevaRouteImport } from './routes/admin/propiedades.nueva'
 import { Route as AdminLeadsIdRouteImport } from './routes/admin/leads.$id'
 import { Route as AdminBlogNuevoRouteImport } from './routes/admin/blog.nuevo'
@@ -100,16 +100,6 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => BlogRoute,
 } as any)
-const AdminPropiedadesRoute = AdminPropiedadesRouteImport.update({
-  id: '/propiedades',
-  path: '/propiedades',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminLeadsRoute = AdminLeadsRouteImport.update({
-  id: '/leads',
-  path: '/leads',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminEquipoRoute = AdminEquipoRouteImport.update({
   id: '/equipo',
   path: '/equipo',
@@ -125,41 +115,51 @@ const AdminConfiguracionRoute = AdminConfiguracionRouteImport.update({
   path: '/configuracion',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminBlogRoute = AdminBlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminAlertasRoute = AdminAlertasRouteImport.update({
   id: '/alertas',
   path: '/alertas',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPropiedadesIndexRoute = AdminPropiedadesIndexRouteImport.update({
+  id: '/propiedades/',
+  path: '/propiedades/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLeadsIndexRoute = AdminLeadsIndexRouteImport.update({
+  id: '/leads/',
+  path: '/leads/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBlogIndexRoute = AdminBlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPropiedadesNuevaRoute = AdminPropiedadesNuevaRouteImport.update({
-  id: '/nueva',
-  path: '/nueva',
-  getParentRoute: () => AdminPropiedadesRoute,
+  id: '/propiedades/nueva',
+  path: '/propiedades/nueva',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminLeadsIdRoute = AdminLeadsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AdminLeadsRoute,
+  id: '/leads/$id',
+  path: '/leads/$id',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminBlogNuevoRoute = AdminBlogNuevoRouteImport.update({
-  id: '/nuevo',
-  path: '/nuevo',
-  getParentRoute: () => AdminBlogRoute,
+  id: '/blog/nuevo',
+  path: '/blog/nuevo',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminPropiedadesIdEditarRoute =
   AdminPropiedadesIdEditarRouteImport.update({
-    id: '/$id/editar',
-    path: '/$id/editar',
-    getParentRoute: () => AdminPropiedadesRoute,
+    id: '/propiedades/$id/editar',
+    path: '/propiedades/$id/editar',
+    getParentRoute: () => AdminRoute,
   } as any)
 const AdminBlogIdEditarRoute = AdminBlogIdEditarRouteImport.update({
-  id: '/$id/editar',
-  path: '/$id/editar',
-  getParentRoute: () => AdminBlogRoute,
+  id: '/blog/$id/editar',
+  path: '/blog/$id/editar',
+  getParentRoute: () => AdminRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -175,17 +175,17 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
-  '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/equipo': typeof AdminEquipoRoute
-  '/admin/leads': typeof AdminLeadsRouteWithChildren
-  '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/blog/': typeof AdminBlogIndexRoute
+  '/admin/leads/': typeof AdminLeadsIndexRoute
+  '/admin/propiedades/': typeof AdminPropiedadesIndexRoute
   '/admin/blog/$id/editar': typeof AdminBlogIdEditarRoute
   '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
@@ -202,17 +202,17 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
-  '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/equipo': typeof AdminEquipoRoute
-  '/admin/leads': typeof AdminLeadsRouteWithChildren
-  '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/blog': typeof AdminBlogIndexRoute
+  '/admin/leads': typeof AdminLeadsIndexRoute
+  '/admin/propiedades': typeof AdminPropiedadesIndexRoute
   '/admin/blog/$id/editar': typeof AdminBlogIdEditarRoute
   '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
@@ -230,17 +230,17 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
-  '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/equipo': typeof AdminEquipoRoute
-  '/admin/leads': typeof AdminLeadsRouteWithChildren
-  '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/blog/': typeof AdminBlogIndexRoute
+  '/admin/leads/': typeof AdminLeadsIndexRoute
+  '/admin/propiedades/': typeof AdminPropiedadesIndexRoute
   '/admin/blog/$id/editar': typeof AdminBlogIdEditarRoute
   '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
@@ -259,17 +259,17 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
-    | '/admin/blog'
     | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/equipo'
-    | '/admin/leads'
-    | '/admin/propiedades'
     | '/blog/$slug'
     | '/propiedades/$slug'
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
+    | '/admin/blog/'
+    | '/admin/leads/'
+    | '/admin/propiedades/'
     | '/admin/blog/$id/editar'
     | '/admin/propiedades/$id/editar'
   fileRoutesByTo: FileRoutesByTo
@@ -286,17 +286,17 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
-    | '/admin/blog'
     | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/equipo'
-    | '/admin/leads'
-    | '/admin/propiedades'
     | '/blog/$slug'
     | '/propiedades/$slug'
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
+    | '/admin/blog'
+    | '/admin/leads'
+    | '/admin/propiedades'
     | '/admin/blog/$id/editar'
     | '/admin/propiedades/$id/editar'
   id:
@@ -313,17 +313,17 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
-    | '/admin/blog'
     | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/equipo'
-    | '/admin/leads'
-    | '/admin/propiedades'
     | '/blog/$slug'
     | '/propiedades/$slug'
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
+    | '/admin/blog/'
+    | '/admin/leads/'
+    | '/admin/propiedades/'
     | '/admin/blog/$id/editar'
     | '/admin/propiedades/$id/editar'
   fileRoutesById: FileRoutesById
@@ -435,20 +435,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof BlogRoute
     }
-    '/admin/propiedades': {
-      id: '/admin/propiedades'
-      path: '/propiedades'
-      fullPath: '/admin/propiedades'
-      preLoaderRoute: typeof AdminPropiedadesRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/leads': {
-      id: '/admin/leads'
-      path: '/leads'
-      fullPath: '/admin/leads'
-      preLoaderRoute: typeof AdminLeadsRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/equipo': {
       id: '/admin/equipo'
       path: '/equipo'
@@ -470,13 +456,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConfiguracionRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/blog': {
-      id: '/admin/blog'
-      path: '/blog'
-      fullPath: '/admin/blog'
-      preLoaderRoute: typeof AdminBlogRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/alertas': {
       id: '/admin/alertas'
       path: '/alertas'
@@ -484,101 +463,93 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAlertasRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/propiedades/': {
+      id: '/admin/propiedades/'
+      path: '/propiedades'
+      fullPath: '/admin/propiedades/'
+      preLoaderRoute: typeof AdminPropiedadesIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/leads/': {
+      id: '/admin/leads/'
+      path: '/leads'
+      fullPath: '/admin/leads/'
+      preLoaderRoute: typeof AdminLeadsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/blog/': {
+      id: '/admin/blog/'
+      path: '/blog'
+      fullPath: '/admin/blog/'
+      preLoaderRoute: typeof AdminBlogIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/propiedades/nueva': {
       id: '/admin/propiedades/nueva'
-      path: '/nueva'
+      path: '/propiedades/nueva'
       fullPath: '/admin/propiedades/nueva'
       preLoaderRoute: typeof AdminPropiedadesNuevaRouteImport
-      parentRoute: typeof AdminPropiedadesRoute
+      parentRoute: typeof AdminRoute
     }
     '/admin/leads/$id': {
       id: '/admin/leads/$id'
-      path: '/$id'
+      path: '/leads/$id'
       fullPath: '/admin/leads/$id'
       preLoaderRoute: typeof AdminLeadsIdRouteImport
-      parentRoute: typeof AdminLeadsRoute
+      parentRoute: typeof AdminRoute
     }
     '/admin/blog/nuevo': {
       id: '/admin/blog/nuevo'
-      path: '/nuevo'
+      path: '/blog/nuevo'
       fullPath: '/admin/blog/nuevo'
       preLoaderRoute: typeof AdminBlogNuevoRouteImport
-      parentRoute: typeof AdminBlogRoute
+      parentRoute: typeof AdminRoute
     }
     '/admin/propiedades/$id/editar': {
       id: '/admin/propiedades/$id/editar'
-      path: '/$id/editar'
+      path: '/propiedades/$id/editar'
       fullPath: '/admin/propiedades/$id/editar'
       preLoaderRoute: typeof AdminPropiedadesIdEditarRouteImport
-      parentRoute: typeof AdminPropiedadesRoute
+      parentRoute: typeof AdminRoute
     }
     '/admin/blog/$id/editar': {
       id: '/admin/blog/$id/editar'
-      path: '/$id/editar'
+      path: '/blog/$id/editar'
       fullPath: '/admin/blog/$id/editar'
       preLoaderRoute: typeof AdminBlogIdEditarRouteImport
-      parentRoute: typeof AdminBlogRoute
+      parentRoute: typeof AdminRoute
     }
   }
 }
 
-interface AdminBlogRouteChildren {
-  AdminBlogNuevoRoute: typeof AdminBlogNuevoRoute
-  AdminBlogIdEditarRoute: typeof AdminBlogIdEditarRoute
-}
-
-const AdminBlogRouteChildren: AdminBlogRouteChildren = {
-  AdminBlogNuevoRoute: AdminBlogNuevoRoute,
-  AdminBlogIdEditarRoute: AdminBlogIdEditarRoute,
-}
-
-const AdminBlogRouteWithChildren = AdminBlogRoute._addFileChildren(
-  AdminBlogRouteChildren,
-)
-
-interface AdminLeadsRouteChildren {
-  AdminLeadsIdRoute: typeof AdminLeadsIdRoute
-}
-
-const AdminLeadsRouteChildren: AdminLeadsRouteChildren = {
-  AdminLeadsIdRoute: AdminLeadsIdRoute,
-}
-
-const AdminLeadsRouteWithChildren = AdminLeadsRoute._addFileChildren(
-  AdminLeadsRouteChildren,
-)
-
-interface AdminPropiedadesRouteChildren {
-  AdminPropiedadesNuevaRoute: typeof AdminPropiedadesNuevaRoute
-  AdminPropiedadesIdEditarRoute: typeof AdminPropiedadesIdEditarRoute
-}
-
-const AdminPropiedadesRouteChildren: AdminPropiedadesRouteChildren = {
-  AdminPropiedadesNuevaRoute: AdminPropiedadesNuevaRoute,
-  AdminPropiedadesIdEditarRoute: AdminPropiedadesIdEditarRoute,
-}
-
-const AdminPropiedadesRouteWithChildren =
-  AdminPropiedadesRoute._addFileChildren(AdminPropiedadesRouteChildren)
-
 interface AdminRouteChildren {
   AdminAlertasRoute: typeof AdminAlertasRoute
-  AdminBlogRoute: typeof AdminBlogRouteWithChildren
   AdminConfiguracionRoute: typeof AdminConfiguracionRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminEquipoRoute: typeof AdminEquipoRoute
-  AdminLeadsRoute: typeof AdminLeadsRouteWithChildren
-  AdminPropiedadesRoute: typeof AdminPropiedadesRouteWithChildren
+  AdminBlogNuevoRoute: typeof AdminBlogNuevoRoute
+  AdminLeadsIdRoute: typeof AdminLeadsIdRoute
+  AdminPropiedadesNuevaRoute: typeof AdminPropiedadesNuevaRoute
+  AdminBlogIndexRoute: typeof AdminBlogIndexRoute
+  AdminLeadsIndexRoute: typeof AdminLeadsIndexRoute
+  AdminPropiedadesIndexRoute: typeof AdminPropiedadesIndexRoute
+  AdminBlogIdEditarRoute: typeof AdminBlogIdEditarRoute
+  AdminPropiedadesIdEditarRoute: typeof AdminPropiedadesIdEditarRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAlertasRoute: AdminAlertasRoute,
-  AdminBlogRoute: AdminBlogRouteWithChildren,
   AdminConfiguracionRoute: AdminConfiguracionRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminEquipoRoute: AdminEquipoRoute,
-  AdminLeadsRoute: AdminLeadsRouteWithChildren,
-  AdminPropiedadesRoute: AdminPropiedadesRouteWithChildren,
+  AdminBlogNuevoRoute: AdminBlogNuevoRoute,
+  AdminLeadsIdRoute: AdminLeadsIdRoute,
+  AdminPropiedadesNuevaRoute: AdminPropiedadesNuevaRoute,
+  AdminBlogIndexRoute: AdminBlogIndexRoute,
+  AdminLeadsIndexRoute: AdminLeadsIndexRoute,
+  AdminPropiedadesIndexRoute: AdminPropiedadesIndexRoute,
+  AdminBlogIdEditarRoute: AdminBlogIdEditarRoute,
+  AdminPropiedadesIdEditarRoute: AdminPropiedadesIdEditarRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

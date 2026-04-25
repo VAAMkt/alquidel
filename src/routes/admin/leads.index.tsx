@@ -63,7 +63,7 @@ const searchSchema = z.object({
   page: fallback(z.number().int().min(1), 1).default(1),
 });
 
-export const Route = createFileRoute("/admin/leads")({
+export const Route = createFileRoute("/admin/leads/")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [{ title: "Leads · ALQUIDEL" }],

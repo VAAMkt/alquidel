@@ -40,7 +40,7 @@ const searchSchema = z.object({
   page: fallback(z.number().int().min(1), 1).default(1),
 });
 
-export const Route = createFileRoute("/admin/blog")({
+export const Route = createFileRoute("/admin/blog/")({
   validateSearch: zodValidator(searchSchema),
   component: AdminBlogPage,
 });
