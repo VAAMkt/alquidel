@@ -24,6 +24,7 @@ import { Route as PropiedadesSlugRouteImport } from './routes/propiedades.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AdminPropiedadesRouteImport } from './routes/admin/propiedades'
 import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
+import { Route as AdminEquipoRouteImport } from './routes/admin/equipo'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminConfiguracionRouteImport } from './routes/admin/configuracion'
 import { Route as AdminBlogRouteImport } from './routes/admin/blog'
@@ -109,6 +110,11 @@ const AdminLeadsRoute = AdminLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminEquipoRoute = AdminEquipoRouteImport.update({
+  id: '/equipo',
+  path: '/equipo',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/equipo': typeof AdminEquipoRoute
   '/admin/leads': typeof AdminLeadsRouteWithChildren
   '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/equipo': typeof AdminEquipoRoute
   '/admin/leads': typeof AdminLeadsRouteWithChildren
   '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/equipo': typeof AdminEquipoRoute
   '/admin/leads': typeof AdminLeadsRouteWithChildren
   '/admin/propiedades': typeof AdminPropiedadesRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/admin/blog'
     | '/admin/configuracion'
     | '/admin/dashboard'
+    | '/admin/equipo'
     | '/admin/leads'
     | '/admin/propiedades'
     | '/blog/$slug'
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/admin/blog'
     | '/admin/configuracion'
     | '/admin/dashboard'
+    | '/admin/equipo'
     | '/admin/leads'
     | '/admin/propiedades'
     | '/blog/$slug'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/admin/blog'
     | '/admin/configuracion'
     | '/admin/dashboard'
+    | '/admin/equipo'
     | '/admin/leads'
     | '/admin/propiedades'
     | '/blog/$slug'
@@ -437,6 +449,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLeadsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/equipo': {
+      id: '/admin/equipo'
+      path: '/equipo'
+      fullPath: '/admin/equipo'
+      preLoaderRoute: typeof AdminEquipoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/dashboard': {
       id: '/admin/dashboard'
       path: '/dashboard'
@@ -547,6 +566,7 @@ interface AdminRouteChildren {
   AdminBlogRoute: typeof AdminBlogRouteWithChildren
   AdminConfiguracionRoute: typeof AdminConfiguracionRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminEquipoRoute: typeof AdminEquipoRoute
   AdminLeadsRoute: typeof AdminLeadsRouteWithChildren
   AdminPropiedadesRoute: typeof AdminPropiedadesRouteWithChildren
 }
@@ -556,6 +576,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBlogRoute: AdminBlogRouteWithChildren,
   AdminConfiguracionRoute: AdminConfiguracionRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminEquipoRoute: AdminEquipoRoute,
   AdminLeadsRoute: AdminLeadsRouteWithChildren,
   AdminPropiedadesRoute: AdminPropiedadesRouteWithChildren,
 }

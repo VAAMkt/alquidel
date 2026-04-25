@@ -25,6 +25,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
 import { RecentViews } from "../components/public/RecentViews";
+import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
 
@@ -255,7 +256,9 @@ function HomePage() {
         </div>
 
         {/* Vistas recientes */}
-        <RecentViews />
+        <ClientOnly>
+          <RecentViews />
+        </ClientOnly>
       </section>
 
       {/* CONFIANZA */}
