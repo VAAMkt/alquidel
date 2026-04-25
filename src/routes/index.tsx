@@ -106,19 +106,20 @@ export const Route = createFileRoute("/")({
     ],
   }),
   loader: async ({ context }) => {
-    // Pre-cargar destacadas (no bloqueante visualmente, pero llena la caché para SSR/hidratación)
+    // Pre-cargar destacadas y devolverlas para SSR + hidratación consistentes
     const featured = await context.queryClient.ensureQueryData(featuredQueryOptions);
+    let recent: typeof featured = [];
     if (!featured || featured.length === 0) {
-      // Si no hay destacadas, también precarga las recientes
-      context.queryClient.prefetchQuery(recentSixQueryOptions);
+      recent = await context.queryClient.ensureQueryData(recentSixQueryOptions);
     }
-    return null;
+    return { featured, recent };
   },
   component: HomePage,
 });
 
 function HomePage() {
   const navigate = useNavigate();
+  const { featured: initialFeatured, recent: initialRecent } = Route.useLoaderData();
   const [op, setOp] = useState<"todos" | "venta" | "arriendo">("todos");
   const [tipo, setTipo] = useState<string>("todos");
   const [ciudad, setCiudad] = useState<string>("todas");
@@ -138,16 +139,20 @@ function HomePage() {
   }
 
   // Destacadas
-  const { data: featured, isLoading: loadingFeatured } = useQuery(featuredQueryOptions);
+  const { data: featured } = useQuery({
+    ...featuredQueryOptions,
+    initialData: initialFeatured,
+  });
 
   // Fallback: si no hay destacadas → 6 más recientes
   const { data: fallbackRecent } = useQuery({
     ...recentSixQueryOptions,
+    initialData: initialRecent,
     enabled: featured !== undefined && featured.length === 0,
   });
 
   const showcase = featured && featured.length > 0 ? featured : fallbackRecent;
-  const isLoadingShowcase = loadingFeatured && !showcase;
+  const isLoadingShowcase = !showcase;
 
   return (
     <PublicLayout>
