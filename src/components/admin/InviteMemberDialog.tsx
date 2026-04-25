@@ -48,11 +48,6 @@ export function InviteMemberDialog() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const accessToken = session?.access_token;
-      if (!accessToken) {
-        throw new Error("Tu sesión expiró. Inicia sesión de nuevo.");
-      }
-
       const parsed = schema.safeParse({ email, fullName, role });
       if (!parsed.success) {
         const errs: Record<string, string> = {};
@@ -61,7 +56,7 @@ export function InviteMemberDialog() {
         throw new Error("Revisa los datos");
       }
       setErrors({});
-      return await inviteFn({ data: { ...parsed.data, accessToken } });
+      return await inviteFn({ data: parsed.data });
     },
     onSuccess: () => {
       toast.success(`Invitación enviada a ${email}`);
