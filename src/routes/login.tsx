@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, redirect, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,26 +36,59 @@ function LoginPage() {
   const search = Route.useSearch();
   const [loading, setLoading] = useState(false);
 
+  // Limpiar email/password de la URL si llegaron por un submit GET accidental
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("email") || url.searchParams.has("password")) {
+      url.searchParams.delete("email");
+      url.searchParams.delete("password");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
+
+  // Navegar cuando la sesión esté realmente persistida
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        navigate({
+          to: search.redirect ?? "/admin/dashboard",
+          replace: true,
+        });
+      }
+    });
+    return () => {
+      sub.subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const parsed = schema.safeParse({
-      email: fd.get("email"),
-      password: fd.get("password"),
-    });
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Datos inválidos");
-      return;
+    e.stopPropagation();
+    try {
+      const fd = new FormData(e.currentTarget);
+      const parsed = schema.safeParse({
+        email: fd.get("email"),
+        password: fd.get("password"),
+      });
+      if (!parsed.success) {
+        toast.error(parsed.error.issues[0]?.message ?? "Datos inválidos");
+        return;
+      }
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword(parsed.data);
+      if (error) {
+        toast.error(error.message || "Credenciales incorrectas");
+        return;
+      }
+      toast.success("Bienvenido");
+      // La navegación ocurre en el listener de onAuthStateChange
+    } catch (err) {
+      console.error("[login] submit error", err);
+      toast.error("Ocurrió un error al iniciar sesión");
+    } finally {
+      setLoading(false);
     }
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword(parsed.data);
-    setLoading(false);
-    if (error) {
-      toast.error("Credenciales incorrectas");
-      return;
-    }
-    toast.success("Bienvenido");
-    navigate({ to: search.redirect ?? "/admin/dashboard" });
   }
 
   return (
@@ -74,7 +107,13 @@ function LoginPage() {
           Ingresa con tu cuenta corporativa para gestionar propiedades y leads.
         </p>
 
-        <form onSubmit={onSubmit} className="mt-8 space-y-5">
+        <form
+          onSubmit={onSubmit}
+          method="post"
+          action="#"
+          noValidate
+          className="mt-8 space-y-5"
+        >
           <div>
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" required className="mt-1.5" autoComplete="email" />
