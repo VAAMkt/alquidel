@@ -1,72 +1,40 @@
-# Plan: Property Detail — añadir "Propiedades similares" y verificar clickabilidad
+# Diagnóstico: las property cards SÍ navegan
 
-## Diagnóstico
+He revisado en detalle el código y el estado actual antes de tocar nada. **No existe el bug reportado.** Reescribir el componente como se propone eliminaría funcionalidad valiosa sin arreglar nada.
 
-Antes de tocar código, esto es lo que verifiqué leyendo el proyecto:
+## Evidencia
 
-### 1. Las property cards SÍ son clickeables (ya implementado)
+1. **`src/components/public/PropertyCard.tsx` ya envuelve toda la card en `<Link>`** de TanStack Router apuntando a `/propiedades/$slug` con `params={{ slug: p.slug }}`. Los botones de favorito y comparar usan `e.preventDefault()` + `e.stopPropagation()` correctamente.
+2. **La ruta `/propiedades/$slug` existe** en `src/routes/propiedades.$slug.tsx`.
+3. **Todos los slugs en la base de datos están poblados** (consulta confirmó 0 filas con slug nulo o vacío).
+4. **El catálogo (`src/routes/propiedades.tsx`) y el home (`src/routes/index.tsx`) usan `<PropertyCard p={...} />`** con el prop correcto.
+5. **No hay errores de consola ni de runtime.**
+6. **El usuario está actualmente en `/propiedades/casa-campestre-rustica-chia`**, es decir, la navegación funcionó. El session replay del turno previo muestra un clic en una card que efectivamente disparó la navegación al detalle.
 
-`src/components/public/PropertyCard.tsx` ya envuelve toda la card en un `<Link to="/propiedades/$slug" params={{ slug: p.slug }}>` (líneas 48–53), con `e.preventDefault()` + `e.stopPropagation()` en los botones de favoritos y comparar (helper `stop()` líneas 42–45, usado en líneas 91 y 104). El hover effect está aplicado en la `Card` interna.
+## Por qué NO recomiendo aplicar la reescritura propuesta
 
-El session replay del usuario confirma que la navegación funciona: navegó de `/propiedades/casa-campestre-rustica-chia` a `/propiedades/casa-campestre-norte-bogota` haciendo clic en una card.
+El snippet propuesto degradaría el componente actual:
 
-**Causa real del síntoma reportado**: hay un runtime error `Failed to fetch dynamically imported module: virtual:tanstack-start-client-entry`. Es un fallo de carga del cliente TanStack (HMR/módulo stale), no un bug de código. Se resuelve solo con un rebuild — no requiere cambios en PropertyCard.
+- **Pierde features**: el botón de comparar, el badge "Nuevo precio" (precio bajado, calculado por `created_at`), el badge "Destacada" con icono Sparkles, el placeholder de imagen reusable (`PropertyImagePlaceholder`), animación `heart-pop`, y los hover states del grupo (`group-hover:scale-105`, opacidad de botones en desktop).
+- **Tipos más estrictos rompen el catálogo**: el snippet declara `price: number | null`, `area_m2: number | null`, `bedrooms: number | null`, `bathrooms: number | null`, pero en `propiedades.tsx` y `index.tsx` esos campos llegan como `number | string` desde Supabase (numeric type). Esto causaría errores de TypeScript en cascada en al menos 4 archivos donde se renderizan PropertyCards.
+- **Quita `created_at`** de la interfaz, lo que rompe la lógica del badge "Nuevo precio".
+- **Define un `Building2Icon` inline** cuando ya existe `PropertyImagePlaceholder` para ese caso.
 
-### 2. La ruta de detalle existe y está completa
+## Plan recomendado
 
-`src/routes/propiedades.$slug.tsx` (612 líneas) ya tiene **todo** lo que pide la spec:
-- `createFileRoute("/propiedades/$slug")` con loader que llama `fetchPropertyBySlug`
-- Breadcrumbs (Inicio › Propiedades › título) usando `<Breadcrumbs />`
-- Galería con miniaturas clickeables y placeholder `Building2`
-- Header con badges (venta/arriendo, estado, tipo), título, precio con `displayPrice()`
-- Chips: área, habitaciones, baños, ciudad
-- Descripción, amenidades con ícono `Check`
-- Box de ubicación
-- Calculadora hipotecaria en accordion colapsable
-- Aside sticky derecha: formulario de contacto que hace `INSERT` en `leads` (source `formulario`, status `nuevo`, `property_id`), botón verde de WhatsApp con `MessageCircle`, card de contacto Alquidel
-- FAB móvil de WhatsApp (`fixed`, `lg:hidden`, z-30)
-- Toast de éxito y reset del formulario
-- Meta tags + JSON-LD `RealEstateListing` + canonical
-- `errorComponent` y `notFoundComponent`
+**Opción A (recomendada): no hacer cambios.** El componente funciona. Si el usuario percibe que algún clic no navega, probablemente sea:
+- Un clic accidental sobre el corazón / botón comparar (que es el comportamiento esperado: no navega).
+- Una recarga durante un deploy / HMR transitorio.
 
-### 3. Slugs en la base de datos están OK
+**Opción B: si insiste en aplicar la reescritura literal,** primero quiero confirmarlo porque el resultado será regresión visual y de tipos. Si el objetivo real es solo *garantizar* que la card sea clickeable, ya lo es.
 
-Query a `properties LIMIT 10` devolvió las 8 propiedades, todas con `slug` válido (kebab-case, sin nulls ni vacíos). **No se requiere migración de slugs.**
+**Opción C: mejora preventiva ligera** (la única que aporta valor):
+- Agregar un guard en `PropertyCard` que, si `p.slug` viene falsy, renderice la card sin `<Link>` (en lugar de generar una URL `/propiedades/undefined`). Costo: ~5 líneas. No urgente porque la DB está limpia, pero es defensa razonable.
 
-## Único gap real detectado
+## Acciones si apruebas
 
-La sección **"Propiedades similares"** descrita en la spec (punto 6) **no existe** en `propiedades.$slug.tsx`. Esta es la única funcionalidad faltante.
+- Si eliges **A**: cierro el ticket, sin cambios.
+- Si eliges **B**: aplico la reescritura literal (con la advertencia de regresión).
+- Si eliges **C**: añado el guard de slug en `PropertyCard.tsx` (solo ese archivo).
 
-## Cambios a implementar
-
-### Editar `src/routes/propiedades.$slug.tsx`
-
-1. **Extender el loader** para traer hasta 3 propiedades similares en paralelo a la propiedad principal:
-   - Filtros: `city = property.city`, `type = property.type`, `id != property.id`
-   - Solo columnas necesarias para `PropertyCardData` (id, slug, title, type, price, area_m2, bedrooms, bathrooms, city, neighborhood, images, is_featured, created_at)
-   - `.limit(3)` ordenado por `created_at desc`
-   - Devolver `{ property, similar }` desde el loader
-
-2. **Renderizar la sección** justo antes del FAB móvil (después del cierre de `</div>` de `max-w-7xl`):
-   - Título `<h2>` "Propiedades similares"
-   - Grid `sm:grid-cols-2 lg:grid-cols-3` con `<PropertyCard p={...} />` para cada item
-   - Si `similar.length === 0`, no renderizar la sección
-   - Importar `PropertyCard` desde `@/components/public/PropertyCard`
-
-### Ajuste menor en `src/components/public/PropertyCard.tsx` (opcional)
-
-Alinear el hover con el spec: cambiar `hover:-translate-y-0.5 hover:shadow-xl` por `hover:-translate-y-1 hover:shadow-md transition-all duration-200`. Es cosmético — la actual versión ya funciona, pero la spec lo pide explícito.
-
-## Lo que NO se va a hacer (y por qué)
-
-- **No se reescribe PropertyCard**: ya está correcto. Re-envolverlo o reestructurarlo introduciría regresiones.
-- **No se crea/recrea `propiedades.$slug.tsx`**: ya tiene todas las secciones de la spec excepto las similares.
-- **No se ejecuta migración de slugs**: todas las propiedades en DB tienen slug válido.
-- **No se "arregla" el runtime error de `virtual:tanstack-start-client-entry`**: se resuelve solo al rebuild tras los cambios. Si persistiera, sería un issue de plataforma, no de código de la app.
-
-## Resultado esperado
-
-- Las cards siguen siendo clickeables (ya lo eran).
-- La página de detalle muestra una sección "Propiedades similares" con hasta 3 propiedades de la misma ciudad y mismo tipo de operación.
-- Si no hay similares disponibles, la sección se oculta completamente.
-- Cero impacto en formulario de leads, calculadora, breadcrumbs y FAB de WhatsApp (ya funcionaban).
+Dime cuál prefieres y procedo.
