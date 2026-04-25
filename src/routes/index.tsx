@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/select";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PropertyCard } from "@/components/public/PropertyCard";
+import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
+import { RecentViews } from "@/components/public/RecentViews";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
 
@@ -73,15 +75,21 @@ function HomePage() {
   const [ciudad, setCiudad] = useState<string>("todas");
 
   function handleSearch() {
-    const search: Record<string, unknown> = {};
-    if (op !== "todos") search.operacion = op;
-    if (tipo !== "todos") search.tipos = [tipo];
-    if (ciudad !== "todas") search.ciudad = ciudad;
-    navigate({ to: "/propiedades", search });
+    // IMPORTANTE: pasamos search como función para que TanStack Router
+    // valide correctamente con el schema de /propiedades (tipos como array).
+    navigate({
+      to: "/propiedades",
+      search: () => ({
+        ...(op !== "todos" ? { operacion: op } : {}),
+        ...(tipo !== "todos" ? { tipos: [tipo as any] } : {}),
+        ...(ciudad !== "todas" ? { ciudad } : {}),
+        page: 1,
+      }),
+    });
   }
 
   // Destacadas
-  const { data: featured } = useQuery({
+  const { data: featured, isLoading: loadingFeatured } = useQuery({
     queryKey: ["properties", "featured"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -117,6 +125,7 @@ function HomePage() {
   });
 
   const showcase = featured && featured.length > 0 ? featured : fallbackRecent;
+  const isLoadingShowcase = loadingFeatured && !showcase;
 
   return (
     <PublicLayout>
@@ -213,7 +222,9 @@ function HomePage() {
         </div>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {showcase && showcase.length > 0 ? (
+          {isLoadingShowcase ? (
+            Array.from({ length: 3 }).map((_, i) => <PropertyCardSkeleton key={i} />)
+          ) : showcase && showcase.length > 0 ? (
             showcase.map((p) => (
               <PropertyCard
                 key={p.id}
@@ -242,6 +253,9 @@ function HomePage() {
             </div>
           )}
         </div>
+
+        {/* Vistas recientes */}
+        <RecentViews />
       </section>
 
       {/* CONFIANZA */}

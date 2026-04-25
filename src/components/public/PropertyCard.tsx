@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Bath, Bed, Building2, GitCompare, Heart, MapPin, Maximize } from "lucide-react";
+import { Bath, Bed, GitCompare, Heart, MapPin, Maximize, Sparkles, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatCOP, formatArea } from "@/lib/format";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useCompare } from "@/contexts/CompareContext";
 import { cn } from "@/lib/utils";
+import { PropertyImagePlaceholder } from "./PropertyImagePlaceholder";
 
 export interface PropertyCardData {
   id: string;
@@ -20,6 +21,7 @@ export interface PropertyCardData {
   neighborhood: string | null;
   images: string[] | null;
   is_featured?: boolean;
+  created_at?: string;
 }
 
 export function PropertyCard({ p }: { p: PropertyCardData }) {
@@ -28,6 +30,14 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
   const { isInCompare, toggle: toggleCmp } = useCompare();
   const fav = isFavorite(p.id);
   const cmp = isInCompare(p.id);
+  const altText = `${p.title} en ${p.city}`;
+
+  const showStaleBadge = (() => {
+    if (!p.created_at) return false;
+    const created = new Date(p.created_at).getTime();
+    if (!Number.isFinite(created)) return false;
+    return Date.now() - created > 30 * 24 * 60 * 60 * 1000;
+  })();
 
   function stop(e: React.MouseEvent) {
     e.preventDefault();
@@ -39,22 +49,21 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
       to="/propiedades/$slug"
       params={{ slug: p.slug }}
       className="group block"
+      aria-label={`Ver propiedad: ${p.title}`}
     >
       <Card className="overflow-hidden rounded-xl border-border p-0 transition-all hover:-translate-y-0.5 hover:shadow-xl">
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           {cover ? (
             <img
               src={cover}
-              alt={p.title}
+              alt={altText}
               loading="lazy"
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-              <Building2 className="h-12 w-12" />
-            </div>
+            <PropertyImagePlaceholder />
           )}
-          <div className="absolute left-3 top-3 flex gap-2">
+          <div className="absolute left-3 top-3 flex max-w-[calc(100%-3rem)] flex-wrap gap-2">
             <Badge
               className={
                 p.type === "venta"
@@ -65,8 +74,14 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
               {p.type === "venta" ? "Venta" : "Arriendo"}
             </Badge>
             {p.is_featured && (
-              <Badge variant="secondary" className="rounded-md bg-background/90 text-foreground backdrop-blur-sm">
-                Destacada
+              <Badge className="rounded-md border border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-100">
+                <Sparkles className="mr-1 h-3 w-3" /> Destacada
+              </Badge>
+            )}
+            {showStaleBadge && (
+              <Badge className="rounded-md bg-rose-50 text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">
+                <TrendingDown className="mr-1 h-3 w-3" />
+                Nuevo precio
               </Badge>
             )}
           </div>
@@ -75,8 +90,10 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
               type="button"
               onClick={(e) => { stop(e); toggleFav(p.id); }}
               aria-label={fav ? "Quitar de favoritos" : "Guardar en favoritos"}
+              aria-pressed={fav}
               className={cn(
                 "inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-colors hover:bg-background",
+                "active:[animation:heart-pop_220ms_ease-out]",
                 fav ? "text-rose-500" : "text-foreground",
               )}
             >
@@ -86,6 +103,7 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
               type="button"
               onClick={(e) => { stop(e); toggleCmp(p); }}
               aria-label={cmp ? "Quitar de comparación" : "Agregar a comparación"}
+              aria-pressed={cmp}
               className={cn(
                 "inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-colors hover:bg-background",
                 cmp ? "text-slate-900" : "text-foreground",

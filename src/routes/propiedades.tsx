@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/sheet";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PropertyCard } from "@/components/public/PropertyCard";
+import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
 import { AlertsModal } from "@/components/public/AlertsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCOP } from "@/lib/format";
@@ -110,7 +111,7 @@ function PropiedadesPage() {
   const navigate = useNavigate({ from: "/propiedades" });
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["properties", "public-all"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -392,12 +393,16 @@ function PropiedadesPage() {
             {/* Grid */}
             <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {isLoading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-[420px] animate-pulse rounded-xl border border-border bg-muted/40"
-                  />
-                ))
+                Array.from({ length: 6 }).map((_, i) => <PropertyCardSkeleton key={i} />)
+              ) : isError ? (
+                <div className="col-span-full rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+                  <p className="text-sm font-medium text-destructive">
+                    No pudimos cargar las propiedades
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+                    Reintentar
+                  </Button>
+                </div>
               ) : pageItems.length === 0 ? (
                 <div className="col-span-full rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center">
                   <Building2 className="mx-auto h-10 w-10 text-muted-foreground" />
@@ -431,6 +436,7 @@ function PropiedadesPage() {
                       neighborhood: p.neighborhood,
                       images: p.images,
                       is_featured: p.is_featured,
+                      created_at: p.created_at,
                     }}
                   />
                 ))

@@ -2,10 +2,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import type { PropertyCardData } from "@/components/public/PropertyCard";
 
 const MAX = 3;
@@ -24,6 +26,30 @@ const CompareContext = createContext<CompareContextValue | null>(null);
 
 export function CompareProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<PropertyCardData[]>([]);
+
+  // Purgar IDs huérfanos (propiedades eliminadas en DB)
+  useEffect(() => {
+    if (items.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("properties")
+          .select("id")
+          .in("id", items.map((i) => i.id));
+        if (cancelled || !data) return;
+        const validIds = new Set(data.map((d) => d.id));
+        setItems((prev) => prev.filter((p) => validIds.has(p.id)));
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Solo al montar — no en cada cambio
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isInCompare = useCallback(
     (id: string) => items.some((p) => p.id === id),

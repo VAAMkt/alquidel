@@ -12,3 +12,11 @@ export function whatsappUrl(message?: string): string {
 export function propertyWhatsappMessage(title: string): string {
   return `Hola, me interesa la propiedad: ${title}`;
 }
+
+/**
+ * Construye un mensaje de "compartir" para enviar el enlace por WhatsApp.
+ */
+export function shareWhatsappUrl(title: string, url: string): string {
+  const msg = `Mira esta propiedad en Alquidel: ${title} — ${url}`;
+  return `https://wa.me/?text=${encodeURIComponent(msg)}`;
+}

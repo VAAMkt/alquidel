@@ -20,6 +20,8 @@ import {
   Maximize,
   MessageCircle,
   Phone,
+  Printer,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,10 +44,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import { Breadcrumbs } from "@/components/public/Breadcrumbs";
+import { PropertyImagePlaceholder } from "@/components/public/PropertyImagePlaceholder";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCOP, formatArea } from "@/lib/format";
 import { COMPANY } from "@/lib/company";
-import { whatsappUrl, propertyWhatsappMessage } from "@/lib/whatsapp";
+import { whatsappUrl, propertyWhatsappMessage, shareWhatsappUrl } from "@/lib/whatsapp";
+import { useEffect } from "react";
+import { useRecentViews } from "@/hooks/useRecentViews";
 
 async function fetchPropertyBySlug(slug: string) {
   const { data, error } = await supabase
@@ -112,6 +118,9 @@ export const Route = createFileRoute("/propiedades/$slug")({
     };
     return {
       meta: baseMeta,
+      links: [
+        { rel: "canonical", href: `https://alquidel.lovable.app/propiedades/${p.slug}` },
+      ],
       scripts: [
         {
           type: "application/ld+json",
@@ -164,8 +173,22 @@ function PropertyDetail() {
   const { property: p } = Route.useLoaderData();
   const router = useRouter();
   const [activeImg, setActiveImg] = useState(0);
+  const { push: pushRecent } = useRecentViews();
+
+  useEffect(() => {
+    if (p?.slug) pushRecent(p.slug);
+  }, [p?.slug, pushRecent]);
 
   const waLink = whatsappUrl(propertyWhatsappMessage(p.title));
+  const shareUrl =
+    typeof window !== "undefined"
+      ? window.location.href
+      : `https://alquidel.lovable.app/propiedades/${p.slug}`;
+  const shareWa = shareWhatsappUrl(p.title, shareUrl);
+
+  function handlePrint() {
+    if (typeof window !== "undefined") window.print();
+  }
 
   // Lead form state
   const [form, setForm] = useState({
@@ -227,14 +250,37 @@ function PropertyDetail() {
   return (
     <PublicLayout>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <Breadcrumbs
+          items={[
+            { label: "Propiedades", to: "/propiedades" },
+            { label: p.title },
+          ]}
+        />
         <button
           type="button"
           onClick={() => router.history.back()}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="no-print mt-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver
         </button>
+
+        {/* Acciones rápidas: compartir e imprimir */}
+        <div className="no-print mt-4 flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a
+              href={shareWa}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Compartir por WhatsApp"
+            >
+              <Share2 className="mr-1.5 h-4 w-4" /> Compartir por WhatsApp
+            </a>
+          </Button>
+          <Button variant="outline" size="sm" onClick={handlePrint} aria-label="Imprimir ficha">
+            <Printer className="mr-1.5 h-4 w-4" /> Imprimir ficha
+          </Button>
+        </div>
 
         <div className="mt-6 grid gap-8 lg:grid-cols-3">
           {/* IZQUIERDA */}

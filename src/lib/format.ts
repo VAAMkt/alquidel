@@ -10,6 +10,7 @@ const cop = new Intl.NumberFormat("es-CO", {
 export function formatCOP(value: number | string | null | undefined): string {
   const n = typeof value === "string" ? Number(value) : (value ?? 0);
   if (!Number.isFinite(n)) return "$ 0";
+  if (n <= 0) return "Precio a consultar";
   return cop.format(n);
 }
 
