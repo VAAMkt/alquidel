@@ -6,6 +6,16 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { AlertTriangle, Shield, ShieldCheck, Trash2, Users, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+
+type TeamMember = {
+  id: string;
+  full_name: string | null;
+  email: string;
+  phone: string | null;
+  created_at: string;
+  roles: string[];
+  isAdmin: boolean;
+};
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -170,7 +180,7 @@ function EquipoPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              team!.map((m) => (
+              team!.map((m: TeamMember) => (
                 <TableRow key={m.id}>
                   <TableCell className="font-medium">{m.full_name || "—"}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{m.email}</TableCell>
