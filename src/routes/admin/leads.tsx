@@ -13,6 +13,9 @@ import {
   Phone,
   Search,
   Users,
+  FileText,
+  Smartphone,
+  Hand,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -43,6 +46,7 @@ import {
   SourceBadge,
   StatusBadge,
 } from "@/lib/leads";
+import { NewLeadDialog } from "@/components/admin/NewLeadDialog";
 
 const PAGE_SIZE = 20;
 
@@ -171,20 +175,36 @@ function LeadsListPage() {
             Gestiona los contactos generados desde el sitio web.
           </p>
         </div>
-        <Card className="flex items-center gap-3 border-border bg-violet-500/5 p-3 pr-4">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15 text-violet-600">
-            <MessageCircle className="h-4 w-4" />
-          </span>
-          <div className="leading-tight">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Alquibot · últimos 30 días
-            </p>
-            <p className="text-lg font-semibold text-foreground">
-              {chatbotMonthCount ?? 0} leads
-            </p>
-          </div>
-        </Card>
+        <div className="flex items-center gap-3">
+          <Card className="flex items-center gap-3 border-border bg-violet-500/5 p-3 pr-4">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15 text-violet-600">
+              <MessageCircle className="h-4 w-4" />
+            </span>
+            <div className="leading-tight">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Alquibot · últimos 30 días
+              </p>
+              <p className="text-lg font-semibold text-foreground">
+                {chatbotMonthCount ?? 0} leads
+              </p>
+            </div>
+          </Card>
+          <NewLeadDialog />
+        </div>
       </div>
+
+      {/* Cómo llegan los leads */}
+      <Card className="mt-6 border-border p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          ¿Cómo llegan los leads?
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ChannelHint icon={FileText} title="Formulario web" desc="Contacto desde /contacto y fichas de propiedad." />
+          <ChannelHint icon={MessageCircle} title="Alquibot" desc="Conversaciones del chatbot del sitio." />
+          <ChannelHint icon={Smartphone} title="WhatsApp" desc="Clics al botón flotante de WhatsApp." />
+          <ChannelHint icon={Hand} title="Manual" desc="Llamadas, walk-ins o referidos registrados aquí." />
+        </div>
+      </Card>
 
       {/* Tabs por estado */}
       <div className="mt-6 flex flex-wrap gap-2 border-b border-border">
