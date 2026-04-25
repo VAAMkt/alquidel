@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Bath, Bed, GitCompare, Heart, MapPin, Maximize, Sparkles, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { formatCOP, formatArea } from "@/lib/format";
+import { displayPrice, formatArea } from "@/lib/format";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useCompare } from "@/contexts/CompareContext";
 import { cn } from "@/lib/utils";
@@ -116,7 +116,7 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
         <div className="space-y-3 p-5">
           <div>
             <p className="text-2xl font-semibold tracking-tight text-foreground">
-              {formatCOP(Number(p.price))}
+              {displayPrice(p.price)}
             </p>
             <h3 className="mt-1 line-clamp-1 text-base font-medium text-foreground">
               {p.title}

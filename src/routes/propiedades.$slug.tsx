@@ -47,7 +47,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Breadcrumbs } from "@/components/public/Breadcrumbs";
 import { PropertyImagePlaceholder } from "@/components/public/PropertyImagePlaceholder";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCOP, formatArea } from "@/lib/format";
+import { formatCOP, formatArea, displayPrice } from "@/lib/format";
 import { COMPANY } from "@/lib/company";
 import { whatsappUrl, propertyWhatsappMessage, shareWhatsappUrl } from "@/lib/whatsapp";
 import { useEffect } from "react";
@@ -351,7 +351,7 @@ function PropertyDetail() {
                 {p.neighborhood ? `${p.neighborhood}, ${p.city}` : p.city}
               </p>
               <p className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                {formatCOP(Number(p.price))}
+                {displayPrice(p.price)}
               </p>
             </div>
 
