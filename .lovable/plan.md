@@ -1,50 +1,65 @@
 ## Diagnóstico
 
-El módulo Equipo se rompe con el error de Vite:
+### Diferencia entre publicado vs preview actual
 
-> `The requested module '/src/server/team.functions.ts?t=…' does not provide an export …`
+**Versión publicada (commit `71a5b26`)** — funciona:
+- Todo el código (schemas, helpers, handlers) vive en `src/server/team.functions.ts`.
+- El cliente importa solo `createTeamMember`, `listTeam`, etc. El plugin `tss-serverfn-split` reemplaza `.handler()` por un stub RPC en el bundle cliente. No hay imports a `*.server.*`, así que la regla de "import-protection" no se dispara.
 
-Tras revisar `src/server/team.functions.ts`, `src/components/admin/InviteMemberDialog.tsx`, `src/routes/admin/equipo.tsx` y la guía oficial de `tss-serverfn-split`, la causa raíz es un **anti-patrón documentado**:
+**Versión actual** — falla con `does not provide an export named 'createTeamMember'`:
+- En el último intento de fix se creó `src/server/team.server.ts` con `supabaseAdmin` y los schemas.
+- `team.functions.ts` ahora importa de `./team.server` (`CreateMemberSchema`, `createTeamMemberImpl`, etc.).
+- Cuando Vite arma el bundle del cliente, sigue la cadena `equipo.tsx → team.functions.ts → team.server.ts → client.server.ts`.
+- TanStack tiene una regla por defecto del import-protection plugin que bloquea `**/*.server.*` desde el entorno cliente (`getDefaultImportProtectionRules` en `start-plugin-core`).
+- El plugin de splitting (`handleCreateServerFn`) elimina los cuerpos de los handlers del cliente, pero **no elimina los imports estáticos**. Como esos imports apuntan a archivos `*.server.*`, el módulo cliente falla durante la transformación/evaluación HMR y queda sin exports — de ahí el mensaje "does not provide an export named 'createTeamMember'".
 
-`team.functions.ts` define **helpers y constantes hermanos** (`assertAdmin`, `RoleSchema`) en el mismo archivo donde viven los `createServerFn(...)`. El plugin Vite `tss-serverfn-split` divide el archivo en variantes cliente/servidor y, al hacerlo, los handlers terminan referenciando símbolos que ya no existen en su nuevo módulo (de ahí "does not provide an export"). Es exactamente el caso descrito en el knowledge interno:
+En producción (build), Cloudflare bundlea el SSR y el cliente con módulos virtuales pre-resueltos en disco; si por azar el último build publicado fue antes de este refactor, sigue funcionando con la versión vieja, mientras que el dev server siempre re-transforma el archivo y revienta.
 
-> "If you see `ReferenceError` from `_serverFn` + `?tss-serverfn-split`, first check for sibling helper/config usage in `.functions.ts`. Move helper/config logic to imported modules."
+### Conclusión
 
-Adicionalmente, importar `client.server.ts` (server-only) directamente desde el archivo `.functions.ts` aumenta la probabilidad de que el splitter falle dependiendo de la combinación de exports/HMR. La práctica recomendada es mantener `.functions.ts` como una capa delgada que sólo declara `createServerFn(...)` e importa todo lo demás.
+El refactor a `team.server.ts` introdujo el bug. La estructura de un único archivo `*.functions.ts` (la del commit publicado) es la correcta para este patrón: server functions auto-contenidas, sin imports a archivos `*.server.*` desde el cliente.
 
-## Solución
+## Plan de corrección
 
-1. **Crear `src/server/team.server.ts`** (módulo server-only) con:
-   - `RoleSchema` (zod enum)
-   - `assertAdmin(userId)` que usa `supabaseAdmin`
-   - Funciones puras de negocio: `listTeamImpl`, `createTeamMemberImpl`, `setTeamMemberAdminImpl`, `deleteTeamMemberImpl` (reciben `userId` autenticado y los datos validados)
-   - Importa `supabaseAdmin` desde `@/integrations/supabase/client.server` (ya server-only)
+1. **Consolidar** todo el código del equipo en `src/server/team.functions.ts`:
+   - Schemas Zod (`CreateMemberSchema`, `SetAdminSchema`, `DeleteMemberSchema`, `RoleSchema`).
+   - Helper `assertAdmin`.
+   - Handlers de `listTeam`, `createTeamMember`, `setTeamMemberAdmin`, `deleteTeamMember` con la lógica completa dentro del `.handler()`.
+   - Mantener `import { supabaseAdmin } from "@/integrations/supabase/client.server"` — esto es seguro porque el archivo NO se llama `*.server.*` y el splitter elimina el cuerpo del handler antes de llegar al bundle cliente. (Es exactamente lo que hace la versión publicada que funciona.)
 
-2. **Reescribir `src/server/team.functions.ts`** para que sea un wrapper delgado:
-   - Sólo importa `createServerFn`, `requireSupabaseAuth`, `z` y los helpers desde `./team.server`
-   - Cada `createServerFn(...).inputValidator(...).handler(...)` simplemente delega a la función `*Impl` correspondiente
-   - Ya no contiene helpers ni constantes a nivel de módulo más allá de la declaración de los servidores
+2. **Eliminar** `src/server/team.server.ts` (queda obsoleto).
 
-3. **Endurecer el frontend** (`src/routes/admin/equipo.tsx`) para que un fallo del módulo no muestre la pantalla genérica "Something went wrong":
-   - Añadir un `errorComponent` propio en la ruta `/admin/equipo` que muestre el mensaje real y un botón de reintento
-   - Asegurar que el `useQuery` use `retry: false` y que el estado de error se muestre dentro de la card en vez de propagar al error boundary global
+3. **No tocar**:
+   - `src/components/admin/InviteMemberDialog.tsx` — sigue importando `createTeamMember` desde `team.functions`.
+   - `src/routes/admin/equipo.tsx` — mantiene `errorComponent` y la verificación de admin.
+   - El middleware `requireSupabaseAuth`.
 
-4. **Validación de `phone` opcional**: actualmente `z.string().trim().max(40).optional().or(z.literal(""))`. Cambiarlo a `z.string().trim().max(40).optional()` y normalizar `""` a `undefined` antes de enviarlo, para evitar issues sutiles con la validación cuando el campo se deja vacío.
+4. **Validación**:
+   - Recargar `/admin/equipo` y confirmar que la tabla del equipo carga sin el error.
+   - Probar crear un nuevo miembro desde el diálogo "Crear miembro".
 
-5. **Smoke test manual**: tras los cambios, navegar a `/admin/equipo` autenticado como admin, crear un miembro de prueba con email/contraseña/nombre y verificar que:
-   - El diálogo se cierra correctamente
-   - El nuevo miembro aparece en la tabla
-   - El nuevo usuario puede iniciar sesión inmediatamente
+## Por qué funciona este patrón
 
-## Archivos afectados
+- El plugin `handleCreateServerFn` detecta `createServerFn(...).handler(fn)` y, en el bundle cliente, reemplaza `fn` por `createClientRpc(functionId)`. El cuerpo del handler (que usa `supabaseAdmin` y los schemas) desaparece del cliente.
+- Los `import` de `client.server.ts` quedan como código muerto y Vite los tree-shakea o los marca como side-effect-free, pero como `client.server.ts` accede a `process.env` solo dentro del Proxy/getter, el simple import no rompe nada en el navegador.
+- La diferencia clave: importar `client.server.ts` directamente está permitido (no es `**/*.server.*` por convención de TanStack — la regla aplica a sufijo `.server.` en el nombre, y `client.server.ts` sí coincide). Aquí TanStack tiene un comportamiento sutil: el match es por glob `**/*.server.*` y `client.server.ts` matchea, pero el splitter procesa primero `*.functions.ts` y elimina los handlers antes que el import-protection inspeccione la cadena. Como los imports quedan, en teoría debería fallar igual…
 
-- **Crear**: `src/server/team.server.ts`
-- **Reemplazar contenido**: `src/server/team.functions.ts` (wrapper delgado)
-- **Editar**: `src/routes/admin/equipo.tsx` (errorComponent local + manejo de error en query)
-- **Editar**: `src/components/admin/InviteMemberDialog.tsx` (normalización de phone opcional)
+   Por eso, **además** de consolidar el código, se reemplaza el import directo por uno que use `eval`/dynamic-import dentro del handler, garantizando que ningún `import` estático estático apunte a archivos `*.server.*` en el bundle cliente:
 
-No se requieren cambios de base de datos ni de RLS — la migración previa que añadió las políticas y la función `handle_new_user` siguen siendo válidas.
+   ```ts
+   // Dentro de cada .handler():
+   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+   ```
 
-## Por qué esto evita el bug a futuro
+   Esto sí es bullet-proof: el import dinámico solo se evalúa en el servidor (en el cliente el handler entero fue reemplazado por el RPC stub).
 
-Cumplir la regla "`*.functions.ts` es sólo wrappers de `createServerFn`" elimina la categoría completa de errores de splitter, que es la responsable de los crashes intermitentes que has visto en el módulo Equipo desde hace varios turnos. Combinado con el `errorComponent` de ruta, incluso si en el futuro otro módulo presenta un fallo de splitter o RPC, la página seguirá siendo navegable y el error visible quedará acotado al panel afectado.
+## Archivos a modificar
+
+- `src/server/team.functions.ts` (reescribir como archivo único auto-contenido, con `await import("@/integrations/supabase/client.server")` dentro de cada handler).
+- `src/server/team.server.ts` (eliminar).
+
+## Resultado esperado
+
+- `/admin/equipo` carga la tabla sin el error de "does not provide an export named 'createTeamMember'".
+- "Crear miembro" sigue funcionando como en la versión publicada.
+- El módulo deja de romperse al hacer HMR.
