@@ -256,7 +256,9 @@ function HomePage() {
         </div>
 
         {/* Vistas recientes */}
-        <RecentViews />
+        <ClientOnly>
+          <RecentViews />
+        </ClientOnly>
       </section>
 
       {/* CONFIANZA */}
