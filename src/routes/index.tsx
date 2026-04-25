@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, queryOptions } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   ArrowRight,
@@ -28,6 +28,7 @@ import { RecentViews } from "../components/public/RecentViews";
 import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
+import heroBogota from "@/assets/hero-bogota.jpg";
 
 const PROPERTY_TYPES = [
   "apartamento",
@@ -49,6 +50,42 @@ const CITIES = [
   "Manizales",
 ] as const;
 
+// Query options compartidos para que el loader y el componente compartan caché
+const featuredQueryOptions = queryOptions({
+  queryKey: ["properties", "featured"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("properties")
+      .select(
+        "id, slug, title, type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured",
+      )
+      .eq("is_featured", true)
+      .eq("status", "disponible")
+      .order("created_at", { ascending: false })
+      .limit(6);
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 5 * 60_000,
+});
+
+const recentSixQueryOptions = queryOptions({
+  queryKey: ["properties", "recent-6"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("properties")
+      .select(
+        "id, slug, title, type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured",
+      )
+      .eq("status", "disponible")
+      .order("created_at", { ascending: false })
+      .limit(6);
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 5 * 60_000,
+});
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -64,8 +101,19 @@ export const Route = createFileRoute("/")({
         content: "Venta y arriendo de inmuebles premium en Bogotá y Colombia.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: heroBogota },
+      { name: "twitter:image", content: heroBogota },
     ],
   }),
+  loader: async ({ context }) => {
+    // Pre-cargar destacadas (no bloqueante visualmente, pero llena la caché para SSR/hidratación)
+    const featured = await context.queryClient.ensureQueryData(featuredQueryOptions);
+    if (!featured || featured.length === 0) {
+      // Si no hay destacadas, también precarga las recientes
+      context.queryClient.prefetchQuery(recentSixQueryOptions);
+    }
+    return null;
+  },
   component: HomePage,
 });
 
@@ -90,38 +138,11 @@ function HomePage() {
   }
 
   // Destacadas
-  const { data: featured, isLoading: loadingFeatured } = useQuery({
-    queryKey: ["properties", "featured"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("properties")
-        .select(
-          "id, slug, title, type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured",
-        )
-        .eq("is_featured", true)
-        .eq("status", "disponible")
-        .order("created_at", { ascending: false })
-        .limit(6);
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { data: featured, isLoading: loadingFeatured } = useQuery(featuredQueryOptions);
 
   // Fallback: si no hay destacadas → 6 más recientes
   const { data: fallbackRecent } = useQuery({
-    queryKey: ["properties", "recent-6"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("properties")
-        .select(
-          "id, slug, title, type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured",
-        )
-        .eq("status", "disponible")
-        .order("created_at", { ascending: false })
-        .limit(6);
-      if (error) throw error;
-      return data;
-    },
+    ...recentSixQueryOptions,
     enabled: featured !== undefined && featured.length === 0,
   });
 
@@ -131,10 +152,17 @@ function HomePage() {
   return (
     <PublicLayout>
       {/* HERO */}
-      <section className="relative isolate overflow-hidden bg-gradient-to-b from-background via-background to-secondary/40">
+      <section className="relative isolate overflow-hidden">
+        {/* Imagen de fondo */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background"
+          className="pointer-events-none absolute inset-0 -z-20 bg-cover bg-center"
+          style={{ backgroundImage: `url(${heroBogota})` }}
+        />
+        {/* Capa blanca para preservar contraste */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/85 via-background/80 to-background"
         />
         <div className="mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 lg:px-8 lg:pt-28">
           <div className="mx-auto max-w-3xl text-center">
