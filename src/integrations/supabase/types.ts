@@ -14,16 +14,204 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agents: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          notes: string | null
+          phone: string | null
+          property_id: string | null
+          source: string
+          status: Database["public"]["Enums"]["lead_status"]
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          property_id?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          property_id?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      properties: {
+        Row: {
+          address: string | null
+          amenities: string[]
+          area_m2: number
+          bathrooms: number
+          bedrooms: number
+          city: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          images: string[]
+          is_featured: boolean
+          neighborhood: string | null
+          price: number
+          property_type: Database["public"]["Enums"]["property_type"]
+          slug: string
+          status: Database["public"]["Enums"]["property_status"]
+          title: string
+          type: Database["public"]["Enums"]["listing_type"]
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[]
+          area_m2: number
+          bathrooms?: number
+          bedrooms?: number
+          city?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          images?: string[]
+          is_featured?: boolean
+          neighborhood?: string | null
+          price: number
+          property_type: Database["public"]["Enums"]["property_type"]
+          slug: string
+          status?: Database["public"]["Enums"]["property_status"]
+          title: string
+          type: Database["public"]["Enums"]["listing_type"]
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[]
+          area_m2?: number
+          bathrooms?: number
+          bedrooms?: number
+          city?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          images?: string[]
+          is_featured?: boolean
+          neighborhood?: string | null
+          price?: number
+          property_type?: Database["public"]["Enums"]["property_type"]
+          slug?: string
+          status?: Database["public"]["Enums"]["property_status"]
+          title?: string
+          type?: Database["public"]["Enums"]["listing_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "agente"
+      lead_status:
+        | "nuevo"
+        | "contactado"
+        | "interesado"
+        | "cerrado"
+        | "descartado"
+      listing_type: "venta" | "arriendo"
+      property_status: "disponible" | "vendido" | "arrendado" | "reservado"
+      property_type:
+        | "apartamento"
+        | "casa"
+        | "local"
+        | "oficina"
+        | "lote"
+        | "bodega"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +338,25 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "agente"],
+      lead_status: [
+        "nuevo",
+        "contactado",
+        "interesado",
+        "cerrado",
+        "descartado",
+      ],
+      listing_type: ["venta", "arriendo"],
+      property_status: ["disponible", "vendido", "arrendado", "reservado"],
+      property_type: [
+        "apartamento",
+        "casa",
+        "local",
+        "oficina",
+        "lote",
+        "bodega",
+      ],
+    },
   },
 } as const
