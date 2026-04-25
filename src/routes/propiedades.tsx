@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, MapPin } from "lucide-react";
-import { PublicLayout } from "@/components/layout/PublicLayout";
+import { PublicLayout } from "../components/layout/PublicLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
