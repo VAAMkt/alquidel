@@ -29,7 +29,7 @@ const schema = z.object({
   email: z.string().email("Email inválido").max(320),
   password: z.string().min(8, "Mínimo 8 caracteres").max(72),
   fullName: z.string().trim().min(2, "Nombre mínimo 2 caracteres").max(120),
-  phone: z.string().trim().max(40).optional().or(z.literal("")),
+  phone: z.string().trim().max(40).optional(),
   role: z.enum(["admin", "agente"]),
 });
 
@@ -61,7 +61,13 @@ export function InviteMemberDialog() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const parsed = schema.safeParse({ email, password, fullName, phone, role });
+      const parsed = schema.safeParse({
+        email,
+        password,
+        fullName,
+        phone: phone.trim() ? phone.trim() : undefined,
+        role,
+      });
       if (!parsed.success) {
         const errs: Record<string, string> = {};
         parsed.error.issues.forEach((i) => { errs[i.path[0] as string] = i.message; });
