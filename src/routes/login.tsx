@@ -10,7 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>) => {
     const r = typeof search.redirect === "string" ? search.redirect : undefined;
-    return r ? { redirect: r } : {};
+    // Solo aceptar paths internos (no URLs absolutas) para evitar open-redirects
+    const safe = r && r.startsWith("/") && !r.startsWith("//") ? r : undefined;
+    return safe ? { redirect: safe } : {};
   },
   beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
@@ -47,7 +49,7 @@ function LoginPage() {
     }
   }, []);
 
-  // Navegar cuando la sesión esté realmente persistida
+  // Respaldo: si por alguna razón el submit no navega, el listener lo hace
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
@@ -77,13 +79,26 @@ function LoginPage() {
         return;
       }
       setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword(parsed.data);
+      const { data: signInData, error } = await supabase.auth.signInWithPassword(parsed.data);
       if (error) {
-        toast.error(error.message || "Credenciales incorrectas");
+        const msg = error.message?.toLowerCase() ?? "";
+        if (msg.includes("invalid login")) {
+          toast.error("Email o contraseña incorrectos");
+        } else if (msg.includes("email not confirmed")) {
+          toast.error("Verifica tu correo antes de ingresar");
+        } else {
+          toast.error(error.message || "No se pudo iniciar sesión");
+        }
+        return;
+      }
+      if (!signInData.session) {
+        toast.error("No se pudo crear la sesión. Intenta de nuevo.");
         return;
       }
       toast.success("Bienvenido");
-      // La navegación ocurre en el listener de onAuthStateChange
+      // Navegar de inmediato (no esperar al listener)
+      const target = search.redirect ?? "/admin/dashboard";
+      navigate({ to: target, replace: true });
     } catch (err) {
       console.error("[login] submit error", err);
       toast.error("Ocurrió un error al iniciar sesión");

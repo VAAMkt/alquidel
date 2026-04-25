@@ -12,14 +12,14 @@ export const Route = createFileRoute("/admin")({
       if (!data.session) {
         throw redirect({
           to: "/login",
-          search: { redirect: location.href },
+          search: { redirect: location.pathname },
         });
       }
     } catch (err) {
       // Re-lanzar redirects de TanStack Router intactos
       if (err && typeof err === "object" && "isRedirect" in (err as any)) throw err;
       // En caso de fallo inesperado al consultar la sesión, redirigir a login
-      throw redirect({ to: "/login", search: { redirect: location.href } });
+      throw redirect({ to: "/login", search: { redirect: location.pathname } });
     }
   },
   component: AdminLayout,

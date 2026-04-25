@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { useFavorites } from "@/contexts/FavoritesContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const NAV = [
   { to: "/propiedades", label: "Propiedades" },
@@ -13,6 +14,7 @@ const NAV = [
 
 export function PublicNavbar() {
   const { count: favCount } = useFavorites();
+  const { session } = useAuth();
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -49,12 +51,22 @@ export function PublicNavbar() {
               </span>
             </Link>
           )}
-          <Link
-            to="/login"
-            className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
-          >
-            Acceder
-          </Link>
+          {session ? (
+            <Link
+              to="/admin/dashboard"
+              className="hidden items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground sm:inline-flex"
+            >
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              Ir al panel
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+            >
+              Acceder
+            </Link>
+          )}
           <Button
             asChild
             size="sm"
