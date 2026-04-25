@@ -87,7 +87,7 @@ const DEFAULTS = {
   page: 1,
 };
 
-export const Route = createFileRoute("/propiedades")({
+export const Route = createFileRoute("/propiedades/")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
