@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/sheet";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PropertyCard } from "@/components/public/PropertyCard";
+import { AlertsModal } from "@/components/public/AlertsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCOP } from "@/lib/format";
 
@@ -462,6 +463,19 @@ function PropiedadesPage() {
                 </div>
               </div>
             )}
+
+            {/* CTA alertas */}
+            <div className="mt-12 rounded-2xl border border-border bg-secondary/40 p-8 text-center sm:p-10">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                ¿No encontraste lo que buscas?
+              </h2>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+                Regístrate y te avisamos cuando publiquemos algo nuevo que coincida con tus criterios.
+              </p>
+              <div className="mt-5 flex justify-center">
+                <AlertsModal />
+              </div>
+            </div>
           </div>
         </div>
       </section>

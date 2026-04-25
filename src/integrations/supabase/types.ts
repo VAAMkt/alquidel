@@ -214,6 +214,33 @@ export type Database = {
         }
         Relationships: []
       }
+      property_alerts: {
+        Row: {
+          city: string | null
+          created_at: string
+          email: string
+          id: string
+          max_price: number | null
+          type: Database["public"]["Enums"]["listing_type"] | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          max_price?: number | null
+          type?: Database["public"]["Enums"]["listing_type"] | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          max_price?: number | null
+          type?: Database["public"]["Enums"]["listing_type"] | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -13,7 +13,9 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PropiedadesRouteImport } from './routes/propiedades'
 import { Route as NosotrosRouteImport } from './routes/nosotros'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as ContactoRouteImport } from './routes/contacto'
+import { Route as CompararRouteImport } from './routes/comparar'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -28,6 +30,7 @@ import { Route as AdminPropiedadesNuevaRouteImport } from './routes/admin/propie
 import { Route as AdminLeadsIdRouteImport } from './routes/admin/leads.$id'
 import { Route as AdminBlogNuevoRouteImport } from './routes/admin/blog.nuevo'
 import { Route as AdminPropiedadesIdEditarRouteImport } from './routes/admin/propiedades.$id.editar'
+import { Route as AdminBlogIdEditarRouteImport } from './routes/admin/blog.$id.editar'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -49,9 +52,19 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactoRoute = ContactoRouteImport.update({
   id: '/contacto',
   path: '/contacto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompararRoute = CompararRouteImport.update({
+  id: '/comparar',
+  path: '/comparar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRoute = BlogRouteImport.update({
@@ -125,12 +138,19 @@ const AdminPropiedadesIdEditarRoute =
     path: '/$id/editar',
     getParentRoute: () => AdminPropiedadesRoute,
   } as any)
+const AdminBlogIdEditarRoute = AdminBlogIdEditarRouteImport.update({
+  id: '/$id/editar',
+  path: '/$id/editar',
+  getParentRoute: () => AdminBlogRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/comparar': typeof CompararRoute
   '/contacto': typeof ContactoRoute
+  '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
@@ -145,13 +165,16 @@ export interface FileRoutesByFullPath {
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/blog/$id/editar': typeof AdminBlogIdEditarRoute
   '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/comparar': typeof CompararRoute
   '/contacto': typeof ContactoRoute
+  '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
@@ -166,6 +189,7 @@ export interface FileRoutesByTo {
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/blog/$id/editar': typeof AdminBlogIdEditarRoute
   '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
 export interface FileRoutesById {
@@ -173,7 +197,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/comparar': typeof CompararRoute
   '/contacto': typeof ContactoRoute
+  '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
   '/propiedades': typeof PropiedadesRouteWithChildren
@@ -188,6 +214,7 @@ export interface FileRoutesById {
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
+  '/admin/blog/$id/editar': typeof AdminBlogIdEditarRoute
   '/admin/propiedades/$id/editar': typeof AdminPropiedadesIdEditarRoute
 }
 export interface FileRouteTypes {
@@ -196,7 +223,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/blog'
+    | '/comparar'
     | '/contacto'
+    | '/favoritos'
     | '/login'
     | '/nosotros'
     | '/propiedades'
@@ -211,13 +240,16 @@ export interface FileRouteTypes {
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
+    | '/admin/blog/$id/editar'
     | '/admin/propiedades/$id/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/blog'
+    | '/comparar'
     | '/contacto'
+    | '/favoritos'
     | '/login'
     | '/nosotros'
     | '/propiedades'
@@ -232,13 +264,16 @@ export interface FileRouteTypes {
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
+    | '/admin/blog/$id/editar'
     | '/admin/propiedades/$id/editar'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/blog'
+    | '/comparar'
     | '/contacto'
+    | '/favoritos'
     | '/login'
     | '/nosotros'
     | '/propiedades'
@@ -253,6 +288,7 @@ export interface FileRouteTypes {
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
+    | '/admin/blog/$id/editar'
     | '/admin/propiedades/$id/editar'
   fileRoutesById: FileRoutesById
 }
@@ -260,7 +296,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
+  CompararRoute: typeof CompararRoute
   ContactoRoute: typeof ContactoRoute
+  FavoritosRoute: typeof FavoritosRoute
   LoginRoute: typeof LoginRoute
   NosotrosRoute: typeof NosotrosRoute
   PropiedadesRoute: typeof PropiedadesRouteWithChildren
@@ -297,11 +335,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contacto': {
       id: '/contacto'
       path: '/contacto'
       fullPath: '/contacto'
       preLoaderRoute: typeof ContactoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comparar': {
+      id: '/comparar'
+      path: '/comparar'
+      fullPath: '/comparar'
+      preLoaderRoute: typeof CompararRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog': {
@@ -402,15 +454,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPropiedadesIdEditarRouteImport
       parentRoute: typeof AdminPropiedadesRoute
     }
+    '/admin/blog/$id/editar': {
+      id: '/admin/blog/$id/editar'
+      path: '/$id/editar'
+      fullPath: '/admin/blog/$id/editar'
+      preLoaderRoute: typeof AdminBlogIdEditarRouteImport
+      parentRoute: typeof AdminBlogRoute
+    }
   }
 }
 
 interface AdminBlogRouteChildren {
   AdminBlogNuevoRoute: typeof AdminBlogNuevoRoute
+  AdminBlogIdEditarRoute: typeof AdminBlogIdEditarRoute
 }
 
 const AdminBlogRouteChildren: AdminBlogRouteChildren = {
   AdminBlogNuevoRoute: AdminBlogNuevoRoute,
+  AdminBlogIdEditarRoute: AdminBlogIdEditarRoute,
 }
 
 const AdminBlogRouteWithChildren = AdminBlogRoute._addFileChildren(
@@ -486,7 +547,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
+  CompararRoute: CompararRoute,
   ContactoRoute: ContactoRoute,
+  FavoritosRoute: FavoritosRoute,
   LoginRoute: LoginRoute,
   NosotrosRoute: NosotrosRoute,
   PropiedadesRoute: PropiedadesRouteWithChildren,

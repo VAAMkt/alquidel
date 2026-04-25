@@ -9,6 +9,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import { CompareProvider } from "@/contexts/CompareContext";
 
 import appCss from "../styles.css?url";
 
@@ -99,8 +101,12 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster richColors position="top-right" />
+      <FavoritesProvider>
+        <CompareProvider>
+          <Outlet />
+          <Toaster richColors position="top-right" />
+        </CompareProvider>
+      </FavoritesProvider>
     </QueryClientProvider>
   );
 }

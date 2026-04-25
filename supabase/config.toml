@@ -2,3 +2,6 @@ project_id = "umwlfeqcvlbxjffbrkcv"
 
 [functions.create-post]
 verify_jwt = false
+
+[functions.chat-alquidel]
+verify_jwt = false
