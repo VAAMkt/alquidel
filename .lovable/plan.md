@@ -1,115 +1,72 @@
-## Deuda técnica ALQUIDEL — limpieza integral
+# Plan: Property Detail — añadir "Propiedades similares" y verificar clickabilidad
 
-Se ejecutarán cinco grupos de cambios para eliminar estado fantasma, mejorar tipado, accesibilidad y manejo de precios en cero/null.
+## Diagnóstico
 
----
+Antes de tocar código, esto es lo que verifiqué leyendo el proyecto:
 
-### 1. Favoritos — purga de IDs huérfanos
+### 1. Las property cards SÍ son clickeables (ya implementado)
 
-**`src/contexts/FavoritesContext.tsx`**
-- Añadir método `removeOrphanIds(orphanIds: string[])` al contexto que filtra `ids` y persiste el resultado a `localStorage` en un solo paso (sin esperar el efecto de persistencia).
-- Exponerlo en `FavoritesContextValue`.
+`src/components/public/PropertyCard.tsx` ya envuelve toda la card en un `<Link to="/propiedades/$slug" params={{ slug: p.slug }}>` (líneas 48–53), con `e.preventDefault()` + `e.stopPropagation()` en los botones de favoritos y comparar (helper `stop()` líneas 42–45, usado en líneas 91 y 104). El hover effect está aplicado en la `Card` interna.
 
-**`src/routes/favoritos.tsx`**
-- Después de cargar las propiedades por IDs, comparar `ids` (los guardados) con `data.map(p => p.id)` (los que existen en DB).
-- Si hay huérfanos, llamar `removeOrphanIds(orphanIds)` dentro de un `useEffect` para evitar setState durante el render.
+El session replay del usuario confirma que la navegación funciona: navegó de `/propiedades/casa-campestre-rustica-chia` a `/propiedades/casa-campestre-norte-bogota` haciendo clic en una card.
 
----
+**Causa real del síntoma reportado**: hay un runtime error `Failed to fetch dynamically imported module: virtual:tanstack-start-client-entry`. Es un fallo de carga del cliente TanStack (HMR/módulo stale), no un bug de código. Se resuelve solo con un rebuild — no requiere cambios en PropertyCard.
 
-### 2. Comparador — persistencia en localStorage
+### 2. La ruta de detalle existe y está completa
 
-**`src/contexts/CompareContext.tsx`**
-- Hidratar `items` desde `localStorage` con la key `'alquidel-compare'` al inicializar (patrón idéntico al de Favoritos: estado `hydrated`, hidratación en `useEffect`).
-- Persistir el array completo de `PropertyCardData` (no solo IDs) en cada cambio para no perder los datos visuales tras refresh.
-- Mantener la purga existente contra Supabase (verifica IDs válidos al montar).
+`src/routes/propiedades.$slug.tsx` (612 líneas) ya tiene **todo** lo que pide la spec:
+- `createFileRoute("/propiedades/$slug")` con loader que llama `fetchPropertyBySlug`
+- Breadcrumbs (Inicio › Propiedades › título) usando `<Breadcrumbs />`
+- Galería con miniaturas clickeables y placeholder `Building2`
+- Header con badges (venta/arriendo, estado, tipo), título, precio con `displayPrice()`
+- Chips: área, habitaciones, baños, ciudad
+- Descripción, amenidades con ícono `Check`
+- Box de ubicación
+- Calculadora hipotecaria en accordion colapsable
+- Aside sticky derecha: formulario de contacto que hace `INSERT` en `leads` (source `formulario`, status `nuevo`, `property_id`), botón verde de WhatsApp con `MessageCircle`, card de contacto Alquidel
+- FAB móvil de WhatsApp (`fixed`, `lg:hidden`, z-30)
+- Toast de éxito y reset del formulario
+- Meta tags + JSON-LD `RealEstateListing` + canonical
+- `errorComponent` y `notFoundComponent`
 
-**`src/routes/comparar.tsx`**
-- La tabla ya tiene `overflow-x-auto` con `min-w-[640px]` — verificado, no requiere cambios adicionales.
-- Reemplazar `formatCOP(Number(p.price))` por `displayPrice(p.price)` (ver punto 5).
+### 3. Slugs en la base de datos están OK
 
----
+Query a `properties LIMIT 10` devolvió las 8 propiedades, todas con `slug` válido (kebab-case, sin nulls ni vacíos). **No se requiere migración de slugs.**
 
-### 3. Eliminar `as any` en rutas admin críticas
+## Único gap real detectado
 
-Aprovechar el tipo `Database` ya generado en `src/integrations/supabase/types.ts`.
+La sección **"Propiedades similares"** descrita en la spec (punto 6) **no existe** en `propiedades.$slug.tsx`. Esta es la única funcionalidad faltante.
 
-**Archivos afectados:**
-- `src/routes/admin/leads.index.tsx` (línea 294)
-- `src/routes/admin/leads.$id.tsx` (línea 150)
-- `src/routes/admin/dashboard.tsx` (línea 163)
+## Cambios a implementar
 
-**Estrategia:** Como el join `properties:property_id(...)` no es inferido perfectamente por el cliente generado, definir tipos locales explícitos en lugar de `any`:
+### Editar `src/routes/propiedades.$slug.tsx`
 
-```ts
-type LeadRow = Database['public']['Tables']['leads']['Row'];
-type LeadWithProperty = LeadRow & {
-  properties: { id: string; slug: string; title: string; /* etc */ } | null;
-};
-```
+1. **Extender el loader** para traer hasta 3 propiedades similares en paralelo a la propiedad principal:
+   - Filtros: `city = property.city`, `type = property.type`, `id != property.id`
+   - Solo columnas necesarias para `PropertyCardData` (id, slug, title, type, price, area_m2, bedrooms, bathrooms, city, neighborhood, images, is_featured, created_at)
+   - `.limit(3)` ordenado por `created_at desc`
+   - Devolver `{ property, similar }` desde el loader
 
-Tipar explícitamente el resultado del query y eliminar el cast `(lead as any).properties`.
+2. **Renderizar la sección** justo antes del FAB móvil (después del cierre de `</div>` de `max-w-7xl`):
+   - Título `<h2>` "Propiedades similares"
+   - Grid `sm:grid-cols-2 lg:grid-cols-3` con `<PropertyCard p={...} />` para cada item
+   - Si `similar.length === 0`, no renderizar la sección
+   - Importar `PropertyCard` desde `@/components/public/PropertyCard`
 
----
+### Ajuste menor en `src/components/public/PropertyCard.tsx` (opcional)
 
-### 4. Accesibilidad en formularios
+Alinear el hover con el spec: cambiar `hover:-translate-y-0.5 hover:shadow-xl` por `hover:-translate-y-1 hover:shadow-md transition-all duration-200`. Es cosmético — la actual versión ya funciona, pero la spec lo pide explícito.
 
-**`src/routes/login.tsx`**
-- Como usa `FormData` sin estado de errores por campo, mantener semántica básica: añadir `aria-required="true"` y `autoComplete` (ya existe).
-- Los toasts ya comunican errores; no se introducirán refs a elementos inexistentes.
+## Lo que NO se va a hacer (y por qué)
 
-**`src/routes/contacto.tsx`**
-- Asociar mensajes con inputs vía `aria-describedby` y `aria-invalid`:
-  ```tsx
-  <Input id="email" aria-describedby={errors.email ? "email-error" : undefined}
-         aria-invalid={!!errors.email} />
-  {errors.email && <p id="email-error" ...>{errors.email}</p>}
-  ```
-- Aplicar el mismo patrón a `name`, `email`, `phone`, `message`.
+- **No se reescribe PropertyCard**: ya está correcto. Re-envolverlo o reestructurarlo introduciría regresiones.
+- **No se crea/recrea `propiedades.$slug.tsx`**: ya tiene todas las secciones de la spec excepto las similares.
+- **No se ejecuta migración de slugs**: todas las propiedades en DB tienen slug válido.
+- **No se "arregla" el runtime error de `virtual:tanstack-start-client-entry`**: se resuelve solo al rebuild tras los cambios. Si persistiera, sería un issue de plataforma, no de código de la app.
 
-**`src/components/public/ChatWidget.tsx`**
-- Botones icon-only (`X`, `Send`, botón flotante) ya tienen `aria-label` — verificado.
-- Tab y Escape ya funcionan: el panel tiene `role="dialog"` y el listener de Escape ya cierra. Verificado, no requiere cambios.
+## Resultado esperado
 
-**Formularios admin (NewLeadDialog y similares):** revisión rápida para añadir `aria-invalid`/`aria-describedby` donde haya estado de errores por campo.
-
----
-
-### 5. Helper `displayPrice` para precio cero/null
-
-**`src/lib/format.ts`**
-- Añadir export:
-  ```ts
-  export function displayPrice(price: number | string | null | undefined): string {
-    if (price === null || price === undefined || price === 0 || price === "0") {
-      return "Precio a consultar";
-    }
-    return formatCOP(price);
-  }
-  ```
-  (`formatCOP` ya devuelve "Precio a consultar" para `n <= 0`, pero el helper deja explícita la intención y maneja `null`/`undefined` sin pasar por la conversión a 0.)
-
-**Reemplazar `formatCOP(price)` por `displayPrice(price)` en:**
-- `src/components/public/PropertyCard.tsx` (línea 119)
-- `src/routes/comparar.tsx` (línea 119)
-- `src/routes/propiedades.$slug.tsx` (línea 354 — precio principal de la ficha; las líneas 492/496 son cálculos de cuota hipotecaria, se mantienen con `formatCOP`)
-- `src/routes/admin/propiedades.index.tsx` (línea 273)
-- `src/routes/admin/alertas.tsx` (línea 209)
-- `src/components/admin/PropertyForm.tsx` (línea 346 — preview en formulario, se mantiene `formatCOP` ya que el admin necesita ver el valor literal incluso si es 0 mientras edita)
-
-`src/routes/propiedades.tsx` línea 274 muestra `precioMax` del filtro (no de una propiedad), se deja con `formatCOP`.
-
----
-
-### Resultado esperado
-
-- Favoritos sincroniza con DB: nunca quedan IDs fantasma tras eliminar propiedades.
-- Comparador sobrevive refresh y limpia silenciosamente IDs inválidos.
-- Cero `as any` en las 3 rutas admin críticas; tipos derivados de `Database`.
-- Formularios públicos accesibles por lectores de pantalla.
-- Ningún precio muestra "$0" en el sitio público.
-
-### Detalles técnicos
-
-- No requiere migraciones de DB ni cambios en edge functions.
-- No requiere paquetes nuevos.
-- Verificación con `tsc --noEmit` al finalizar.
+- Las cards siguen siendo clickeables (ya lo eran).
+- La página de detalle muestra una sección "Propiedades similares" con hasta 3 propiedades de la misma ciudad y mismo tipo de operación.
+- Si no hay similares disponibles, la sección se oculta completamente.
+- Cero impacto en formulario de leads, calculadora, breadcrumbs y FAB de WhatsApp (ya funcionaban).

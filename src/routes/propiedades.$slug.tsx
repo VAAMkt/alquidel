@@ -46,6 +46,7 @@ import {
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Breadcrumbs } from "@/components/public/Breadcrumbs";
 import { PropertyImagePlaceholder } from "@/components/public/PropertyImagePlaceholder";
+import { PropertyCard, type PropertyCardData } from "@/components/public/PropertyCard";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCOP, formatArea, displayPrice } from "@/lib/format";
 import { COMPANY } from "@/lib/company";
@@ -63,11 +64,38 @@ async function fetchPropertyBySlug(slug: string) {
   return data;
 }
 
+async function fetchSimilarProperties(opts: {
+  city: string;
+  type: "venta" | "arriendo";
+  excludeId: string;
+}): Promise<PropertyCardData[]> {
+  const { data, error } = await supabase
+    .from("properties")
+    .select(
+      "id, slug, title, type, price, area_m2, bedrooms, bathrooms, city, neighborhood, images, is_featured, created_at",
+    )
+    .eq("city", opts.city)
+    .eq("type", opts.type)
+    .neq("id", opts.excludeId)
+    .order("created_at", { ascending: false })
+    .limit(3);
+  if (error) {
+    console.error("[propiedad] Error cargando similares:", error);
+    return [];
+  }
+  return (data ?? []) as PropertyCardData[];
+}
+
 export const Route = createFileRoute("/propiedades/$slug")({
   loader: async ({ params }) => {
     const property = await fetchPropertyBySlug(params.slug);
     if (!property) throw notFound();
-    return { property };
+    const similar = await fetchSimilarProperties({
+      city: property.city,
+      type: property.type as "venta" | "arriendo",
+      excludeId: property.id,
+    });
+    return { property, similar };
   },
   head: ({ loaderData }) => {
     if (!loaderData?.property) return { meta: [{ title: "Propiedad | Alquidel" }] };
@@ -170,7 +198,7 @@ const statusBadge: Record<string, string> = {
 };
 
 function PropertyDetail() {
-  const { property: p } = Route.useLoaderData();
+  const { property: p, similar } = Route.useLoaderData();
   const router = useRouter();
   const [activeImg, setActiveImg] = useState(0);
   const { push: pushRecent } = useRecentViews();
@@ -595,6 +623,23 @@ function PropertyDetail() {
             </div>
           </aside>
         </div>
+
+        {/* Propiedades similares */}
+        {similar.length > 0 && (
+          <section className="mt-16">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+              Propiedades similares
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Otras opciones en {p.city} para {p.type === "venta" ? "compra" : "arriendo"}.
+            </p>
+            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {similar.map((s) => (
+                <PropertyCard key={s.id} p={s} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* FAB móvil WhatsApp */}
