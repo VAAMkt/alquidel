@@ -7,8 +7,13 @@ import {
   type Post,
 } from "@/lib/posts";
 
+type PostCardData = Pick<
+  Post,
+  "slug" | "cover_image" | "title" | "category" | "excerpt" | "published_at" | "author"
+>;
+
 interface Props {
-  post: Post;
+  post: PostCardData;
 }
 
 export function PostCard({ post }: Props) {
