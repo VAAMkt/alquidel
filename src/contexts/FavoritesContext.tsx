@@ -15,6 +15,7 @@ interface FavoritesContextValue {
   isFavorite: (id: string) => boolean;
   toggle: (id: string) => void;
   clear: () => void;
+  removeOrphanIds: (orphanIds: string[]) => void;
 }
 
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
@@ -59,9 +60,24 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 
   const clear = useCallback(() => setIds([]), []);
 
+  // Elimina IDs que ya no existen en DB y persiste el resultado
+  // a localStorage en el mismo paso para evitar re-render fantasma.
+  const removeOrphanIds = useCallback((orphanIds: string[]) => {
+    if (orphanIds.length === 0) return;
+    setIds((prev) => {
+      const next = prev.filter((id) => !orphanIds.includes(id));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
   const value = useMemo(
-    () => ({ ids, count: ids.length, isFavorite, toggle, clear }),
-    [ids, isFavorite, toggle, clear],
+    () => ({ ids, count: ids.length, isFavorite, toggle, clear, removeOrphanIds }),
+    [ids, isFavorite, toggle, clear, removeOrphanIds],
   );
 
   return (

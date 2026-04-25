@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { useCompare } from "@/contexts/CompareContext";
-import { formatCOP, formatArea } from "@/lib/format";
+import { displayPrice, formatArea } from "@/lib/format";
 
 export const Route = createFileRoute("/comparar")({
   head: () => ({
@@ -116,7 +116,7 @@ function CompararPage() {
                   <Row label="Precio">
                     {items.map((p) => (
                       <td key={p.id} className="border-b border-border px-3 py-3 align-top text-sm font-semibold text-foreground">
-                        {formatCOP(Number(p.price))}
+                        {displayPrice(p.price)}
                       </td>
                     ))}
                   </Row>

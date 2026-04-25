@@ -131,11 +131,27 @@ function LoginPage() {
         >
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required className="mt-1.5" autoComplete="email" />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              required
+              aria-required="true"
+              className="mt-1.5"
+              autoComplete="email"
+            />
           </div>
           <div>
             <Label htmlFor="password">Contraseña</Label>
-            <Input id="password" name="password" type="password" required className="mt-1.5" autoComplete="current-password" />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              required
+              aria-required="true"
+              className="mt-1.5"
+              autoComplete="current-password"
+            />
           </div>
           <Button type="submit" disabled={loading} className="w-full rounded-lg" size="lg">
             {loading ? "Ingresando…" : "Ingresar"}

@@ -36,6 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import {
   LEAD_SOURCES,
   LEAD_STATUSES,
@@ -49,6 +50,11 @@ import {
 import { NewLeadDialog } from "@/components/admin/NewLeadDialog";
 
 const PAGE_SIZE = 20;
+
+type LeadRow = Database["public"]["Tables"]["leads"]["Row"];
+type LeadWithProperty = LeadRow & {
+  properties: { id: string; slug: string; title: string } | null;
+};
 
 const searchSchema = z.object({
   status: fallback(
@@ -291,9 +297,7 @@ function LeadsListPage() {
               </TableRow>
             ) : (
               data!.rows.map((lead) => {
-                const property = (lead as any).properties as
-                  | { slug: string; title: string }
-                  | null;
+                const property = (lead as LeadWithProperty).properties;
                 return (
                   <TableRow key={lead.id} className="cursor-pointer">
                     <TableCell>

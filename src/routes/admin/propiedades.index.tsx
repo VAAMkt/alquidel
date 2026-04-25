@@ -22,7 +22,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCOP } from "@/lib/format";
+import { displayPrice } from "@/lib/format";
 import type { Database } from "@/integrations/supabase/types";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
@@ -270,7 +270,7 @@ function PropiedadesAdmin() {
                       {p.type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-medium text-foreground">{formatCOP(Number(p.price))}</TableCell>
+                  <TableCell className="font-medium text-foreground">{displayPrice(p.price)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{p.city}</TableCell>
                   <TableCell>
                     <Select

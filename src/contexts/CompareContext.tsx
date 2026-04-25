@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { PropertyCardData } from "@/components/public/PropertyCard";
 
 const MAX = 3;
+const STORAGE_KEY = "alquidel-compare";
 
 interface CompareContextValue {
   items: PropertyCardData[];
@@ -26,10 +27,42 @@ const CompareContext = createContext<CompareContextValue | null>(null);
 
 export function CompareProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<PropertyCardData[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hidratar desde localStorage solo en cliente
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          // Validar shape mínimo de cada item
+          const valid = parsed.filter(
+            (x): x is PropertyCardData =>
+              !!x && typeof x === "object" && typeof x.id === "string",
+          );
+          setItems(valid.slice(0, MAX));
+        }
+      }
+    } catch {
+      // ignore
+    }
+    setHydrated(true);
+  }, []);
+
+  // Persistir cuando cambia
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      // ignore
+    }
+  }, [items, hydrated]);
 
   // Purgar IDs huérfanos (propiedades eliminadas en DB)
   useEffect(() => {
-    if (items.length === 0) return;
+    if (!hydrated || items.length === 0) return;
     let cancelled = false;
     (async () => {
       try {
@@ -47,9 +80,9 @@ export function CompareProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-    // Solo al montar — no en cada cambio
+    // Solo cuando hidrate — no en cada cambio
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hydrated]);
 
   const isInCompare = useCallback(
     (id: string) => items.some((p) => p.id === id),
