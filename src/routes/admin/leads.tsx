@@ -49,13 +49,13 @@ const searchSchema = z.object({
   status: fallback(
     z.enum(["todos", ...LEAD_STATUSES] as [string, ...string[]]),
     "todos",
-  ),
+  ).default("todos"),
   source: fallback(
     z.enum(["todas", ...LEAD_SOURCES] as [string, ...string[]]),
     "todas",
-  ),
-  q: fallback(z.string(), ""),
-  page: fallback(z.number().int().min(1), 1),
+  ).default("todas"),
+  q: fallback(z.string(), "").default(""),
+  page: fallback(z.number().int().min(1), 1).default(1),
 });
 
 export const Route = createFileRoute("/admin/leads")({
@@ -110,10 +110,10 @@ function LeadsListPage() {
         .range(from, to);
 
       if (search.status !== "todos") {
-        query = query.eq("status", search.status);
+        query = query.eq("status", search.status as LeadStatus);
       }
       if (search.source !== "todas") {
-        query = query.eq("source", search.source);
+        query = query.eq("source", search.source as LeadSource);
       }
       if (search.q.trim()) {
         const term = search.q.trim();
@@ -128,9 +128,13 @@ function LeadsListPage() {
 
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
 
-  const setSearch = (patch: Record<string, unknown>) =>
+  const setSearch = (patch: Record<string, any>) =>
     navigate({
-      search: (prev) => ({ ...prev, ...patch, page: patch.page ?? 1 }),
+      search: (prev) => ({
+        ...prev,
+        ...patch,
+        page: typeof patch.page === "number" ? patch.page : 1,
+      }),
     });
 
   const tabs = [
