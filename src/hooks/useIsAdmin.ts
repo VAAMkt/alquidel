@@ -12,12 +12,12 @@ import { useAuth } from "@/hooks/useAuth";
  * del módulo de server functions tumbase todo el panel.
  */
 export function useIsAdmin() {
-  const { session, loading: authLoading } = useAuth();
+  const { session, isAuthLoading } = useAuth();
   const userId = session?.user?.id;
 
   const query = useQuery({
     queryKey: ["auth", "is-admin", userId],
-    enabled: !authLoading && !!userId,
+    enabled: !isAuthLoading && !!userId,
     staleTime: 5 * 60_000,
     retry: false,
     queryFn: async () => {
@@ -28,17 +28,14 @@ export function useIsAdmin() {
         .eq("user_id", userId)
         .eq("role", "admin")
         .maybeSingle();
-      if (error) {
-        console.warn("[useIsAdmin] role lookup failed", error.message);
-        return false;
-      }
+      if (error) return false;
       return !!data;
     },
   });
 
   return {
     isAdmin: query.data === true,
-    isLoading: authLoading || query.isLoading,
+    isLoading: isAuthLoading || query.isLoading,
     isAuthenticated: !!userId,
   };
 }
