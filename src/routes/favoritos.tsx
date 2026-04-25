@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Building2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PublicLayout } from "@/components/layout/PublicLayout";
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/favoritos")({
 });
 
 function FavoritosPage() {
-  const { ids, count } = useFavorites();
+  const { ids, count, removeOrphanIds } = useFavorites();
 
   const { data, isLoading } = useQuery({
     queryKey: ["properties", "favorites", ids.slice().sort().join(",")],
@@ -37,6 +38,14 @@ function FavoritosPage() {
       return data;
     },
   });
+
+  // Purgar IDs huérfanos (propiedades eliminadas en DB)
+  useEffect(() => {
+    if (!data || ids.length === 0) return;
+    const loadedIds = data.map((p) => p.id);
+    const orphanIds = ids.filter((id) => !loadedIds.includes(id));
+    if (orphanIds.length > 0) removeOrphanIds(orphanIds);
+  }, [data, ids, removeOrphanIds]);
 
   return (
     <PublicLayout>
