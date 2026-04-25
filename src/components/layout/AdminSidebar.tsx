@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import {
   LayoutDashboard,
   Building2,
@@ -26,8 +25,7 @@ import {
 import { signOut } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { getAdminStatus } from "@/server/team.functions";
-import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const items = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, badgeKey: null },
@@ -41,24 +39,7 @@ const items = [
 export function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const adminCheckFn = useServerFn(getAdminStatus);
-  const { session, loading: authLoading } = useAuth();
-  const accessToken = session?.access_token;
-
-  const { data: meCheck } = useQuery({
-    queryKey: ["admin", "me-is-admin"],
-    queryFn: async () => {
-      if (!accessToken) return { isAdmin: false };
-      try {
-        return await adminCheckFn({ data: { accessToken } });
-      } catch {
-        return { isAdmin: false };
-      }
-    },
-    enabled: !authLoading && !!accessToken,
-    staleTime: 5 * 60_000,
-    retry: false,
-  });
+  const { isAdmin, isAuthenticated } = useIsAdmin();
 
   const { data: newLeadsCount } = useQuery({
     queryKey: ["admin", "leads", "new-count"],
@@ -69,6 +50,7 @@ export function AdminSidebar() {
         .eq("status", "nuevo");
       return count ?? 0;
     },
+    enabled: isAuthenticated,
     refetchInterval: 30_000,
   });
 
@@ -114,7 +96,7 @@ export function AdminSidebar() {
                   </SidebarMenuItem>
                 );
               })}
-              {meCheck?.isAdmin && (
+              {isAdmin && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild

@@ -30,12 +30,12 @@ import {
 import { InviteMemberDialog } from "@/components/admin/InviteMemberDialog";
 import {
   deleteTeamMember,
-  getAdminStatus,
   listTeam,
   setTeamMemberAdmin,
 } from "@/server/team.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export const Route = createFileRoute("/admin/equipo")({
   beforeLoad: async () => {
@@ -52,30 +52,16 @@ export const Route = createFileRoute("/admin/equipo")({
 function EquipoPage() {
   const qc = useQueryClient();
   const listFn = useServerFn(listTeam);
-  const adminCheckFn = useServerFn(getAdminStatus);
   const setAdminFn = useServerFn(setTeamMemberAdmin);
   const deleteFn = useServerFn(deleteTeamMember);
-  const { session, loading: authLoading } = useAuth();
+  const { session } = useAuth();
   const accessToken = session?.access_token;
-
-  const { data: meCheck, isLoading: checkingAdmin } = useQuery({
-    queryKey: ["admin", "me-is-admin"],
-    queryFn: async () => {
-      if (!accessToken) return { isAdmin: false };
-      try {
-        return await adminCheckFn({ data: { accessToken } });
-      } catch {
-        return { isAdmin: false };
-      }
-    },
-    enabled: !authLoading && !!accessToken,
-    retry: false,
-  });
+  const { isAdmin, isLoading: checkingAdmin } = useIsAdmin();
 
   const { data: team, isLoading } = useQuery({
     queryKey: ["admin", "team"],
     queryFn: () => listFn({ data: { accessToken: accessToken! } }),
-    enabled: !!accessToken && meCheck?.isAdmin === true,
+    enabled: !!accessToken && isAdmin,
   });
 
   const setAdmin = useMutation({
@@ -105,7 +91,7 @@ function EquipoPage() {
     );
   }
 
-  if (!meCheck?.isAdmin) {
+  if (!isAdmin) {
     return (
       <Card className="mx-auto max-w-md p-8 text-center">
         <Shield className="mx-auto h-10 w-10 text-muted-foreground" />

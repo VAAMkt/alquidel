@@ -19,6 +19,7 @@ import {
   type LeadStatus,
   type LeadSource,
 } from "@/lib/leads";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard · ALQUIDEL" }] }),
@@ -51,8 +52,12 @@ function StatCard({
 }
 
 function DashboardPage() {
+  const { session, loading: authLoading } = useAuth();
+  const isReady = !authLoading && !!session;
+
   const { data: stats } = useQuery({
     queryKey: ["admin", "dashboard-stats-v2"],
+    enabled: isReady,
     queryFn: async () => {
       const monthStart = new Date();
       monthStart.setDate(1);
@@ -75,6 +80,7 @@ function DashboardPage() {
 
   const { data: recentLeads } = useQuery({
     queryKey: ["admin", "dashboard-recent-leads"],
+    enabled: isReady,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")

@@ -1,125 +1,59 @@
-## Diagnóstico
+## Plan
 
-### 1. La web está muy lenta y los botones del admin "no hacen nada"
-La causa raíz NO es performance — es que el **SSR del Home está crasheando** por un import roto (`@/components/public/RecentViews`) que aún figuraba en el log del dev-server. Cuando el SSR falla, TanStack Router cae a *client-rendering* tras un timeout, lo que produce:
-- Sensación de lentitud al cambiar de pestaña / módulo (espera del fallback).
-- Botones que "no responden": las navegaciones a `/admin/propiedades/nueva` y `/admin/propiedades/$id/editar` arrancan pero el chunk del módulo destino tarda o falla.
-- Redirección al `/login` (estado actual del usuario) porque la sesión se pierde durante el crash.
+1. Stabilize the authentication bootstrap
+- Add a single auth-readiness layer so the app waits for session restoration before rendering protected admin content or firing protected queries.
+- Update the `/admin` layout to show a controlled loading state while auth is resolving, redirect unauthenticated users to `/login`, and stop rendering the admin shell prematurely.
+- Keep the login redirect flow consistent: unauthenticated `/admin` requests go to `/login?redirect=...`, and successful login lands on the requested admin page or `/admin/dashboard`.
 
-Las rutas en sí **están bien registradas** en `routeTree.gen.ts` (`/admin/propiedades/nueva` y `/admin/propiedades/$id/editar` existen).
+2. Remove the fragile admin-status dependency that is breaking the shell
+- Stop relying on `getAdminStatus` inside the sidebar/render path, since that transformed server-function export is the direct source of the current module crash.
+- Replace the sidebar and admin-role checks with a client-safe role query against the backend, gated by auth readiness and existing RLS.
+- Keep privileged team actions on the server, but isolate them so a broken admin-check import cannot take down the whole dashboard.
 
-### 2. Filtros de `/admin/propiedades` que "no funcionan solos"
-La query `useQuery(["admin","properties"])` trae **toda la tabla** y filtra en cliente con `useMemo`. El filtrado SÍ funciona, pero:
-- Con `staleTime: 60s` global + sin `refetchOnWindowFocus`, los cambios de filtro no recargan datos pero el `useMemo` debería aplicarse instantáneamente.
-- El problema percibido es el mismo del punto 1: el render se bloquea por el SSR caído.
+3. Harden route and module permissions
+- Apply a clear role model across admin routes:
+  - `/admin/*` requires authenticated staff
+  - `/admin/equipo` requires admin
+- Prevent dashboard and module queries from running until the user is authenticated and authorized.
+- For unauthorized users, show a controlled access-denied state or redirect instead of letting queries fail into the global error boundary.
 
-### 3. Leads: no hay forma de crearlos manualmente y no se explica el origen
-Hoy los leads se crean automáticamente desde:
-- Formulario público de contacto (`source: 'formulario'`)
-- Chatbot Alquibot (`source: 'chat'`)
-- Botón WhatsApp (`source: 'whatsapp'`)
+4. Make admin pages fail safely instead of blanking out
+- Add route-level error handling for the admin area so one bad query/import does not collapse the whole panel.
+- Guard sidebar badges, dashboard stats, and module data loads with `enabled` conditions tied to auth + role state.
+- Remove any remaining direct dependencies on unstable exports from `src/server/team.functions.ts` in always-rendered components.
 
-Falta:
-- Botón **"Nuevo lead manual"** en `/admin/leads` (para registrar llamadas, walk-ins, referidos).
-- Panel informativo explicando los 3 canales de captación.
+5. Verify backend permissions match the UI flow
+- Re-check the current RLS setup for `user_roles`, `agents`, `leads`, `properties`, and `property_alerts`.
+- Use the existing policies where possible rather than changing schema unnecessarily: the current role table and access rules are mostly correct, but the frontend is consuming them unsafely.
+- Only introduce a migration if I find a real policy gap during implementation.
 
-### 4. Gestión de admins/agentes
-Hoy todo usuario nuevo se crea solo con `signUp` y el trigger `handle_new_user()` lo asigna como `agente`. No hay UI para:
-- Ver el equipo
-- Invitar nuevos admins/agentes
-- Cambiar rol (promover a admin / degradar)
-- Eliminar agentes
+6. End-to-end verification
+- Confirm `/admin` without session redirects to `/login`.
+- Confirm login completes and lands on `/admin/dashboard` with no white screen.
+- Confirm dashboard data loads only after auth is ready.
+- Confirm non-admin staff can use normal admin modules but not `Equipo`.
+- Confirm admin users can access `Equipo` and team actions still work.
 
----
+## What appears to be wrong now
+- The admin shell is crashing because `AdminSidebar` imports `getAdminStatus` from `src/server/team.functions.ts`, and the browser is receiving a transformed module that does not currently expose that export.
+- Separately, several admin pages assume auth/role state is ready immediately, so protected queries can run too early and hit permission or session timing issues.
+- The backend role model is present, but the frontend guard flow is not robust enough, so permission checks are causing app rupture instead of controlled redirects/states.
 
-## Plan de cambios
-
-### A. Estabilizar SSR (corrige lentitud + botones)
-1. Cambiar el import roto en `src/routes/index.tsx` a path **relativo verificable**: ya está como `"../components/public/RecentViews"` pero el log muestra que sigue fallando con alias. Forzar reload del dev-server tocando el archivo y verificando con `tail` del log.
-2. Envolver `<RecentViews />` en un `<ClientOnly>` (no se renderiza en SSR — usa `localStorage`). Esto elimina dependencia del componente en el ciclo SSR.
-3. Asegurar que ningún otro hook en la home toque `window`/`localStorage` durante SSR.
-
-### B. `/admin/propiedades` — UX de filtros y feedback
-1. Añadir indicador visual cuando se está re-filtrando ("X resultados de Y").
-2. Botón **"Limpiar filtros"** cuando hay algún filtro activo.
-3. Ya funciona con cambio de filtro inmediato; reforzar con `transition` para evitar flicker.
-4. Verificar que los botones **"Nueva propiedad"** y **"Editar"** navegan correctamente una vez SSR estabilizado.
-
-### C. `/admin/leads` — Crear leads manualmente + transparencia
-1. Añadir botón **"+ Nuevo lead"** que abre un `Dialog` con formulario:
-   - Nombre, email, teléfono, mensaje, fuente (formulario/chat/whatsapp/manual), propiedad asociada (opcional), estado inicial.
-2. Agregar un **bloque informativo** colapsable arriba: "¿Cómo llegan los leads?" listando los 3 canales con iconos.
-3. Para soportar `source: 'manual'`:
-   - Migración SQL: actualizar el `CHECK`/policy de `leads` para incluir `'manual'` en la lista de fuentes válidas.
-   - Actualizar `LEAD_SOURCES` y labels en `src/lib/leads.tsx`.
-
-### D. Gestión de equipo (admins + agentes)
-1. Nueva ruta **`/admin/equipo`** (`src/routes/admin/equipo.tsx`):
-   - Tabla con: nombre, email, teléfono, rol, fecha de alta, acciones.
-   - Visible solo para admins (verificar con `has_role(uid, 'admin')`).
-2. Botón **"Invitar miembro"** → Dialog con email + nombre + rol (admin/agente).
-   - Implementación: usa **Lovable Cloud Auth** con `supabase.auth.admin.inviteUserByEmail` desde una **server function** con `requireSupabaseAuth` + verificación de rol admin (usando `supabaseAdmin`).
-   - Al aceptar la invitación, el trigger `handle_new_user()` crea el agente; luego un paso adicional escribe el rol elegido en `user_roles`.
-3. Acciones por fila (solo admin):
-   - Cambiar rol (admin ↔ agente) → `update user_roles`.
-   - Eliminar miembro → `supabase.auth.admin.deleteUser(id)` vía server function.
-4. Agregar entrada **"Equipo"** en `AdminSidebar` (ícono `Users`) visible solo si el usuario actual es admin.
-
-### E. Hacer al usuario actual admin (one-shot)
-- Como hoy todos los usuarios entran con rol `agente` por el trigger, necesitamos que **el dueño del proyecto** sea admin. Crearemos un script SQL que promueva al primer usuario registrado a `admin` (o le permitiremos elegir un email vía pregunta si hay varios).
-
----
-
-## Detalles técnicos
-
-**Migraciones SQL:**
-```sql
--- 1) Permitir source 'manual' en leads
-ALTER POLICY "Cualquiera puede crear un lead validado" ON public.leads
-WITH CHECK (
-  length(trim(name)) BETWEEN 1 AND 200
-  AND email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
-  AND length(email) <= 320
-  AND length(coalesce(message,'')) <= 2000
-  AND source = ANY(ARRAY['formulario','chat','whatsapp','manual'])
-);
-
--- 2) Política para que staff (admin/agente) cree leads manuales
-CREATE POLICY "Staff puede crear leads manuales"
-ON public.leads FOR INSERT TO authenticated
-WITH CHECK (is_staff(auth.uid()));
-
--- 3) Promover al usuario actual a admin
-INSERT INTO public.user_roles (user_id, role)
-SELECT id, 'admin'::app_role FROM auth.users
-ORDER BY created_at ASC LIMIT 1
-ON CONFLICT (user_id, role) DO NOTHING;
-```
-
-**Server functions nuevas** (`src/server/team.ts`):
-- `inviteTeamMember({ email, fullName, role })` — usa `supabaseAdmin.auth.admin.inviteUserByEmail` + inserta rol.
-- `updateTeamMemberRole({ userId, role })` — verifica admin, actualiza `user_roles`.
-- `deleteTeamMember({ userId })` — verifica admin, llama `auth.admin.deleteUser`.
-
-**Componentes nuevos:**
-- `src/components/admin/NewLeadDialog.tsx`
-- `src/components/admin/InviteMemberDialog.tsx`
-- `src/components/common/ClientOnly.tsx`
-- `src/routes/admin/equipo.tsx`
-
-**Archivos editados:**
-- `src/routes/index.tsx` (envolver RecentViews en ClientOnly)
-- `src/routes/admin/leads.tsx` (botón "+ Nuevo lead" + bloque informativo)
-- `src/routes/admin/propiedades.tsx` (botón limpiar filtros + contador)
-- `src/components/layout/AdminSidebar.tsx` (entrada "Equipo" si admin)
-- `src/lib/leads.tsx` (añadir `'manual'` a sources)
-
----
-
-## Entregables esperados
-1. ✅ Navegación admin fluida sin caídas a client-render.
-2. ✅ Botones "Nueva propiedad" y "Editar" funcionando.
-3. ✅ Filtros con feedback visual y "Limpiar filtros".
-4. ✅ Leads creables manualmente + explicación de canales.
-5. ✅ `/admin/equipo` con invitar / cambiar rol / eliminar (solo admin).
-6. ✅ Usuario actual promovido a admin.
+## Technical details
+- Files likely involved:
+  - `src/hooks/useAuth.ts`
+  - `src/routes/login.tsx`
+  - `src/routes/admin.tsx`
+  - `src/components/layout/AdminSidebar.tsx`
+  - `src/routes/admin/dashboard.tsx`
+  - `src/routes/admin/equipo.tsx`
+  - `src/server/team.functions.ts`
+- Preferred implementation direction:
+  - use a shared auth-ready pattern
+  - query the current user’s role from `user_roles` on the client for UI gating
+  - reserve server functions for privileged mutations/list operations
+  - avoid making the sidebar depend on a server-function export that can fail module resolution
+- Database review result so far:
+  - `user_roles` is correctly separated from `agents`
+  - existing RLS already allows users to read their own roles and admins to manage roles
+  - current breakage looks primarily like frontend auth/permission orchestration, not a missing table design
