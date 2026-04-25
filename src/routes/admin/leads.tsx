@@ -409,3 +409,25 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
     </div>
   );
 }
+
+function ChannelHint({
+  icon: Icon,
+  title,
+  desc,
+}: {
+  icon: typeof Search;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-md border border-border bg-background/40 p-3">
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="leading-tight">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
+      </div>
+    </div>
+  );
+}
