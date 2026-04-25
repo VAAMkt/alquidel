@@ -2,12 +2,46 @@
 // Uses Lovable AI Gateway (no extra API key required).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+// CORS: usa SITE_URL si está configurado; si no, fallback a wildcard.
+// TODO: configurar SITE_URL=https://alquidel.com en producción para restringir el origen.
+const SITE_URL = Deno.env.get("SITE_URL");
+const corsHeaders: Record<string, string> = {
+  "Access-Control-Allow-Origin": SITE_URL || "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers":
     "authorization, content-type, x-client-info, apikey",
+  Vary: "Origin",
 };
+
+// Rate limiting en memoria por instancia del worker.
+// 20 requests por IP en una ventana de 60 segundos.
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function getClientIp(req: Request): string {
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0]!.trim();
+  return req.headers.get("x-real-ip") ?? "unknown";
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
+  const now = Date.now();
+  // Limpieza perezosa de entradas expiradas.
+  for (const [key, entry] of rateLimitMap) {
+    if (entry.resetAt <= now) rateLimitMap.delete(key);
+  }
+  const entry = rateLimitMap.get(ip);
+  if (!entry || entry.resetAt <= now) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfter: 0 };
+  }
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  }
+  entry.count += 1;
+  return { allowed: true, retryAfter: 0 };
+}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -37,8 +71,7 @@ function extractPhone(text: string): string | null {
   return match ? match[0] : null;
 }
 
-/** Heuristic name extraction: look for "soy <Nombre>", "me llamo <Nombre>",
- *  "mi nombre es <Nombre>", or first capitalized word(s) at start. */
+/** Heuristic name extraction. */
 function extractName(text: string): string | null {
   const patterns = [
     /\b(?:soy|me llamo|mi nombre es)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){0,2})/i,
@@ -59,6 +92,23 @@ Deno.serve(async (req) => {
   }
   if (req.method !== "POST") {
     return json({ error: "Method not allowed" }, 405);
+  }
+
+  // Rate limiting por IP
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(ip);
+  if (!rl.allowed) {
+    return new Response(
+      JSON.stringify({ error: "Demasiadas solicitudes. Intenta en un momento." }),
+      {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "Retry-After": String(rl.retryAfter || 60),
+        },
+      },
+    );
   }
 
   let body: { message?: string; history?: ChatMessage[] };
@@ -144,7 +194,7 @@ INSTRUCCIONES:
     { role: "user", content: userMessage },
   ];
 
-  // 2. Llamar a Lovable AI Gateway con timeout
+  // 2. Llamar a Lovable AI Gateway con timeout de 15s
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
 
@@ -189,9 +239,21 @@ INSTRUCCIONES:
           200,
         );
       }
-      const txt = await aiResp.text();
-      console.error("AI gateway error:", aiResp.status, txt);
-      return json({ error: "AI gateway error" }, 502);
+      // Log detallado solo en server; respuesta amigable al cliente.
+      try {
+        const txt = await aiResp.text();
+        console.error("AI gateway error:", aiResp.status, txt);
+      } catch {
+        console.error("AI gateway error:", aiResp.status);
+      }
+      return json(
+        {
+          reply:
+            "El asistente no está disponible temporalmente. Por favor escríbenos al WhatsApp 321 491 0400 y un asesor te ayudará.",
+          lead_captured: false,
+        },
+        200,
+      );
     }
 
     const aiJson = await aiResp.json();
@@ -201,7 +263,17 @@ INSTRUCCIONES:
         "No pude generar una respuesta en este momento. ¿Puedes reformular tu pregunta?";
     }
   } catch (err) {
-    console.error("AI request failed:", err);
+    const aborted = (err as { name?: string })?.name === "AbortError";
+    console.error("AI request failed:", aborted ? "timeout 15s" : err);
+    if (aborted) {
+      return json(
+        {
+          error:
+            "El asistente está tardando demasiado en responder. Intenta de nuevo o escríbenos al WhatsApp 321 491 0400.",
+        },
+        504,
+      );
+    }
     return json(
       {
         reply:
