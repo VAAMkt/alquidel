@@ -1,58 +1,87 @@
 ## Problema
 
-Los leads enviados desde el formulario de contacto **no se guardan en la base de datos**. La tabla `leads` está completamente vacía (0 filas), confirmando que ninguna inserción está pasando.
+La invitación por email de Lovable Cloud llega al usuario, pero el flujo para que él/ella elija contraseña no está funcionando correctamente (probablemente por la configuración del enlace de redirección o por el flujo de "set password" que no está implementado en la app). Resultado: la invitación queda en limbo.
 
-### Causa raíz
+## Solución propuesta
 
-Las políticas RLS de la tabla `leads` tienen un hueco para usuarios **autenticados** que envían `source = 'formulario'`:
+Reemplazar el flujo de "Invitar por email" por **creación directa del usuario desde el panel de Equipo**, donde el admin define la contraseña inicial y se la comunica al miembro por el canal que prefiera (WhatsApp, llamada, etc.). El miembro entra a `/login`, usa email + contraseña que le dio el admin y listo.
 
-| Política | Rol | Condición |
-|---|---|---|
-| `Cualquiera puede crear un lead validado` | `public` (anónimo) | source ∈ ('formulario','chat','whatsapp') |
-| `Staff puede crear leads manuales` | `authenticated` | source ∈ (...,'manual') **y** `is_staff(auth.uid())` |
+Esto es más simple, más rápido y elimina la dependencia del email de invitación.
 
-Cuando un usuario logueado (como tú, admin) envía el formulario público con `source = 'formulario'`:
-- La política `public` **no aplica** porque ya no eres anónimo.
-- La política `staff` **no aplica** porque PostgREST evalúa primero la condición `source = 'manual'`. Aunque eres staff, el source es 'formulario', así que falla.
+## Cambios
 
-Resultado: la inserción es bloqueada silenciosamente por RLS y el toast de éxito no se muestra (o el error se pierde). Los visitantes anónimos sí podrían insertar, pero como tú probaste estando logueado, falló.
+### 1. Server function — reemplazar `inviteTeamMember` por `createTeamMember`
 
-## Solución
+Archivo: `src/server/team.functions.ts`
 
-Agregar una política RLS adicional que permita a **cualquier usuario autenticado** crear leads con sources públicos (`formulario`, `chat`, `whatsapp`), aplicando las mismas validaciones de longitud/formato que la política pública.
+Cambiar la implementación para usar `supabaseAdmin.auth.admin.createUser()` en lugar de `inviteUserByEmail()`:
 
-### Cambios
+- Recibe: `email`, `password` (mín 8 caracteres), `fullName`, `phone` (opcional), `role` (`admin` | `agente`)
+- Crea el usuario con `email_confirm: true` (queda confirmado de inmediato, puede entrar al instante)
+- El trigger `handle_new_user()` ya existente crea automáticamente la fila en `agents` y le asigna rol `agente`
+- Si el rol elegido es `admin`, agrega también el rol `admin` a `user_roles`
+- Si se proporcionó `phone`, actualiza `agents.phone`
 
-1. **Migración SQL** — agregar nueva política en `leads`:
-   ```sql
-   CREATE POLICY "Autenticados pueden crear leads públicos"
-   ON public.leads
-   FOR INSERT
-   TO authenticated
-   WITH CHECK (
-     length(trim(name)) BETWEEN 1 AND 200
-     AND email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
-     AND length(email) <= 320
-     AND length(coalesce(message,'')) <= 2000
-     AND source IN ('formulario','chat','whatsapp')
-   );
-   ```
+### 2. Diálogo del frontend — agregar campos de contraseña y teléfono
 
-2. **`src/routes/contacto.tsx`** — mejorar manejo de errores:
-   - Mostrar el mensaje real de Supabase en el toast cuando `error` no sea null (hoy se lanza pero el `.message` de PostgREST puede ser críptico).
-   - Loggear `error` en consola para diagnóstico futuro.
+Archivo: `src/components/admin/InviteMemberDialog.tsx` (renombrar internamente a `CreateMemberDialog` o mantener nombre del componente)
 
-3. **`src/routes/propiedades.$slug.tsx`** (línea 212) — mismo patrón de manejo de error, ya que usa la misma inserción.
+- Agregar campo **Contraseña** (tipo `password`, mínimo 8 caracteres) con botón de "mostrar/ocultar" y un botón "Generar contraseña segura" que llene el campo con una random de 12 caracteres
+- Agregar campo **Teléfono** (opcional)
+- Cambiar título: "Crear nuevo miembro" / descripción: "El miembro podrá acceder de inmediato con el email y contraseña que definas. Compártele estos datos por un canal seguro."
+- Botón: "Crear miembro" en lugar de "Enviar invitación"
+- Tras crear con éxito, mostrar toast con instrucción: "Miembro creado. Comparte la contraseña con {email} de forma segura."
 
-### Verificación
+### 3. UI menor en `equipo.tsx`
 
-Después del cambio probar:
-- Enviar formulario en `/contacto` estando logueado como admin → debe aparecer en `/admin/leads`.
-- Enviar formulario en `/contacto` desde ventana incógnita (anónimo) → también debe funcionar (la política pública sigue intacta).
-- Enviar interés en una página de propiedad → debe registrarse con `source = 'formulario'` y `property_id` ligado.
+Sin cambios funcionales; el componente sigue invocando `<InviteMemberDialog />` (mantenemos el nombre del archivo para no tocar imports).
 
-## Resumen técnico
+## Detalles técnicos
 
-- **Tipo de cambio**: 1 migración SQL (nueva policy) + 2 ediciones menores de manejo de errores en frontend.
-- **Sin breaking changes**: las políticas existentes se conservan.
-- **Sin riesgo de seguridad**: la nueva política aplica las mismas validaciones de input que la política pública y restringe `source` a los valores permitidos.
+```ts
+// team.functions.ts (extracto)
+export const createTeamMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      email: z.string().email().max(320),
+      password: z.string().min(8).max(72),
+      fullName: z.string().trim().min(2).max(120),
+      phone: z.string().trim().max(40).optional().or(z.literal("")),
+      role: z.enum(["admin", "agente"]),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName },
+    });
+    if (error) throw new Error(error.message);
+    const userId = created.user!.id;
+
+    // Trigger handle_new_user() ya creó agents + rol 'agente'.
+    if (data.phone && data.phone.trim()) {
+      await supabaseAdmin.from("agents")
+        .update({ phone: data.phone.trim() })
+        .eq("id", userId);
+    }
+    if (data.role === "admin") {
+      const { error: rErr } = await supabaseAdmin
+        .from("user_roles")
+        .insert({ user_id: userId, role: "admin" });
+      if (rErr && !rErr.message.includes("duplicate")) throw new Error(rErr.message);
+    }
+    return { ok: true, userId };
+  });
+```
+
+## Resumen
+
+- 1 server function reescrito (`inviteTeamMember` → `createTeamMember`)
+- 1 diálogo actualizado con 2 nuevos campos (contraseña + teléfono) y generador de contraseña
+- Sin migraciones SQL — la lógica de roles y `agents` ya está cubierta por el trigger existente
+- Sin breaking changes en la tabla — solo cambia cómo se crean los usuarios desde el panel
