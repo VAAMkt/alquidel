@@ -195,17 +195,28 @@ export const deleteTeamMember = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 // ¿Soy admin?
 // ---------------------------------------------------------------------------
-export const amIAdmin = createServerFn({ method: "POST" })
+export const getAdminStatus = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z.object({ accessToken: AccessTokenSchema }).parse(input),
   )
   .handler(async ({ data }) => {
-    const userId = await getUserIdFromAccessToken(data.accessToken);
-    const { data: roleRow } = await supabaseAdmin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-    return { isAdmin: !!roleRow };
+    try {
+      const userId = await getUserIdFromAccessToken(data.accessToken);
+      const { data: roleRow, error } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (error) {
+        console.error("getAdminStatus role lookup failed", error.message);
+        return { isAdmin: false, fallback: true };
+      }
+
+      return { isAdmin: !!roleRow, fallback: false };
+    } catch (error) {
+      console.error("getAdminStatus failed", error);
+      return { isAdmin: false, fallback: true };
+    }
   });
