@@ -1,10 +1,9 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   Building2,
   Users,
-  FileText,
-  Settings,
   LogOut,
 } from "lucide-react";
 import {
@@ -20,19 +19,30 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { signOut } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const items = [
-  { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
-  { title: "Propiedades", url: "/admin/propiedades", icon: Building2 },
-  { title: "Leads", url: "/admin/leads", icon: Users },
-  { title: "Blog", url: "/admin/blog", icon: FileText },
-  { title: "Configuración", url: "/admin/configuracion", icon: Settings },
+  { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, badgeKey: null },
+  { title: "Propiedades", url: "/admin/propiedades", icon: Building2, badgeKey: null },
+  { title: "Leads", url: "/admin/leads", icon: Users, badgeKey: "newLeads" },
 ] as const;
 
 export function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { data: newLeadsCount } = useQuery({
+    queryKey: ["admin", "leads", "new-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("leads")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "nuevo");
+      return count ?? 0;
+    },
+    refetchInterval: 30_000,
+  });
 
   const handleLogout = async () => {
     await signOut();
@@ -55,13 +65,22 @@ export function AdminSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
-                const isActive = location.pathname === item.url;
+                const isActive = location.pathname.startsWith(item.url);
+                const showBadge =
+                  item.badgeKey === "newLeads" && (newLeadsCount ?? 0) > 0;
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                      <Link to={item.url}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
+                      <Link to={item.url} className="flex items-center justify-between w-full">
+                        <span className="flex items-center gap-2">
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </span>
+                        {showBadge && (
+                          <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-semibold text-white">
+                            {newLeadsCount}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
