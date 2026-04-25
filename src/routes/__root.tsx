@@ -55,14 +55,14 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ALQUIDEL — Inmobiliaria premium en Bogotá" },
+      { title: "ALQUIDEL — Encuentra la propiedad de tus sueños" },
       {
         name: "description",
         content:
           "Venta y arriendo de propiedades premium en Bogotá. Apartamentos, casas, oficinas y locales seleccionados.",
       },
       { name: "author", content: "ALQUIDEL" },
-      { property: "og:title", content: "ALQUIDEL — Inmobiliaria premium en Bogotá" },
+      { property: "og:title", content: "ALQUIDEL — Encuentra la propiedad de tus sueños" },
       {
         property: "og:description",
         content: "Venta y arriendo de propiedades premium en Bogotá.",
@@ -70,6 +70,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@alquidel" },
+      { name: "twitter:title", content: "ALQUIDEL — Encuentra la propiedad de tus sueños" },
+      { name: "description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
+      { property: "og:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
+      { name: "twitter:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/70f0e713-88c7-40bb-b1dc-9c98de1e0fee/id-preview-2d105826--f91f64c7-ad7e-47ad-9166-c0ddacd2464a.lovable.app-1777139596373.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/70f0e713-88c7-40bb-b1dc-9c98de1e0fee/id-preview-2d105826--f91f64c7-ad7e-47ad-9166-c0ddacd2464a.lovable.app-1777139596373.png" },
     ],
     links: [
       {
