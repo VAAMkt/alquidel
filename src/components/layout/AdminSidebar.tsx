@@ -43,17 +43,19 @@ export function AdminSidebar() {
   const navigate = useNavigate();
   const adminCheckFn = useServerFn(amIAdmin);
   const { session, loading: authLoading } = useAuth();
+  const accessToken = session?.access_token;
 
   const { data: meCheck } = useQuery({
     queryKey: ["admin", "me-is-admin"],
     queryFn: async () => {
+      if (!accessToken) return { isAdmin: false };
       try {
-        return await adminCheckFn({});
+        return await adminCheckFn({ data: { accessToken } });
       } catch {
         return { isAdmin: false };
       }
     },
-    enabled: !authLoading && !!session,
+    enabled: !authLoading && !!accessToken,
     staleTime: 5 * 60_000,
     retry: false,
   });
