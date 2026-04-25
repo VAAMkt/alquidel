@@ -539,11 +539,12 @@ function PropertyDetail() {
             <div className="lg:sticky lg:top-20 space-y-4">
               {/* Formulario contacto */}
               <Card className="rounded-xl border-border p-6">
-                <h2 className="text-base font-semibold text-foreground">
-                  ¿Te interesa esta propiedad?
+                <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
+                  <CalendarCheck className="h-4 w-4 text-accent" />
+                  Solicitar visita
                 </h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Déjanos tus datos y un asesor te contactará.
+                  Déjanos tus datos y coordinamos una visita a la propiedad.
                 </p>
                 <form
                   onSubmit={(e) => {
@@ -577,12 +578,13 @@ function PropertyDetail() {
                   />
                   <Textarea
                     rows={3}
-                    placeholder="Mensaje"
+                    placeholder="Mensaje (fechas y horarios preferidos para la visita)"
                     value={form.message}
                     onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
                   />
                   <Button type="submit" className="w-full" disabled={leadMutation.isPending}>
-                    {leadMutation.isPending ? "Enviando…" : "Enviar consulta"}
+                    <CalendarCheck className="mr-1.5 h-4 w-4" />
+                    {leadMutation.isPending ? "Enviando…" : "Solicitar visita"}
                   </Button>
                 </form>
 
