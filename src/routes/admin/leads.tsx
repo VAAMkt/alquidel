@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Inbox,
+  MessageCircle,
   Phone,
   Search,
   Users,
@@ -69,6 +70,22 @@ export const Route = createFileRoute("/admin/leads")({
 function LeadsListPage() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
+
+  // Métrica: leads capturados por Alquibot en los últimos 30 días
+  const { data: chatbotMonthCount } = useQuery({
+    queryKey: ["admin", "leads", "chatbot-30d"],
+    queryFn: async () => {
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      const { count } = await supabase
+        .from("leads")
+        .select("*", { count: "exact", head: true })
+        .eq("source", "chat")
+        .gte("created_at", since.toISOString());
+      return count ?? 0;
+    },
+    refetchInterval: 60_000,
+  });
 
   // Conteos por estado (para los tabs)
   const { data: counts } = useQuery({
@@ -154,6 +171,19 @@ function LeadsListPage() {
             Gestiona los contactos generados desde el sitio web.
           </p>
         </div>
+        <Card className="flex items-center gap-3 border-border bg-violet-500/5 p-3 pr-4">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15 text-violet-600">
+            <MessageCircle className="h-4 w-4" />
+          </span>
+          <div className="leading-tight">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Alquibot · últimos 30 días
+            </p>
+            <p className="text-lg font-semibold text-foreground">
+              {chatbotMonthCount ?? 0} leads
+            </p>
+          </div>
+        </Card>
       </div>
 
       {/* Tabs por estado */}
