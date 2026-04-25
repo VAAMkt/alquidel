@@ -9,6 +9,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { CompareProvider } from "@/contexts/CompareContext";
 import { installServerFnAuthFetch } from "@/integrations/supabase/server-fn-fetch";
@@ -112,12 +113,14 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <FavoritesProvider>
-        <CompareProvider>
-          <Outlet />
-          <Toaster richColors position="top-right" />
-        </CompareProvider>
-      </FavoritesProvider>
+      <AuthProvider>
+        <FavoritesProvider>
+          <CompareProvider>
+            <Outlet />
+            <Toaster richColors position="top-right" />
+          </CompareProvider>
+        </FavoritesProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

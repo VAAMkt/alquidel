@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as PropiedadesRouteImport } from './routes/propiedades'
 import { Route as NosotrosRouteImport } from './routes/nosotros'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
@@ -20,6 +19,7 @@ import { Route as CompararRouteImport } from './routes/comparar'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PropiedadesIndexRouteImport } from './routes/propiedades.index'
 import { Route as PropiedadesSlugRouteImport } from './routes/propiedades.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AdminEquipoRouteImport } from './routes/admin/equipo'
@@ -43,11 +43,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PropiedadesRoute = PropiedadesRouteImport.update({
-  id: '/propiedades',
-  path: '/propiedades',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NosotrosRoute = NosotrosRouteImport.update({
@@ -90,10 +85,15 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PropiedadesIndexRoute = PropiedadesIndexRouteImport.update({
+  id: '/propiedades/',
+  path: '/propiedades/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PropiedadesSlugRoute = PropiedadesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => PropiedadesRoute,
+  id: '/propiedades/$slug',
+  path: '/propiedades/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
@@ -171,7 +171,6 @@ export interface FileRoutesByFullPath {
   '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
-  '/propiedades': typeof PropiedadesRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
@@ -180,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/admin/equipo': typeof AdminEquipoRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
+  '/propiedades/': typeof PropiedadesIndexRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
@@ -198,7 +198,6 @@ export interface FileRoutesByTo {
   '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
-  '/propiedades': typeof PropiedadesRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
@@ -207,6 +206,7 @@ export interface FileRoutesByTo {
   '/admin/equipo': typeof AdminEquipoRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
+  '/propiedades': typeof PropiedadesIndexRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
@@ -226,7 +226,6 @@ export interface FileRoutesById {
   '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
-  '/propiedades': typeof PropiedadesRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
@@ -235,6 +234,7 @@ export interface FileRoutesById {
   '/admin/equipo': typeof AdminEquipoRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
+  '/propiedades/': typeof PropiedadesIndexRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/propiedades/nueva': typeof AdminPropiedadesNuevaRoute
@@ -255,7 +255,6 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/login'
     | '/nosotros'
-    | '/propiedades'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
@@ -264,6 +263,7 @@ export interface FileRouteTypes {
     | '/admin/equipo'
     | '/blog/$slug'
     | '/propiedades/$slug'
+    | '/propiedades/'
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
@@ -282,7 +282,6 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/login'
     | '/nosotros'
-    | '/propiedades'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
@@ -291,6 +290,7 @@ export interface FileRouteTypes {
     | '/admin/equipo'
     | '/blog/$slug'
     | '/propiedades/$slug'
+    | '/propiedades'
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
@@ -309,7 +309,6 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/login'
     | '/nosotros'
-    | '/propiedades'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
@@ -318,6 +317,7 @@ export interface FileRouteTypes {
     | '/admin/equipo'
     | '/blog/$slug'
     | '/propiedades/$slug'
+    | '/propiedades/'
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
     | '/admin/propiedades/nueva'
@@ -337,9 +337,10 @@ export interface RootRouteChildren {
   FavoritosRoute: typeof FavoritosRoute
   LoginRoute: typeof LoginRoute
   NosotrosRoute: typeof NosotrosRoute
-  PropiedadesRoute: typeof PropiedadesRouteWithChildren
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PropiedadesSlugRoute: typeof PropiedadesSlugRoute
+  PropiedadesIndexRoute: typeof PropiedadesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -356,13 +357,6 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/propiedades': {
-      id: '/propiedades'
-      path: '/propiedades'
-      fullPath: '/propiedades'
-      preLoaderRoute: typeof PropiedadesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nosotros': {
@@ -421,12 +415,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/propiedades/': {
+      id: '/propiedades/'
+      path: '/propiedades'
+      fullPath: '/propiedades/'
+      preLoaderRoute: typeof PropiedadesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/propiedades/$slug': {
       id: '/propiedades/$slug'
-      path: '/$slug'
+      path: '/propiedades/$slug'
       fullPath: '/propiedades/$slug'
       preLoaderRoute: typeof PropiedadesSlugRouteImport
-      parentRoute: typeof PropiedadesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/blog/$slug': {
       id: '/blog/$slug'
@@ -564,18 +565,6 @@ const BlogRouteChildren: BlogRouteChildren = {
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
-interface PropiedadesRouteChildren {
-  PropiedadesSlugRoute: typeof PropiedadesSlugRoute
-}
-
-const PropiedadesRouteChildren: PropiedadesRouteChildren = {
-  PropiedadesSlugRoute: PropiedadesSlugRoute,
-}
-
-const PropiedadesRouteWithChildren = PropiedadesRoute._addFileChildren(
-  PropiedadesRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -585,9 +574,10 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritosRoute: FavoritosRoute,
   LoginRoute: LoginRoute,
   NosotrosRoute: NosotrosRoute,
-  PropiedadesRoute: PropiedadesRouteWithChildren,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PropiedadesSlugRoute: PropiedadesSlugRoute,
+  PropiedadesIndexRoute: PropiedadesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
