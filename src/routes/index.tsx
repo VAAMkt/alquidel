@@ -1,95 +1,199 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Building2, MapPin, Sparkles } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowRight,
+  Award,
+  Building2,
+  Headset,
+  Home as HomeIcon,
+  MapPin,
+  Search,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { PublicLayout } from "../components/layout/PublicLayout";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PublicLayout } from "@/components/layout/PublicLayout";
+import { PropertyCard } from "@/components/public/PropertyCard";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCOP, formatArea } from "@/lib/format";
-import heroImage from "@/assets/hero-bogota.jpg";
+import { COMPANY } from "@/lib/company";
+
+const PROPERTY_TYPES = [
+  "apartamento",
+  "casa",
+  "local",
+  "oficina",
+  "lote",
+  "bodega",
+] as const;
+
+const CITIES = [
+  "Bogotá",
+  "Medellín",
+  "Cali",
+  "Barranquilla",
+  "Cartagena",
+  "Bucaramanga",
+  "Pereira",
+  "Manizales",
+] as const;
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ALQUIDEL — Inmobiliaria premium en Bogotá" },
+      { title: `${COMPANY.shortName} — ${COMPANY.tagline}` },
       {
         name: "description",
         content:
-          "Descubre propiedades exclusivas para venta y arriendo en Bogotá. Apartamentos, casas y oficinas seleccionadas por ALQUIDEL.",
+          "Alquidel Bienes Raíces: venta y arriendo de inmuebles premium en Bogotá y principales ciudades de Colombia. Asesoría inmobiliaria personalizada.",
       },
-      { property: "og:image", content: heroImage },
-      { name: "twitter:image", content: heroImage },
+      { property: "og:title", content: `${COMPANY.shortName} — ${COMPANY.tagline}` },
+      {
+        property: "og:description",
+        content: "Venta y arriendo de inmuebles premium en Bogotá y Colombia.",
+      },
+      { property: "og:type", content: "website" },
     ],
   }),
   component: HomePage,
 });
 
 function HomePage() {
+  const navigate = useNavigate();
+  const [op, setOp] = useState<"todos" | "venta" | "arriendo">("todos");
+  const [tipo, setTipo] = useState<string>("todos");
+  const [ciudad, setCiudad] = useState<string>("todas");
+
+  function handleSearch() {
+    const search: Record<string, unknown> = {};
+    if (op !== "todos") search.operacion = op;
+    if (tipo !== "todos") search.tipos = [tipo];
+    if (ciudad !== "todas") search.ciudad = ciudad;
+    navigate({ to: "/propiedades", search });
+  }
+
+  // Destacadas
   const { data: featured } = useQuery({
     queryKey: ["properties", "featured"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("id, title, slug, type, property_type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images")
+        .select(
+          "id, slug, title, type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured",
+        )
         .eq("is_featured", true)
         .eq("status", "disponible")
+        .order("created_at", { ascending: false })
         .limit(6);
       if (error) throw error;
       return data;
     },
   });
 
+  // Fallback: si no hay destacadas → 6 más recientes
+  const { data: fallbackRecent } = useQuery({
+    queryKey: ["properties", "recent-6"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select(
+          "id, slug, title, type, price, area_m2, bedrooms, bathrooms, neighborhood, city, images, is_featured",
+        )
+        .eq("status", "disponible")
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data;
+    },
+    enabled: featured !== undefined && featured.length === 0,
+  });
+
+  const showcase = featured && featured.length > 0 ? featured : fallbackRecent;
+
   return (
     <PublicLayout>
       {/* HERO */}
-      <section className="relative isolate overflow-hidden">
-        <div className="absolute inset-0 -z-10">
-          <img
-            src={heroImage}
-            alt="Edificio premium en Bogotá al atardecer"
-            width={1920}
-            height={1080}
-            className="h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/40 to-transparent" />
-        </div>
-
-        <div className="mx-auto flex min-h-[640px] max-w-7xl items-center px-4 py-24 sm:px-6 lg:px-8">
-          <div className="max-w-2xl text-background">
-            <Badge variant="outline" className="mb-6 border-accent/40 bg-accent/10 text-accent backdrop-blur-sm">
-              <Sparkles className="mr-1.5 h-3 w-3" />
-              Inmobiliaria premium · Bogotá
-            </Badge>
-            <h1 className="text-balance text-4xl font-semibold tracking-tight text-background sm:text-6xl">
-              Encuentra tu próximo hogar en{" "}
-              <span className="text-accent">Bogotá</span>
+      <section className="relative isolate overflow-hidden bg-gradient-to-b from-background via-background to-secondary/40">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background"
+        />
+        <div className="mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 lg:px-8 lg:pt-28">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur-sm">
+              <Sparkles className="h-3 w-3 text-accent" />
+              Inmobiliaria colombiana · Bogotá
+            </div>
+            <h1 className="mt-6 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              Encuentra la propiedad de tus{" "}
+              <span className="text-accent">sueños en Colombia</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-background/80">
-              Apartamentos, casas y oficinas seleccionadas con criterio. Venta y arriendo
-              en las mejores zonas de la ciudad.
+            <p className="mx-auto mt-5 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
+              Venta y arriendo de inmuebles premium. Bogotá y principales ciudades.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="rounded-lg">
-                <Link to="/propiedades">
-                  Explorar propiedades
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+          </div>
+
+          {/* Buscador */}
+          <Card className="mx-auto mt-10 max-w-4xl rounded-2xl border-border bg-background/95 p-3 shadow-sm backdrop-blur sm:p-4">
+            <div className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
+              <Select value={op} onValueChange={(v) => setOp(v as typeof op)}>
+                <SelectTrigger className="h-12 rounded-lg border-border">
+                  <SelectValue placeholder="Operación" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todas las operaciones</SelectItem>
+                  <SelectItem value="venta">Venta</SelectItem>
+                  <SelectItem value="arriendo">Arriendo</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={tipo} onValueChange={setTipo}>
+                <SelectTrigger className="h-12 rounded-lg border-border capitalize">
+                  <SelectValue placeholder="Tipo de inmueble" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos los inmuebles</SelectItem>
+                  {PROPERTY_TYPES.map((t) => (
+                    <SelectItem key={t} value={t} className="capitalize">
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={ciudad} onValueChange={setCiudad}>
+                <SelectTrigger className="h-12 rounded-lg border-border">
+                  <SelectValue placeholder="Ciudad" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas las ciudades</SelectItem>
+                  {CITIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button
-                asChild
                 size="lg"
-                variant="outline"
-                className="rounded-lg border-background/40 bg-background/10 text-background backdrop-blur-sm hover:bg-background hover:text-foreground"
+                onClick={handleSearch}
+                className="h-12 rounded-lg px-6"
               >
-                <Link to="/contacto">Contactar un asesor</Link>
+                <Search className="mr-2 h-4 w-4" />
+                Buscar
               </Button>
             </div>
-          </div>
+          </Card>
         </div>
       </section>
 
-      {/* PROPIEDADES DESTACADAS */}
+      {/* DESTACADAS */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between">
           <div>
@@ -109,46 +213,31 @@ function HomePage() {
         </div>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featured && featured.length > 0 ? (
-            featured.map((p) => (
-              <Card key={p.id} className="group overflow-hidden rounded-lg border-border p-0 transition-shadow hover:shadow-lg">
-                <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
-                  {p.images?.[0] ? (
-                    <img
-                      src={p.images[0]}
-                      alt={p.title}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                      <Building2 className="h-10 w-10" />
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-2 p-5">
-                  <Badge variant="secondary" className="rounded-md uppercase tracking-wide">
-                    {p.type === "venta" ? "Venta" : "Arriendo"}
-                  </Badge>
-                  <h3 className="text-lg font-semibold text-foreground">{p.title}</h3>
-                  <p className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {p.neighborhood ?? p.city}
-                  </p>
-                  <div className="flex items-baseline justify-between pt-2">
-                    <span className="text-lg font-semibold text-foreground">
-                      {formatCOP(Number(p.price))}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{formatArea(Number(p.area_m2))}</span>
-                  </div>
-                </div>
-              </Card>
+          {showcase && showcase.length > 0 ? (
+            showcase.map((p) => (
+              <PropertyCard
+                key={p.id}
+                p={{
+                  id: p.id,
+                  slug: p.slug,
+                  title: p.title,
+                  type: p.type as "venta" | "arriendo",
+                  price: p.price,
+                  area_m2: p.area_m2,
+                  bedrooms: p.bedrooms,
+                  bathrooms: p.bathrooms,
+                  city: p.city,
+                  neighborhood: p.neighborhood,
+                  images: p.images,
+                  is_featured: p.is_featured,
+                }}
+              />
             ))
           ) : (
             <div className="col-span-full rounded-lg border border-dashed border-border bg-muted/30 p-12 text-center">
               <Building2 className="mx-auto h-10 w-10 text-muted-foreground" />
               <p className="mt-4 text-sm text-muted-foreground">
-                Aún no hay propiedades destacadas. Pronto publicaremos nuestra selección.
+                Pronto publicaremos nuestra selección.
               </p>
             </div>
           )}
@@ -156,20 +245,90 @@ function HomePage() {
       </section>
 
       {/* CONFIANZA */}
-      <section className="border-t border-border bg-secondary/40">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:grid-cols-3 sm:px-6 lg:px-8">
+      <section className="border-y border-border bg-secondary/40">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:grid-cols-3 sm:px-6 lg:px-8">
           {[
-            { n: "+150", l: "Propiedades publicadas" },
-            { n: "12", l: "Zonas premium en Bogotá" },
-            { n: "98%", l: "Clientes satisfechos" },
-          ].map((s) => (
-            <div key={s.l} className="text-center sm:text-left">
-              <div className="text-4xl font-semibold tracking-tight text-foreground">
-                {s.n}
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">{s.l}</p>
-            </div>
+            {
+              icon: HomeIcon,
+              title: "8+ Propiedades exclusivas",
+              desc: "Catálogo curado de inmuebles seleccionados con criterio.",
+            },
+            {
+              icon: MapPin,
+              title: "Bogotá y Colombia",
+              desc: "Presencia en las principales ciudades del país.",
+            },
+            {
+              icon: Headset,
+              title: "Asesoría personalizada",
+              desc: "Acompañamiento integral en cada paso del proceso.",
+            },
+          ].map((item) => (
+            <Card
+              key={item.title}
+              className="rounded-xl border-border bg-background p-6"
+            >
+              <item.icon className="h-6 w-6 text-accent" />
+              <h3 className="mt-4 text-base font-semibold text-foreground">
+                {item.title}
+              </h3>
+              <p className="mt-1.5 text-sm text-muted-foreground">{item.desc}</p>
+            </Card>
           ))}
+        </div>
+      </section>
+
+      {/* ¿POR QUÉ ALQUIDEL? */}
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">
+            Nuestra promesa
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            ¿Por qué Alquidel?
+          </h2>
+        </div>
+
+        <div className="mt-12 grid gap-8 md:grid-cols-3">
+          <div>
+            <Award className="h-7 w-7 text-accent" />
+            <h3 className="mt-4 text-lg font-semibold text-foreground">
+              Experiencia
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Trabajamos profesionalmente para prestar el mejor y más completo
+              servicio inmobiliario.
+            </p>
+          </div>
+          <div>
+            <Building2 className="h-7 w-7 text-accent" />
+            <h3 className="mt-4 text-lg font-semibold text-foreground">
+              Servicio integral
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Servicios completos basados en las necesidades de cada cliente, para
+              brindar la mejor asesoría inmobiliaria.
+            </p>
+          </div>
+          <div>
+            <Users className="h-7 w-7 text-accent" />
+            <h3 className="mt-4 text-lg font-semibold text-foreground">
+              Clientes de por vida
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              No buscamos transacciones, buscamos relaciones duraderas que mejoren
+              la calidad de vida de nuestros clientes.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-12 flex justify-center">
+          <Button asChild size="lg" className="rounded-lg">
+            <Link to="/propiedades">
+              Explorar propiedades
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </section>
     </PublicLayout>
