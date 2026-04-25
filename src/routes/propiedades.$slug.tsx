@@ -218,7 +218,7 @@ function PropertyDetail() {
               </div>
               {p.images && p.images.length > 1 && (
                 <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6 lg:grid-cols-8">
-                  {p.images.map((img, idx) => (
+                  {p.images.map((img: string, idx: number) => (
                     <button
                       key={img + idx}
                       type="button"
@@ -298,7 +298,7 @@ function PropertyDetail() {
                   Amenidades y características
                 </h2>
                 <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {p.amenities.map((a) => (
+                  {p.amenities.map((a: string) => (
                     <li key={a} className="inline-flex items-center gap-2 text-sm text-foreground">
                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent/15 text-accent">
                         <Check className="h-3 w-3" />

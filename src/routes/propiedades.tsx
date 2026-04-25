@@ -166,7 +166,7 @@ function PropiedadesPage() {
 
   function setSearch(patch: Partial<typeof DEFAULTS>) {
     navigate({
-      search: (prev) => ({
+      search: (prev: typeof DEFAULTS) => ({
         ...prev,
         ...patch,
         page: patch.page ?? 1,
@@ -182,7 +182,7 @@ function PropiedadesPage() {
   function toggleTipo(tipo: (typeof PROPERTY_TYPES)[number]) {
     const current = search.tipos;
     const next = current.includes(tipo)
-      ? current.filter((t) => t !== tipo)
+      ? current.filter((t: (typeof PROPERTY_TYPES)[number]) => t !== tipo)
       : [...current, tipo];
     setSearch({ tipos: next });
   }
