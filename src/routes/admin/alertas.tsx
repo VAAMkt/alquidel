@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-import { formatPriceCOP } from "@/lib/format";
+import { formatCOP } from "@/lib/format";
 import { toast } from "sonner";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -206,7 +206,7 @@ function AlertasPage() {
                   </TableCell>
                   <TableCell className="text-right text-sm tabular-nums">
                     {a.max_price ? (
-                      formatPriceCOP(Number(a.max_price))
+                      formatCOP(Number(a.max_price))
                     ) : (
                       <span className="text-xs text-muted-foreground">Sin límite</span>
                     )}
