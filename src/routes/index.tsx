@@ -4,7 +4,7 @@ import { ArrowRight, Building2, MapPin, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PublicLayout } from "@/components/layout/PublicLayout";
+import { PublicLayout } from "../components/layout/PublicLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCOP, formatArea } from "@/lib/format";
 import heroImage from "@/assets/hero-bogota.jpg";
