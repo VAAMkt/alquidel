@@ -31,6 +31,7 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
   const fav = isFavorite(p.id);
   const cmp = isInCompare(p.id);
   const altText = `${p.title} en ${p.city}`;
+  const hasSlug = typeof p.slug === "string" && p.slug.length > 0;
 
   const showStaleBadge = (() => {
     if (!p.created_at) return false;
@@ -44,14 +45,8 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
     e.stopPropagation();
   }
 
-  return (
-    <Link
-      to="/propiedades/$slug"
-      params={{ slug: p.slug }}
-      className="group block"
-      aria-label={`Ver propiedad: ${p.title}`}
-    >
-      <Card className="overflow-hidden rounded-xl border-border p-0 transition-all hover:-translate-y-0.5 hover:shadow-xl">
+  const cardInner = (
+    <Card className="overflow-hidden rounded-xl border-border p-0 transition-all hover:-translate-y-0.5 hover:shadow-xl">
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           {cover ? (
             <img
@@ -144,6 +139,20 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
           </div>
         </div>
       </Card>
+  );
+
+  if (!hasSlug) {
+    return <div className="group block">{cardInner}</div>;
+  }
+
+  return (
+    <Link
+      to="/propiedades/$slug"
+      params={{ slug: p.slug }}
+      className="group block"
+      aria-label={`Ver propiedad: ${p.title}`}
+    >
+      {cardInner}
     </Link>
   );
 }
