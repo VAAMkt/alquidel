@@ -21,4 +21,8 @@ export const COMPANY = {
     "Prestar el mejor y más completo servicio inmobiliario, trabajando profesionalmente, con el fin de formar clientes de por vida.",
   vision:
     "Ser una organización referente en el mercado inmobiliario, destacada por su solidez, credibilidad y resultados.",
+  social: {
+    facebook: "https://www.facebook.com/alquidelbienesraices",
+    instagram: "https://www.instagram.com/alquidelbrsas/",
+  },
 } as const;
