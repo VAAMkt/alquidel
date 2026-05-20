@@ -17,6 +17,7 @@ interface Props {
 }
 
 export function PostCard({ post }: Props) {
+  if (!post.slug) return null;
   return (
     <Link
       to="/blog/$slug"
