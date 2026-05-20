@@ -13,7 +13,6 @@ import {
   Bath,
   Bed,
   Building2,
-  Building,
   Calculator,
   CalendarCheck,
   Check,
