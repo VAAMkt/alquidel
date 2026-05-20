@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, UploadCloud, Loader2, GripVertical } from "lucide-react";
+import { X, UploadCloud, Loader2, GripVertical, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,12 @@ import { Progress } from "@/components/ui/progress";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+} from "@/components/ui/command";
+import { COLOMBIA_CITIES } from "@/lib/colombia-cities";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/lib/slugify";
 import { formatCOP } from "@/lib/format";
@@ -25,7 +31,6 @@ type PropertyType = Database["public"]["Enums"]["property_type"];
 type ListingType = Database["public"]["Enums"]["listing_type"];
 type PropertyStatus = Database["public"]["Enums"]["property_status"];
 
-const CITIES = ["Bogotá","Medellín","Cali","Barranquilla","Cartagena","Bucaramanga","Pereira","Manizales","Otra"];
 const PROPERTY_TYPES: PropertyType[] = ["apartamento","casa","local","oficina","lote","bodega"];
 const STATUS_OPTIONS: PropertyStatus[] = ["disponible","vendido","arrendado","reservado"];
 const SUGGESTED_AMENITIES = [
@@ -50,6 +55,12 @@ const schema = z.object({
   status: z.enum(["disponible","vendido","arrendado","reservado"]),
   is_featured: z.boolean(),
   images: z.array(z.string()),
+  administration_fee: z.number().min(0).nullable().optional(),
+  video_url: z.string().trim().url("URL inválida").or(z.literal("")).optional(),
+  stratum: z.number().int().min(1).max(6).nullable().optional(),
+  built_year: z.number().int().min(1800).max(2100).nullable().optional(),
+  garages: z.number().int().min(0),
+  storage_rooms: z.number().int().min(0),
 });
 
 export type PropertyFormValues = z.infer<typeof schema>;
@@ -76,6 +87,12 @@ const blank: PropertyFormValues = {
   status: "disponible",
   is_featured: false,
   images: [],
+  administration_fee: null,
+  video_url: "",
+  stratum: null,
+  built_year: null,
+  garages: 0,
+  storage_rooms: 0,
 };
 
 function pathFromPublicUrl(url: string): string | null {
