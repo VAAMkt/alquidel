@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { COMPANY } from "@/lib/company";
 import { whatsappUrl } from "@/lib/whatsapp";
 
@@ -18,6 +18,31 @@ export function PublicFooter() {
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {COMPANY.about}
             </p>
+            <div className="mt-5">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                Síguenos
+              </h4>
+              <div className="mt-2 flex gap-2">
+                <a
+                  href={COMPANY.social.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook de Alquidel"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-accent hover:text-accent"
+                >
+                  <Facebook className="h-4 w-4" />
+                </a>
+                <a
+                  href={COMPANY.social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram de Alquidel"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-accent hover:text-accent"
+                >
+                  <Instagram className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
           </div>
 
           <div>
