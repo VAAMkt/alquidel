@@ -16,10 +16,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as ContactoRouteImport } from './routes/contacto'
 import { Route as CompararRouteImport } from './routes/comparar'
-import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropiedadesIndexRouteImport } from './routes/propiedades.index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as PropiedadesSlugRouteImport } from './routes/propiedades.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AdminEquipoRouteImport } from './routes/admin/equipo'
@@ -70,11 +70,6 @@ const CompararRoute = CompararRouteImport.update({
   path: '/comparar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogRoute = BlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -90,15 +85,20 @@ const PropiedadesIndexRoute = PropiedadesIndexRouteImport.update({
   path: '/propiedades/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PropiedadesSlugRoute = PropiedadesSlugRouteImport.update({
   id: '/propiedades/$slug',
   path: '/propiedades/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => BlogRoute,
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEquipoRoute = AdminEquipoRouteImport.update({
   id: '/equipo',
@@ -165,7 +165,6 @@ const AdminBlogIdEditarRoute = AdminBlogIdEditarRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/blog': typeof BlogRouteWithChildren
   '/comparar': typeof CompararRoute
   '/contacto': typeof ContactoRoute
   '/favoritos': typeof FavoritosRoute
@@ -179,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin/equipo': typeof AdminEquipoRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/propiedades/': typeof PropiedadesIndexRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
@@ -192,7 +192,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/blog': typeof BlogRouteWithChildren
   '/comparar': typeof CompararRoute
   '/contacto': typeof ContactoRoute
   '/favoritos': typeof FavoritosRoute
@@ -206,6 +205,7 @@ export interface FileRoutesByTo {
   '/admin/equipo': typeof AdminEquipoRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
+  '/blog': typeof BlogIndexRoute
   '/propiedades': typeof PropiedadesIndexRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
@@ -220,7 +220,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/blog': typeof BlogRouteWithChildren
   '/comparar': typeof CompararRoute
   '/contacto': typeof ContactoRoute
   '/favoritos': typeof FavoritosRoute
@@ -234,6 +233,7 @@ export interface FileRoutesById {
   '/admin/equipo': typeof AdminEquipoRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/propiedades/': typeof PropiedadesIndexRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
@@ -249,7 +249,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
-    | '/blog'
     | '/comparar'
     | '/contacto'
     | '/favoritos'
@@ -263,6 +262,7 @@ export interface FileRouteTypes {
     | '/admin/equipo'
     | '/blog/$slug'
     | '/propiedades/$slug'
+    | '/blog/'
     | '/propiedades/'
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
@@ -276,7 +276,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
-    | '/blog'
     | '/comparar'
     | '/contacto'
     | '/favoritos'
@@ -290,6 +289,7 @@ export interface FileRouteTypes {
     | '/admin/equipo'
     | '/blog/$slug'
     | '/propiedades/$slug'
+    | '/blog'
     | '/propiedades'
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
@@ -303,7 +303,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
-    | '/blog'
     | '/comparar'
     | '/contacto'
     | '/favoritos'
@@ -317,6 +316,7 @@ export interface FileRouteTypes {
     | '/admin/equipo'
     | '/blog/$slug'
     | '/propiedades/$slug'
+    | '/blog/'
     | '/propiedades/'
     | '/admin/blog/nuevo'
     | '/admin/leads/$id'
@@ -331,7 +331,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
-  BlogRoute: typeof BlogRouteWithChildren
   CompararRoute: typeof CompararRoute
   ContactoRoute: typeof ContactoRoute
   FavoritosRoute: typeof FavoritosRoute
@@ -339,7 +338,9 @@ export interface RootRouteChildren {
   NosotrosRoute: typeof NosotrosRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   PropiedadesSlugRoute: typeof PropiedadesSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   PropiedadesIndexRoute: typeof PropiedadesIndexRoute
 }
 
@@ -394,13 +395,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompararRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog': {
-      id: '/blog'
-      path: '/blog'
-      fullPath: '/blog'
-      preLoaderRoute: typeof BlogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -422,6 +416,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropiedadesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/propiedades/$slug': {
       id: '/propiedades/$slug'
       path: '/propiedades/$slug'
@@ -431,10 +432,10 @@ declare module '@tanstack/react-router' {
     }
     '/blog/$slug': {
       id: '/blog/$slug'
-      path: '/$slug'
+      path: '/blog/$slug'
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
-      parentRoute: typeof BlogRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/equipo': {
       id: '/admin/equipo'
@@ -555,20 +556,9 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface BlogRouteChildren {
-  BlogSlugRoute: typeof BlogSlugRoute
-}
-
-const BlogRouteChildren: BlogRouteChildren = {
-  BlogSlugRoute: BlogSlugRoute,
-}
-
-const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
-  BlogRoute: BlogRouteWithChildren,
   CompararRoute: CompararRoute,
   ContactoRoute: ContactoRoute,
   FavoritosRoute: FavoritosRoute,
@@ -576,7 +566,9 @@ const rootRouteChildren: RootRouteChildren = {
   NosotrosRoute: NosotrosRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  BlogSlugRoute: BlogSlugRoute,
   PropiedadesSlugRoute: PropiedadesSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
   PropiedadesIndexRoute: PropiedadesIndexRoute,
 }
 export const routeTree = rootRouteImport
