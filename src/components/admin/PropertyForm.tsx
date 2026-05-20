@@ -413,13 +413,59 @@ export function PropertyForm({ initial, mode }: Props) {
         <h2 className="text-base font-semibold tracking-tight text-foreground">Ubicación</h2>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <div>
-            <Label>Ciudad</Label>
-            <Select value={values.city} onValueChange={(v) => update("city", v)}>
-              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {CITIES.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
-              </SelectContent>
-            </Select>
+            <Label>Ciudad / Municipio</Label>
+            <Popover open={cityOpen} onOpenChange={setCityOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={cityOpen}
+                  className="mt-1.5 w-full justify-between font-normal"
+                >
+                  <span className="truncate">{values.city || "Selecciona municipio…"}</span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command
+                  filter={(value, search) =>
+                    value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+                  }
+                >
+                  <CommandInput placeholder="Buscar municipio…" />
+                  <CommandList>
+                    <CommandEmpty>Sin resultados.</CommandEmpty>
+                    <CommandGroup>
+                      {COLOMBIA_CITIES.map((c) => {
+                        const label = `${c.name}, ${c.department}`;
+                        return (
+                          <CommandItem
+                            key={label}
+                            value={label}
+                            onSelect={() => {
+                              update("city", c.name);
+                              setCityOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                values.city === c.name ? "opacity-100" : "opacity-0",
+                              )}
+                            />
+                            <span>{c.name}</span>
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              {c.department}
+                            </span>
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div>
             <Label htmlFor="neighborhood">Barrio / Sector</Label>
@@ -431,13 +477,16 @@ export function PropertyForm({ initial, mode }: Props) {
             />
           </div>
           <div className="sm:col-span-2">
-            <Label htmlFor="address">Dirección completa</Label>
+            <Label htmlFor="address">Dirección completa (privada, solo para mapa)</Label>
             <Input
               id="address"
               value={values.address ?? ""}
               onChange={(e) => update("address", e.target.value)}
               className="mt-1.5"
             />
+            <p className="mt-1 text-xs text-muted-foreground">
+              No se muestra en la ficha pública; solo ubica el pin en el mapa.
+            </p>
           </div>
           <div className="sm:col-span-2">
             <Label htmlFor="slug">Slug (URL)</Label>
