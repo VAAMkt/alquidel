@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, UploadCloud, Loader2, GripVertical } from "lucide-react";
+import { X, UploadCloud, Loader2, GripVertical, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,12 @@ import { Progress } from "@/components/ui/progress";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+} from "@/components/ui/command";
+import { COLOMBIA_CITIES } from "@/lib/colombia-cities";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/lib/slugify";
 import { formatCOP } from "@/lib/format";
@@ -25,7 +31,6 @@ type PropertyType = Database["public"]["Enums"]["property_type"];
 type ListingType = Database["public"]["Enums"]["listing_type"];
 type PropertyStatus = Database["public"]["Enums"]["property_status"];
 
-const CITIES = ["Bogotá","Medellín","Cali","Barranquilla","Cartagena","Bucaramanga","Pereira","Manizales","Otra"];
 const PROPERTY_TYPES: PropertyType[] = ["apartamento","casa","local","oficina","lote","bodega"];
 const STATUS_OPTIONS: PropertyStatus[] = ["disponible","vendido","arrendado","reservado"];
 const SUGGESTED_AMENITIES = [
@@ -50,6 +55,12 @@ const schema = z.object({
   status: z.enum(["disponible","vendido","arrendado","reservado"]),
   is_featured: z.boolean(),
   images: z.array(z.string()),
+  administration_fee: z.number().min(0).nullable().optional(),
+  video_url: z.string().trim().url("URL inválida").or(z.literal("")).optional(),
+  stratum: z.number().int().min(1).max(6).nullable().optional(),
+  built_year: z.number().int().min(1800).max(2100).nullable().optional(),
+  garages: z.number().int().min(0),
+  storage_rooms: z.number().int().min(0),
 });
 
 export type PropertyFormValues = z.infer<typeof schema>;
@@ -76,6 +87,12 @@ const blank: PropertyFormValues = {
   status: "disponible",
   is_featured: false,
   images: [],
+  administration_fee: null,
+  video_url: "",
+  stratum: null,
+  built_year: null,
+  garages: 0,
+  storage_rooms: 0,
 };
 
 function pathFromPublicUrl(url: string): string | null {
@@ -108,6 +125,13 @@ export function PropertyForm({ initial, mode }: Props) {
           status: initial.status as PropertyStatus,
           is_featured: initial.is_featured,
           images: initial.images ?? [],
+          administration_fee:
+            initial.administration_fee != null ? Number(initial.administration_fee) : null,
+          video_url: initial.video_url ?? "",
+          stratum: initial.stratum ?? null,
+          built_year: initial.built_year ?? null,
+          garages: initial.garages ?? 0,
+          storage_rooms: initial.storage_rooms ?? 0,
         }
       : blank
   );
@@ -116,6 +140,7 @@ export function PropertyForm({ initial, mode }: Props) {
   const [amenityInput, setAmenityInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [cityOpen, setCityOpen] = useState(false);
 
   function update<K extends keyof PropertyFormValues>(key: K, val: PropertyFormValues[K]) {
     setValues((v) => ({ ...v, [key]: val }));
@@ -224,6 +249,13 @@ export function PropertyForm({ initial, mode }: Props) {
             status: payload.status,
             is_featured: payload.is_featured,
             images: payload.images,
+            administration_fee:
+              payload.type === "venta" ? payload.administration_fee ?? null : null,
+            video_url: payload.video_url || null,
+            stratum: payload.stratum ?? null,
+            built_year: payload.built_year ?? null,
+            garages: payload.garages,
+            storage_rooms: payload.storage_rooms,
           })
           .select()
           .single();
@@ -249,6 +281,13 @@ export function PropertyForm({ initial, mode }: Props) {
             status: payload.status,
             is_featured: payload.is_featured,
             images: payload.images,
+            administration_fee:
+              payload.type === "venta" ? payload.administration_fee ?? null : null,
+            video_url: payload.video_url || null,
+            stratum: payload.stratum ?? null,
+            built_year: payload.built_year ?? null,
+            garages: payload.garages,
+            storage_rooms: payload.storage_rooms,
           })
           .eq("id", initial!.id)
           .select()
@@ -388,13 +427,59 @@ export function PropertyForm({ initial, mode }: Props) {
         <h2 className="text-base font-semibold tracking-tight text-foreground">Ubicación</h2>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <div>
-            <Label>Ciudad</Label>
-            <Select value={values.city} onValueChange={(v) => update("city", v)}>
-              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {CITIES.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
-              </SelectContent>
-            </Select>
+            <Label>Ciudad / Municipio</Label>
+            <Popover open={cityOpen} onOpenChange={setCityOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={cityOpen}
+                  className="mt-1.5 w-full justify-between font-normal"
+                >
+                  <span className="truncate">{values.city || "Selecciona municipio…"}</span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command
+                  filter={(value, search) =>
+                    value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+                  }
+                >
+                  <CommandInput placeholder="Buscar municipio…" />
+                  <CommandList>
+                    <CommandEmpty>Sin resultados.</CommandEmpty>
+                    <CommandGroup>
+                      {COLOMBIA_CITIES.map((c) => {
+                        const label = `${c.name}, ${c.department}`;
+                        return (
+                          <CommandItem
+                            key={label}
+                            value={label}
+                            onSelect={() => {
+                              update("city", c.name);
+                              setCityOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                values.city === c.name ? "opacity-100" : "opacity-0",
+                              )}
+                            />
+                            <span>{c.name}</span>
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              {c.department}
+                            </span>
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div>
             <Label htmlFor="neighborhood">Barrio / Sector</Label>
@@ -406,13 +491,16 @@ export function PropertyForm({ initial, mode }: Props) {
             />
           </div>
           <div className="sm:col-span-2">
-            <Label htmlFor="address">Dirección completa</Label>
+            <Label htmlFor="address">Dirección completa (privada, solo para mapa)</Label>
             <Input
               id="address"
               value={values.address ?? ""}
               onChange={(e) => update("address", e.target.value)}
               className="mt-1.5"
             />
+            <p className="mt-1 text-xs text-muted-foreground">
+              No se muestra en la ficha pública; solo ubica el pin en el mapa.
+            </p>
           </div>
           <div className="sm:col-span-2">
             <Label htmlFor="slug">Slug (URL)</Label>
@@ -425,6 +513,109 @@ export function PropertyForm({ initial, mode }: Props) {
             />
             <p className="mt-1 text-xs text-muted-foreground">/propiedades/{values.slug || "tu-propiedad"}</p>
             {errors.slug && <p className="mt-1 text-xs text-destructive">{errors.slug}</p>}
+          </div>
+        </div>
+      </Card>
+
+      {/* Sección 2.5: Detalles del inmueble */}
+      <Card className="rounded-lg border-border p-6">
+        <h2 className="text-base font-semibold tracking-tight text-foreground">
+          Detalles del inmueble
+        </h2>
+        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <Label>Estrato</Label>
+            <Select
+              value={values.stratum != null ? String(values.stratum) : "none"}
+              onValueChange={(v) =>
+                update("stratum", v === "none" ? null : (Number(v) as PropertyFormValues["stratum"]))
+              }
+            >
+              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sin especificar</SelectItem>
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="built_year">Año de construcción</Label>
+            <Input
+              id="built_year"
+              type="number"
+              min={1800}
+              max={2100}
+              value={values.built_year ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                update("built_year", v === "" ? null : Number(v));
+              }}
+              className="mt-1.5"
+              placeholder="Ej: 2018"
+            />
+          </div>
+          <div>
+            <Label htmlFor="garages">Garajes</Label>
+            <Input
+              id="garages"
+              type="number"
+              min={0}
+              value={values.garages}
+              onChange={(e) => update("garages", Math.max(0, Number(e.target.value) || 0))}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label htmlFor="storage_rooms">Depósitos</Label>
+            <Input
+              id="storage_rooms"
+              type="number"
+              min={0}
+              value={values.storage_rooms}
+              onChange={(e) => update("storage_rooms", Math.max(0, Number(e.target.value) || 0))}
+              className="mt-1.5"
+            />
+          </div>
+          {values.type === "venta" && (
+            <div>
+              <Label htmlFor="administration_fee">Administración mensual (COP)</Label>
+              <Input
+                id="administration_fee"
+                inputMode="numeric"
+                value={
+                  values.administration_fee
+                    ? new Intl.NumberFormat("es-CO").format(values.administration_fee)
+                    : ""
+                }
+                onChange={(e) => {
+                  const clean = e.target.value.replace(/\D/g, "");
+                  update("administration_fee", clean ? Number(clean) : null);
+                }}
+                className="mt-1.5"
+                placeholder="0"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                {values.administration_fee
+                  ? formatCOP(values.administration_fee)
+                  : "Opcional — solo se muestra para Venta"}
+              </p>
+            </div>
+          )}
+          <div className={values.type === "venta" ? "" : "sm:col-span-2 lg:col-span-2"}>
+            <Label htmlFor="video_url">URL de video (YouTube)</Label>
+            <Input
+              id="video_url"
+              type="url"
+              value={values.video_url ?? ""}
+              onChange={(e) => update("video_url", e.target.value)}
+              className="mt-1.5"
+              placeholder="https://www.youtube.com/watch?v=…"
+            />
+            {errors.video_url && (
+              <p className="mt-1 text-xs text-destructive">{errors.video_url}</p>
+            )}
           </div>
         </div>
       </Card>

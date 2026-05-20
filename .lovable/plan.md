@@ -1,55 +1,81 @@
+# Plan de mejoras para Alquidel
 
-## Causa raíz
+Voy a implementar 5 bloques de cambios manteniendo el diseño actual (Shadcn UI + tokens semánticos).
 
-Las cards del catálogo SÍ son `<Link>` válidos y navegan correctamente — verificado con el browser automatizado en el preview. El problema reportado por el usuario en `alquidel.com` es un **error de hidratación de React**:
+---
 
-> Hydration failed because the server rendered HTML didn't match the client (...) `<div className="bb-custom-select-container bb-customSelect">`
+## 1. Base de datos: nuevos campos en `properties`
 
-El prefijo `bb-` corresponde a una extensión del navegador (Babylon / similar) que reemplaza los `<select>` nativos antes de que React hidrate. Radix UI usa un `<select>` nativo oculto dentro de su `<Select>` (componente `SelectBubbleInput`) para accesibilidad y form submission — exactamente el elemento que la extensión está mutando.
+Migración SQL que agrega columnas opcionales a `public.properties`:
 
-Cuando la hidratación falla:
-1. React desmonta y vuelve a renderizar TODO el árbol en cliente (lo dice el propio error).
-2. Durante esa regeneración, los `onClick` y los listeners de los `<Link>` de TanStack Router **no están conectados todavía**.
-3. El usuario hace clic, no pasa nada, y como el `<Link>` envuelve un `<a>` sin `href` resuelto en SSR (TanStack Router resuelve el `href` en cliente), tampoco navega como anchor normal.
+- `administration_fee numeric` (valor administración, solo aplica visualmente para arriendo o como dato extra)
+- `video_url text` (URL YouTube)
+- `stratum smallint` con check `between 1 and 6`
+- `built_year int`
+- `garages int default 0`
+- `storage_rooms int default 0`
+- `neighborhood` ya existe → no se toca
 
-## Cambios
+Nota: `src/integrations/supabase/types.ts` se regenera automáticamente tras correr la migración (no se edita a mano).
 
-### 1. `src/components/public/PropertyCard.tsx` — fallback nativo de navegación
+> **Aclaración importante sobre administración**: en el mensaje aparece "solo si es Venta", pero en Colombia la cuota de administración es habitual tanto en venta (informativa) como en arriendo (se suma al canon). Voy a mostrarla en ambos casos pero con etiqueta clara ("Administración mensual"). Si prefieres limitarlo estrictamente a venta, dímelo antes de implementar.
 
-Convertir el `<Link>` para que durante SSR ya tenga un `href` real resuelto vía `useRouter().buildLocation()`. Si la hidratación falla, el navegador igual hace navegación normal al hacer clic en el ancla (porque es un `<a href="...">` válido en el HTML SSR).
+---
 
-Implementación: usar `<Link>` normal pero asegurarse de que renderice un `<a>` con `href` calculado. TanStack `<Link>` ya hace esto por defecto — verificar que no se esté pasando ningún `as`/`asChild` que lo convierta en `<div>`. En este caso ya es un `<a>`, así que el fix real es eliminar la causa de la regeneración.
+## 2. Formulario admin (`src/components/admin/PropertyForm.tsx`)
 
-### 2. `src/routes/propiedades.tsx` y `src/routes/index.tsx` — envolver Selects en `ClientOnly`
+- Ampliar el esquema Zod y `blank` con los nuevos campos.
+- Nueva sección **"Detalles del inmueble"** con inputs: Estrato (select 1–6), Año de construcción, Garajes, Depósitos, Administración (COP, formateado igual que precio), URL de video YouTube (con validación de URL y patrón youtube/youtu.be).
+- Mantener input de Barrio (ya existe) y Dirección.
+- **Reemplazar el `Select` de Ciudad por un ComboBox** con `Popover` + `Command` (`CommandInput`, `CommandList`, `CommandEmpty`, `CommandGroup`, `CommandItem`) de shadcn — ya están en el proyecto.
+- Crear `src/lib/colombia-cities.ts` con un array de los principales municipios de Colombia (~300–400 cabeceras + capitales y municipios clave de Cundinamarca: Chía, Cajicá, Zipaquirá, Cota, Sopó, La Calera, Mosquera, Funza, Madrid, Tenjo, Tabio, Tocancipá, etc.). Formato `{ name, department }` para mostrar "Chía, Cundinamarca" y permitir búsqueda por ambos. No es necesario incluir los 1.123 municipios; con ~400 cubrimos el mercado y el bundle queda <30KB.
+- Actualizar `insert`/`update` del mutation para incluir los nuevos campos (con `null` cuando vacíos).
 
-Los `<Select>` de Radix en el panel de filtros (catálogo) y en el buscador del hero (home) son los puntos donde la extensión inyecta `bb-custom-select-container`, rompiendo la hidratación. Solución:
+---
 
-- Envolver el panel de filtros completo (`FiltersPanel`) en `<ClientOnly>` con un fallback estático (skeleton de filtros) durante SSR.
-- Envolver los 3 `<Select>` del buscador del hero en `<ClientOnly>` con un fallback estático.
+## 3. Ficha pública (`src/routes/propiedades.$slug.tsx`)
 
-`ClientOnly` ya existe en `src/components/common/ClientOnly.tsx` y se usa en otros lugares del proyecto.
+- **Resumen de características (chips)**: pasar de 4 a 6 tarjetas — Área, Habitaciones, Baños, Garajes, Estrato, Antigüedad (año). Solo mostrar las que tengan dato; en grid responsive 2/3/6 columnas.
+- **Precio + administración**: debajo del precio principal, si `administration_fee` existe, mostrar "+ Administración: $XXX/mes" en `text-muted-foreground`.
+- **Privacidad de dirección**:
+  - En el header y card "Ubicación" mostrar SOLO `"Barrio, Ciudad"` (nunca `address`).
+  - En el JSON-LD (`streetAddress`) tampoco se incluirá la dirección exacta; solo `addressLocality` + `addressRegion`.
+- **Mapa**: nuevo bloque con iframe de Google Maps embebido usando `address` (o `neighborhood, city` como fallback) en el `q=` del embed, sin renderizar el texto. URL tipo `https://www.google.com/maps?q=<encoded>&output=embed`, `loading="lazy"`, aspect 16/9, bordes redondeados acorde al diseño.
+- **Video YouTube**: si `video_url` existe, extraer el ID con un helper en `src/lib/youtube.ts` y embedir `<iframe>` responsive (aspect-video) bajo la galería o tras la descripción.
 
-### 3. `src/routes/propiedades.tsx` — botón "Operación" en mobile usando RadioGroup en lugar de Select
+---
 
-Verificar: el catálogo solo usa `<Select>` para "Ciudad". Mover ese Select a un fallback `ClientOnly` (mismo punto 2) lo cubre.
+## 4. Footer (`src/components/layout/PublicFooter.tsx`)
 
-### 4. Garantizar `href` SSR-render del `<Link>` en `PropertyCard`
+- Añadir bloque "Síguenos" con íconos `Facebook` e `Instagram` de `lucide-react`, linkeando a:
+  - Facebook: la URL exacta del perfil oficial. Necesito confirmación de la URL real (la del mensaje es un placeholder). Por defecto usaré `https://www.facebook.com/alquidelbienesraices` y pediré confirmación.
+  - Instagram: `https://www.instagram.com/alquidelbrsas/`
+- Centralizar las URLs en `src/lib/company.ts` (`COMPANY.social.facebook` / `instagram`).
 
-Verificar que el `<Link>` actual ya emite un `<a href="/propiedades/[slug]?...">` en el HTML SSR. Si no, forzar el `href` con `to + params` resueltos. (Esto ya funciona — confirmado por `view-source` implícito en el observe del browser.) No requiere cambio adicional, pero documentamos el comportamiento.
+---
 
-## Resultado esperado
+## 5. Bug del blog (`PostCard` + ruta `/blog/$slug`)
 
-- Sin error de hidratación → el árbol no se regenera → los handlers de los `<Link>` quedan conectados desde el primer paint.
-- Las cards responden al primer clic en producción, igual que en el preview.
-- El catálogo y home siguen viéndose idénticos visualmente. El único cambio perceptible es que los `<Select>` aparecen ~1 frame después en la primera carga (fallback CSS-only durante SSR, hidratan en cliente).
+Revisión: `PostCard.tsx` ya envuelve toda la tarjeta en `<Link to="/blog/$slug" params={{ slug: post.slug }}>` correctamente, y `src/routes/blog.$slug.tsx` existe con loader funcional. El bug que reportas probablemente sea consecuencia de que la lista del blog use `<a>` en lugar de `<Link>`, o de un slug vacío en datos.
 
-## Archivos a editar
+Voy a:
 
-- `src/routes/propiedades.tsx` — envolver `<Select>` de ciudad y panel de filtros con `ClientOnly` + fallback skeleton.
-- `src/routes/index.tsx` — envolver los 3 `<Select>` del hero search con `ClientOnly` + fallback estático.
+- Auditar `src/routes/blog.tsx` y cualquier componente que liste posts para asegurar uso de `<Link>` tipado (no `<a href>`).
+- Añadir guard en `PostCard` para no renderizar la tarjeta si `post.slug` está vacío (evita 404).
+- Verificar en preview que el click navega correctamente; si no, revisar `routeTree.gen.ts` y reiniciar dev server.
 
-## Lo que NO se cambia
+---
 
-- `PropertyCard.tsx` — ya está correcto, no se toca.
-- La ruta `/propiedades/$slug` — ya carga toda la información, formulario de contacto, calculadora, propiedades similares y WhatsApp.
-- Los contextos de Favoritos/Comparar.
+## Detalles técnicos
+
+- Stack: React + TanStack Router + Supabase + Tailwind + Shadcn. Sin nuevas dependencias (Command, Popover ya existen; mapa vía iframe nativo, no react-leaflet).
+- Tokens: usar `text-foreground`, `text-muted-foreground`, `bg-accent/15`, etc. — sin colores hardcodeados nuevos.
+- Migración SQL se ejecuta antes de tocar el formulario y la ficha para que los tipos estén disponibles.
+- Orden de implementación: (1) migración → (2) `colombia-cities.ts` + helper YouTube → (3) PropertyForm → (4) ficha pública → (5) footer → (6) auditoría blog.
+
+¿Confirmamos las dos cuestiones abiertas?
+
+1. ¿Administración solo en venta o también en arriendo?  
+1. **Administración:** Sigamos estrictamente la retroalimentación del cliente. El campo y el valor de la administración deben mostrarse y aplicar ÚNICAMENTE para propiedades en Venta, NO para arriendo. Oculta el campo si se selecciona arriendo.
+2. ¿URL exacta de Facebook de Alquidel?  
+2. **URL de Facebook:** Por ahora utiliza `https://www.facebook.com/alquidelbienesraices` como placeholder en `src/lib/company.ts`. Yo me encargaré de actualizar la URL final exacta más adelante. La de Instagram que pusiste `https://www.instagram.com/alquidelbrsas/`) es correcta. El orden de implementación que propones (Migración -> Ciudades/Helpers -> Formulario Admin -> Ficha Pública -> Footer -> Auditoría Blog) es ideal. ¡Adelante, ejecuta el código siguiendo esos pasos!
