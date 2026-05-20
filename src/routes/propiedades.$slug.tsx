@@ -132,7 +132,7 @@ export const Route = createFileRoute("/propiedades/$slug")({
         "@type": "PostalAddress",
         addressLocality: p.city,
         addressCountry: "CO",
-        streetAddress: p.address ?? p.neighborhood ?? undefined,
+        addressRegion: p.neighborhood ?? undefined,
       },
       floorSize: {
         "@type": "QuantitativeValue",
