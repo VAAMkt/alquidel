@@ -148,14 +148,17 @@ export type Database = {
       properties: {
         Row: {
           address: string | null
+          administration_fee: number | null
           amenities: string[]
           area_m2: number
           bathrooms: number
           bedrooms: number
+          built_year: number | null
           city: string
           created_at: string
           created_by: string | null
           description: string
+          garages: number
           id: string
           images: string[]
           is_featured: boolean
@@ -164,20 +167,26 @@ export type Database = {
           property_type: Database["public"]["Enums"]["property_type"]
           slug: string
           status: Database["public"]["Enums"]["property_status"]
+          storage_rooms: number
+          stratum: number | null
           title: string
           type: Database["public"]["Enums"]["listing_type"]
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           address?: string | null
+          administration_fee?: number | null
           amenities?: string[]
           area_m2: number
           bathrooms?: number
           bedrooms?: number
+          built_year?: number | null
           city?: string
           created_at?: string
           created_by?: string | null
           description?: string
+          garages?: number
           id?: string
           images?: string[]
           is_featured?: boolean
@@ -186,20 +195,26 @@ export type Database = {
           property_type: Database["public"]["Enums"]["property_type"]
           slug: string
           status?: Database["public"]["Enums"]["property_status"]
+          storage_rooms?: number
+          stratum?: number | null
           title: string
           type: Database["public"]["Enums"]["listing_type"]
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           address?: string | null
+          administration_fee?: number | null
           amenities?: string[]
           area_m2?: number
           bathrooms?: number
           bedrooms?: number
+          built_year?: number | null
           city?: string
           created_at?: string
           created_by?: string | null
           description?: string
+          garages?: number
           id?: string
           images?: string[]
           is_featured?: boolean
@@ -208,9 +223,12 @@ export type Database = {
           property_type?: Database["public"]["Enums"]["property_type"]
           slug?: string
           status?: Database["public"]["Enums"]["property_status"]
+          storage_rooms?: number
+          stratum?: number | null
           title?: string
           type?: Database["public"]["Enums"]["listing_type"]
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
