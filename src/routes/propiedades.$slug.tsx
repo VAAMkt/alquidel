@@ -479,16 +479,34 @@ function PropertyDetail() {
             <Card className="rounded-xl border-border p-5">
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-5 w-5 text-accent" />
-                <div>
+                <div className="flex-1">
                   <p className="text-sm font-semibold text-foreground">Ubicación</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Sector: {p.neighborhood ? `${p.neighborhood}, ${p.city}` : p.city}
+                    {p.neighborhood ? `${p.neighborhood}, ${p.city}` : p.city}
                   </p>
-                  {p.address && (
-                    <p className="mt-1 text-sm text-muted-foreground">{p.address}</p>
-                  )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Por seguridad, la dirección exacta se comparte solo con clientes confirmados.
+                  </p>
                 </div>
               </div>
+              {(() => {
+                const q = encodeURIComponent(
+                  p.address && p.address.trim()
+                    ? `${p.address}, ${p.city}, Colombia`
+                    : `${p.neighborhood ? p.neighborhood + ", " : ""}${p.city}, Colombia`,
+                );
+                return (
+                  <div className="mt-4 aspect-[16/9] overflow-hidden rounded-lg border border-border bg-muted">
+                    <iframe
+                      src={`https://www.google.com/maps?q=${q}&output=embed`}
+                      title={`Mapa de ${p.title}`}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="h-full w-full border-0"
+                    />
+                  </div>
+                );
+              })()}
             </Card>
 
             {/* Calculadora hipotecaria */}
