@@ -125,6 +125,13 @@ export function PropertyForm({ initial, mode }: Props) {
           status: initial.status as PropertyStatus,
           is_featured: initial.is_featured,
           images: initial.images ?? [],
+          administration_fee:
+            initial.administration_fee != null ? Number(initial.administration_fee) : null,
+          video_url: initial.video_url ?? "",
+          stratum: initial.stratum ?? null,
+          built_year: initial.built_year ?? null,
+          garages: initial.garages ?? 0,
+          storage_rooms: initial.storage_rooms ?? 0,
         }
       : blank
   );
@@ -133,6 +140,7 @@ export function PropertyForm({ initial, mode }: Props) {
   const [amenityInput, setAmenityInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [cityOpen, setCityOpen] = useState(false);
 
   function update<K extends keyof PropertyFormValues>(key: K, val: PropertyFormValues[K]) {
     setValues((v) => ({ ...v, [key]: val }));
