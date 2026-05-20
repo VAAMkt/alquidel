@@ -249,6 +249,13 @@ export function PropertyForm({ initial, mode }: Props) {
             status: payload.status,
             is_featured: payload.is_featured,
             images: payload.images,
+            administration_fee:
+              payload.type === "venta" ? payload.administration_fee ?? null : null,
+            video_url: payload.video_url || null,
+            stratum: payload.stratum ?? null,
+            built_year: payload.built_year ?? null,
+            garages: payload.garages,
+            storage_rooms: payload.storage_rooms,
           })
           .select()
           .single();
@@ -274,6 +281,13 @@ export function PropertyForm({ initial, mode }: Props) {
             status: payload.status,
             is_featured: payload.is_featured,
             images: payload.images,
+            administration_fee:
+              payload.type === "venta" ? payload.administration_fee ?? null : null,
+            video_url: payload.video_url || null,
+            stratum: payload.stratum ?? null,
+            built_year: payload.built_year ?? null,
+            garages: payload.garages,
+            storage_rooms: payload.storage_rooms,
           })
           .eq("id", initial!.id)
           .select()
