@@ -503,6 +503,109 @@ export function PropertyForm({ initial, mode }: Props) {
         </div>
       </Card>
 
+      {/* Sección 2.5: Detalles del inmueble */}
+      <Card className="rounded-lg border-border p-6">
+        <h2 className="text-base font-semibold tracking-tight text-foreground">
+          Detalles del inmueble
+        </h2>
+        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <Label>Estrato</Label>
+            <Select
+              value={values.stratum != null ? String(values.stratum) : "none"}
+              onValueChange={(v) =>
+                update("stratum", v === "none" ? null : (Number(v) as PropertyFormValues["stratum"]))
+              }
+            >
+              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sin especificar</SelectItem>
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="built_year">Año de construcción</Label>
+            <Input
+              id="built_year"
+              type="number"
+              min={1800}
+              max={2100}
+              value={values.built_year ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                update("built_year", v === "" ? null : Number(v));
+              }}
+              className="mt-1.5"
+              placeholder="Ej: 2018"
+            />
+          </div>
+          <div>
+            <Label htmlFor="garages">Garajes</Label>
+            <Input
+              id="garages"
+              type="number"
+              min={0}
+              value={values.garages}
+              onChange={(e) => update("garages", Math.max(0, Number(e.target.value) || 0))}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label htmlFor="storage_rooms">Depósitos</Label>
+            <Input
+              id="storage_rooms"
+              type="number"
+              min={0}
+              value={values.storage_rooms}
+              onChange={(e) => update("storage_rooms", Math.max(0, Number(e.target.value) || 0))}
+              className="mt-1.5"
+            />
+          </div>
+          {values.type === "venta" && (
+            <div>
+              <Label htmlFor="administration_fee">Administración mensual (COP)</Label>
+              <Input
+                id="administration_fee"
+                inputMode="numeric"
+                value={
+                  values.administration_fee
+                    ? new Intl.NumberFormat("es-CO").format(values.administration_fee)
+                    : ""
+                }
+                onChange={(e) => {
+                  const clean = e.target.value.replace(/\D/g, "");
+                  update("administration_fee", clean ? Number(clean) : null);
+                }}
+                className="mt-1.5"
+                placeholder="0"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                {values.administration_fee
+                  ? formatCOP(values.administration_fee)
+                  : "Opcional — solo se muestra para Venta"}
+              </p>
+            </div>
+          )}
+          <div className={values.type === "venta" ? "" : "sm:col-span-2 lg:col-span-2"}>
+            <Label htmlFor="video_url">URL de video (YouTube)</Label>
+            <Input
+              id="video_url"
+              type="url"
+              value={values.video_url ?? ""}
+              onChange={(e) => update("video_url", e.target.value)}
+              className="mt-1.5"
+              placeholder="https://www.youtube.com/watch?v=…"
+            />
+            {errors.video_url && (
+              <p className="mt-1 text-xs text-destructive">{errors.video_url}</p>
+            )}
+          </div>
+        </div>
+      </Card>
+
       {/* Sección 3: Imágenes */}
       <Card className="rounded-lg border-border p-6">
         <h2 className="text-base font-semibold tracking-tight text-foreground">Imágenes</h2>
