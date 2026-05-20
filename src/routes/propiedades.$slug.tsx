@@ -388,23 +388,63 @@ function PropertyDetail() {
               <p className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                 {displayPrice(p.price)}
               </p>
+              {p.type === "venta" && p.administration_fee != null && Number(p.administration_fee) > 0 && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  + Administración: <span className="font-medium text-foreground">{formatCOP(Number(p.administration_fee))}</span> / mes
+                </p>
+              )}
             </div>
 
             {/* Chips datos clave */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                { icon: Maximize, label: "Área", value: formatArea(Number(p.area_m2)) },
-                { icon: Bed, label: "Habitaciones", value: String(p.bedrooms) },
-                { icon: Bath, label: "Baños", value: String(p.bathrooms) },
-                { icon: MapPin, label: "Ciudad", value: p.city },
-              ].map((c) => (
-                <Card key={c.label} className="rounded-lg border-border p-4">
-                  <c.icon className="h-4 w-4 text-accent" />
-                  <p className="mt-2 text-xs text-muted-foreground">{c.label}</p>
-                  <p className="text-sm font-semibold text-foreground">{c.value}</p>
-                </Card>
-              ))}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {(() => {
+                const chips: { icon: typeof Maximize; label: string; value: string }[] = [
+                  { icon: Maximize, label: "Área", value: formatArea(Number(p.area_m2)) },
+                  { icon: Bed, label: "Habitaciones", value: String(p.bedrooms) },
+                  { icon: Bath, label: "Baños", value: String(p.bathrooms) },
+                ];
+                if ((p.garages ?? 0) > 0) {
+                  chips.push({ icon: Car, label: "Garajes", value: String(p.garages) });
+                }
+                if (p.stratum != null) {
+                  chips.push({ icon: Layers, label: "Estrato", value: String(p.stratum) });
+                }
+                if (p.built_year != null) {
+                  chips.push({ icon: CalendarDays, label: "Año", value: String(p.built_year) });
+                }
+                return chips.map((c) => (
+                  <Card key={c.label} className="rounded-lg border-border p-4">
+                    <c.icon className="h-4 w-4 text-accent" />
+                    <p className="mt-2 text-xs text-muted-foreground">{c.label}</p>
+                    <p className="text-sm font-semibold text-foreground">{c.value}</p>
+                  </Card>
+                ));
+              })()}
             </div>
+
+            {/* Video YouTube */}
+            {(() => {
+              const embed = youtubeEmbedUrl(p.video_url);
+              if (!embed) return null;
+              return (
+                <div>
+                  <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground">
+                    <PlayCircle className="h-5 w-5 text-accent" />
+                    Video del inmueble
+                  </h2>
+                  <div className="mt-3 aspect-video overflow-hidden rounded-2xl bg-muted">
+                    <iframe
+                      src={embed}
+                      title={`Video de ${p.title}`}
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="h-full w-full border-0"
+                    />
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Descripción */}
             {p.description && (
