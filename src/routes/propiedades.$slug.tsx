@@ -13,9 +13,14 @@ import {
   Bath,
   Bed,
   Building2,
+  Building,
   Calculator,
   CalendarCheck,
   Check,
+  Car,
+  Layers,
+  CalendarDays,
+  PlayCircle,
   Mail,
   MapPin,
   Maximize,
@@ -54,6 +59,7 @@ import { COMPANY } from "@/lib/company";
 import { whatsappUrl, propertyWhatsappMessage, shareWhatsappUrl } from "@/lib/whatsapp";
 import { useEffect } from "react";
 import { useRecentViews } from "@/hooks/useRecentViews";
+import { youtubeEmbedUrl } from "@/lib/youtube";
 
 async function fetchPropertyBySlug(slug: string) {
   const { data, error } = await supabase
