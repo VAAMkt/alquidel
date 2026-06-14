@@ -264,7 +264,7 @@ function PropiedadesAdmin() {
                       className={
                         p.type === "venta"
                           ? "bg-slate-700 text-slate-50 hover:bg-slate-700"
-                          : "bg-amber-500 text-white hover:bg-amber-500"
+                          : "bg-[color:var(--brand-teal)] text-white hover:bg-[color:var(--brand-teal)]"
                       }
                     >
                       {p.type}
@@ -299,7 +299,7 @@ function PropiedadesAdmin() {
                       aria-label={p.is_featured ? "Quitar destacada" : "Marcar destacada"}
                     >
                       <Star
-                        className={`h-4 w-4 ${p.is_featured ? "fill-amber-500 text-amber-500" : "text-muted-foreground"}`}
+                        className={`h-4 w-4 ${p.is_featured ? "fill-[color:var(--brand-teal)] text-[color:var(--brand-teal)]" : "text-muted-foreground"}`}
                       />
                     </button>
                   </TableCell>

@@ -63,13 +63,13 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
               className={
                 p.type === "venta"
                   ? "rounded-md bg-slate-800 text-slate-50 hover:bg-slate-800"
-                  : "rounded-md bg-amber-500 text-white hover:bg-amber-500"
+                  : "rounded-md bg-[color:var(--brand-teal)] text-white hover:bg-[color:var(--brand-teal)]"
               }
             >
               {p.type === "venta" ? "Venta" : "Arriendo"}
             </Badge>
             {p.is_featured && (
-              <Badge className="rounded-md border border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-100">
+              <Badge className="rounded-md border border-[color:var(--brand-teal)]/30 bg-[color:var(--brand-teal-soft)] text-[color:var(--brand-navy)] hover:bg-[color:var(--brand-teal-soft)]">
                 <Sparkles className="mr-1 h-3 w-3" /> Destacada
               </Badge>
             )}
