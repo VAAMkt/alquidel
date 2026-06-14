@@ -1,5 +1,5 @@
 import { BrandMark } from "./BrandMark";
-import logoFullColor from "@/assets/alquidel-logo-full.jpg.asset.json";
+import logoFullColor from "@/assets/alquidel-logo.png.asset.json";
 
 type Variant = "full" | "mark" | "wordmark";
 type Tone = "color" | "light" | "dark";
