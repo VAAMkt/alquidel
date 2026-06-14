@@ -42,7 +42,7 @@ import {
   deleteTeamMember,
   listTeam,
   setTeamMemberAdmin,
-} from "@/server/team.functions";
+} from "@/lib/team.functions";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export const Route = createFileRoute("/admin/equipo")({

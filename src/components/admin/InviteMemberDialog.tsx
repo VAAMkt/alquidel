@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createTeamMember } from "@/server/team.functions";
+import { createTeamMember } from "@/lib/team.functions";
 
 const schema = z.object({
   email: z.string().email("Email inválido").max(320),
