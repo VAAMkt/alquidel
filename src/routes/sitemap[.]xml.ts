@@ -4,8 +4,8 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
-        const origin = new URL(request.url).origin;
+      GET: async () => {
+        const origin = "https://alquidel.com";
 
         const [{ data: properties }, { data: posts }] = await Promise.all([
           supabaseAdmin
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             .order("updated_at", { ascending: false }),
         ]);
 
-        const staticUrls = ["/", "/propiedades", "/blog", "/nosotros", "/contacto"];
+        const staticUrls = ["/", "/propiedades", "/comparar", "/blog", "/nosotros", "/contacto"];
         const urls: string[] = [];
 
         for (const path of staticUrls) {

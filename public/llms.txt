@@ -1,0 +1,12 @@
+# Alquidel Bienes Raíces
+
+> Empresa colombiana de comercialización inmobiliaria. Venta y arriendo de apartamentos, casas, oficinas y locales en Bogotá y principales ciudades de Colombia, con asesoría personalizada.
+
+## Pages
+
+- [Inicio](/): Búsqueda de propiedades en venta y arriendo en Colombia.
+- [Propiedades](/propiedades): Catálogo completo con filtros por ciudad, tipo, precio y habitaciones.
+- [Comparador](/comparar): Comparar hasta 3 propiedades lado a lado.
+- [Blog](/blog): Consejos, tendencias del mercado y guías inmobiliarias.
+- [Nosotros](/nosotros): Quiénes somos, misión y visión de Alquidel.
+- [Contacto](/contacto): Teléfono, email, WhatsApp y dirección en Bogotá.
