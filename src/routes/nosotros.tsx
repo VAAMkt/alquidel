@@ -19,7 +19,9 @@ export const Route = createFileRoute("/nosotros")({
         property: "og:description",
         content: "Empresa colombiana dedicada a la comercialización de bienes raíces con asesoría integral.",
       },
+      { property: "og:url", content: "https://alquidel.com/nosotros" },
     ],
+    links: [{ rel: "canonical", href: "https://alquidel.com/nosotros" }],
   }),
   component: NosotrosPage,
 });

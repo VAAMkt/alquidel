@@ -15,7 +15,11 @@ export const Route = createFileRoute("/comparar")({
         content:
           "Compara hasta 3 propiedades lado a lado: precio, área, habitaciones, baños y amenidades.",
       },
+      { property: "og:title", content: "Comparador de propiedades | Alquidel" },
+      { property: "og:description", content: "Compara hasta 3 propiedades lado a lado." },
+      { property: "og:url", content: "https://alquidel.com/comparar" },
     ],
+    links: [{ rel: "canonical", href: "https://alquidel.com/comparar" }],
   }),
   component: CompararPage,
 });

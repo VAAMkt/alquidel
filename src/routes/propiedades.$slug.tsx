@@ -113,6 +113,7 @@ export const Route = createFileRoute("/propiedades/$slug")({
       { property: "og:title", content: `${p.title} | ${COMPANY.shortName}` },
       { property: "og:description", content: desc || `${p.title} en ${p.city}` },
       { property: "og:type", content: "article" },
+      { property: "og:url", content: `https://alquidel.com/propiedades/${p.slug}` },
     ];
     if (p.images?.[0]) {
       baseMeta.push(
@@ -153,7 +154,7 @@ export const Route = createFileRoute("/propiedades/$slug")({
     return {
       meta: baseMeta,
       links: [
-        { rel: "canonical", href: `https://alquidel.lovable.app/propiedades/${p.slug}` },
+        { rel: "canonical", href: `https://alquidel.com/propiedades/${p.slug}` },
       ],
       scripts: [
         {
@@ -617,7 +618,12 @@ function PropertyDetail() {
                   className="mt-5 space-y-3"
                 >
                   <div>
+                    <Label htmlFor="visit-name" className="sr-only">Nombre</Label>
                     <Input
+                      id="visit-name"
+                      name="name"
+                      autoComplete="name"
+                      aria-label="Nombre"
                       placeholder="Nombre *"
                       value={form.name}
                       onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -625,7 +631,12 @@ function PropertyDetail() {
                     {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
                   </div>
                   <div>
+                    <Label htmlFor="visit-email" className="sr-only">Email</Label>
                     <Input
+                      id="visit-email"
+                      name="email"
+                      autoComplete="email"
+                      aria-label="Email"
                       type="email"
                       placeholder="Email *"
                       value={form.email}
@@ -633,13 +644,22 @@ function PropertyDetail() {
                     />
                     {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
                   </div>
+                  <Label htmlFor="visit-phone" className="sr-only">Teléfono</Label>
                   <Input
+                    id="visit-phone"
+                    name="phone"
+                    autoComplete="tel"
+                    aria-label="Teléfono"
                     type="tel"
                     placeholder="Teléfono"
                     value={form.phone}
                     onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                   />
+                  <Label htmlFor="visit-message" className="sr-only">Mensaje</Label>
                   <Textarea
+                    id="visit-message"
+                    name="message"
+                    aria-label="Mensaje"
                     rows={3}
                     placeholder="Mensaje (fechas y horarios preferidos para la visita)"
                     value={form.message}
