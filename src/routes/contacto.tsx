@@ -27,6 +27,28 @@ export const Route = createFileRoute("/contacto")({
         property: "og:description",
         content: "Estamos disponibles para asesorarte. Contáctanos por teléfono, email o WhatsApp.",
       },
+      { property: "og:url", content: "https://alquidel.com/contacto" },
+    ],
+    links: [{ rel: "canonical", href: "https://alquidel.com/contacto" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "RealEstateAgent",
+          name: COMPANY.name,
+          url: "https://alquidel.com",
+          telephone: COMPANY.phone,
+          email: COMPANY.email,
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "Calle 138 #74-51, Oficina 09",
+            addressLocality: "Bogotá",
+            addressCountry: "CO",
+          },
+          sameAs: [COMPANY.social.facebook, COMPANY.social.instagram],
+        }),
+      },
     ],
   }),
   component: ContactoPage,

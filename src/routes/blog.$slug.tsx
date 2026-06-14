@@ -49,6 +49,7 @@ export const Route = createFileRoute("/blog/$slug")({
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:type", content: "article" },
+      { property: "og:url", content: `https://alquidel.com/blog/${post.slug}` },
       { property: "article:published_time", content: post.published_at ?? "" },
       { property: "article:author", content: post.author },
       { property: "article:section", content: POST_CATEGORY_LABELS[post.category] },
@@ -80,6 +81,7 @@ export const Route = createFileRoute("/blog/$slug")({
 
     return {
       meta,
+      links: [{ rel: "canonical", href: `https://alquidel.com/blog/${post.slug}` }],
       scripts: [
         {
           type: "application/ld+json",

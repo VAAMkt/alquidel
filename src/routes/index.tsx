@@ -103,6 +103,24 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { property: "og:image", content: heroBogota },
       { name: "twitter:image", content: heroBogota },
+      { property: "og:url", content: "https://alquidel.com/" },
+    ],
+    links: [{ rel: "canonical", href: "https://alquidel.com/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Alquidel Bienes Raíces",
+          url: "https://alquidel.com",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://alquidel.com/propiedades?ciudad={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
     ],
   }),
   loader: async ({ context }) => {

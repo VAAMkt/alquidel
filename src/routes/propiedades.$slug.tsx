@@ -113,6 +113,7 @@ export const Route = createFileRoute("/propiedades/$slug")({
       { property: "og:title", content: `${p.title} | ${COMPANY.shortName}` },
       { property: "og:description", content: desc || `${p.title} en ${p.city}` },
       { property: "og:type", content: "article" },
+      { property: "og:url", content: `https://alquidel.com/propiedades/${p.slug}` },
     ];
     if (p.images?.[0]) {
       baseMeta.push(
@@ -153,7 +154,7 @@ export const Route = createFileRoute("/propiedades/$slug")({
     return {
       meta: baseMeta,
       links: [
-        { rel: "canonical", href: `https://alquidel.lovable.app/propiedades/${p.slug}` },
+        { rel: "canonical", href: `https://alquidel.com/propiedades/${p.slug}` },
       ],
       scripts: [
         {

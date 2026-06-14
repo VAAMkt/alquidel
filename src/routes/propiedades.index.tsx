@@ -102,7 +102,9 @@ export const Route = createFileRoute("/propiedades/")({
         property: "og:description",
         content: "Inmuebles seleccionados para venta y arriendo en Colombia.",
       },
+      { property: "og:url", content: "https://alquidel.com/propiedades" },
     ],
+    links: [{ rel: "canonical", href: "https://alquidel.com/propiedades" }],
   }),
   component: PropiedadesPage,
 });

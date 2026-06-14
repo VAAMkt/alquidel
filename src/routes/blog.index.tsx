@@ -40,7 +40,9 @@ export const Route = createFileRoute("/blog/")({
           "Consejos de compra, tendencias del mercado y guías inmobiliarias en Colombia.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://alquidel.com/blog" },
     ],
+    links: [{ rel: "canonical", href: "https://alquidel.com/blog" }],
   }),
   component: BlogPage,
 });
