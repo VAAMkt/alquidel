@@ -1,75 +1,35 @@
+# Plan: Logo transparente Alquidel + tamaño doble
 
-# Identidad de marca Alquidel
+## Problema
+1. El logo actual es un JPG con fondo blanco (se ve un rectángulo blanco sobre la barra).
+2. El usuario subió la versión PNG sin fondo (transparente) — debemos usar esa.
+3. El logo se ve pequeño. Hay que duplicar el tamaño en navbar y footer.
+4. Los cambios anteriores parecen haberse perdido (probablemente porque el navegador cacheaba el JPG anterior, o el componente seguía usando el asset viejo). Esta vez sustituimos el asset por completo para que sea permanente.
 
-Aplicar el logo real y los colores corporativos (navy + teal) en toda la plataforma, con variantes para fondos claros y oscuros, y una marca gráfica ("A" + swoosh) reutilizable como imagotipo.
+## Cambios
 
-## 1. Assets del logo
+### 1. Subir el PNG transparente como asset oficial
+- `lovable-assets create --file /mnt/user-uploads/PHOTO-2026-06-14-10-16-45-removebg-preview.png --filename alquidel-logo.png`
+- Guardar el pointer en `src/assets/alquidel-logo.png.asset.json` (nuevo archivo, PNG transparente).
+- Eliminar el antiguo `src/assets/alquidel-logo-full.jpg.asset.json` para que ninguna referencia residual lo use.
 
-Subir el logo aportado a Lovable Assets y crear variantes:
+### 2. Actualizar `BrandLogo.tsx`
+- Importar `alquidel-logo.png.asset.json` en lugar del JPG.
+- El PNG transparente sirve tanto sobre fondo claro como oscuro (logo navy+teal funciona sobre blanco; para fondos muy oscuros mantenemos la composición SVG `tone="dark"`).
 
-- `logo-alquidel-full.png` — versión horizontal completa (la que enviaste), para fondo claro.
-- `logo-alquidel-full-dark.svg` — misma composición con texto en blanco y swoosh teal, para fondo oscuro (footer, hero overlay).
-- `logo-alquidel-mark.svg` — solo la "A" con el swoosh teal (imagotipo) en versiones:
-  - teal sobre transparente (uso general)
-  - blanco sobre transparente (sobre fondo navy/foto)
-  - navy sobre transparente (detalles sobre fondo claro)
-- `favicon.svg` / `favicon-32.png` / `apple-touch-icon.png` — generados a partir del imagotipo "A".
-- `og-image.jpg` — 1200×630 con la "A" + wordmark sobre fondo navy degradado, para compartir en redes.
+### 3. Duplicar tamaño del logo
+- Navbar (`PublicNavbar.tsx`): `h-9` → `h-16` y altura del header `h-16` → `h-24` para acomodar.
+- Footer (`PublicFooter.tsx`): `h-10` → `h-20`.
+- Favicon/OG/apple-touch en `__root.tsx`: apuntar al nuevo PNG.
 
-Los SVG monocromos se construyen reconstruyendo el path del imagotipo en código (no recortes del JPG) para mantener nitidez.
-
-## 2. Paleta corporativa (tokens en `src/styles.css`)
-
-Reemplazar la paleta actual (slate-700 + amber) por:
-
-| Token | Light | Dark | Uso |
-|---|---|---|---|
-| `--brand-navy` | `#0E2A47` | igual | Texto wordmark, primario |
-| `--brand-teal` | `#1AA6B7` | `#3FC4D4` | Swoosh, acentos, CTA secundario |
-| `--brand-teal-soft` | `#E6F6F8` | `#0F3A42` | Fondos suaves, chips |
-| `--primary` | navy | navy claro | botones principales |
-| `--accent` | teal | teal | enlaces activos, badges, focus ring |
-| `--ring` | teal | teal | focus accesible |
-
-Eliminar el amber/dorado (ya no es marca). Actualizar `--sidebar-*`, `--chart-*` para que los charts del admin usen variaciones navy/teal coherentes.
-
-## 3. Uso del logo por contexto
-
-- **Navbar público** (`PublicNavbar.tsx`): reemplazar el texto "ALQUIDEL" actual por `<img src={logoFull} />` (altura 36px). En móvil, usar solo el imagotipo "A".
-- **Footer** (`PublicFooter.tsx`): versión "dark" del logo completo (texto blanco, swoosh teal) sobre fondo navy o blanco según diseño actual.
-- **Admin Sidebar**: imagotipo "A" + wordmark compacto.
-- **Favicon / OG / Apple touch**: registrar en `__root.tsx` head().
-- **Hero / detalles especiales**: el imagotipo "A" teal como elemento decorativo (marca de agua sutil en tarjetas destacadas, separador entre secciones, loader spinner).
-- **Email/PDF impresión**: logo full color en la ficha imprimible de propiedad.
-
-## 4. Componente `<BrandLogo />`
-
-Crear `src/components/brand/BrandLogo.tsx` con props:
-
-```tsx
-<BrandLogo variant="full" | "mark" | "wordmark"
-           tone="color" | "light" | "dark"
-           className="h-9" />
-```
-
-Centraliza qué archivo se sirve y evita que cada vista importe rutas distintas. Todas las pantallas (navbar, footer, sidebar, login, 404) lo consumen.
-
-## 5. Limpieza
-
-- Quitar el "punto amber" decorativo (`bg-accent rounded-full`) actual del navbar/footer — se sustituye por el logo real.
-- Revisar componentes que usan `text-amber-*` o el viejo `--accent` dorado y migrar al teal.
-- Actualizar `mem://index.md` con la nueva regla de marca (paleta + uso del logo).
+### 4. Limpieza
+- Borrar el archivo JSON del JPG viejo (`src/assets/alquidel-logo-full.jpg.asset.json`).
+- Actualizar la memoria `mem/design/brand.md` para reflejar el nuevo asset PNG transparente y los tamaños.
 
 ## Archivos a tocar
+- **Nuevo**: `src/assets/alquidel-logo.png.asset.json`
+- **Eliminar**: `src/assets/alquidel-logo-full.jpg.asset.json`
+- **Editar**: `src/components/brand/BrandLogo.tsx`, `src/components/layout/PublicNavbar.tsx`, `src/components/layout/PublicFooter.tsx`, `src/routes/__root.tsx`, `mem/design/brand.md`
 
-- `src/styles.css` — tokens de color
-- `src/components/brand/BrandLogo.tsx` *(nuevo)*
-- `src/components/layout/PublicNavbar.tsx`
-- `src/components/layout/PublicFooter.tsx`
-- `src/components/layout/AdminSidebar.tsx`
-- `src/routes/__root.tsx` — favicon, og:image, theme-color
-- `src/assets/brand/*` — pointers a Lovable Assets (logo full, mark, dark)
-- `mem://index.md` + `mem://design/brand`
-
-## Nota técnica
-El JPG adjunto se sube tal cual como versión "full color sobre blanco". Las variantes monocromas (blanco para fondo oscuro, solo-A) se entregan como SVG vectoriales generados para conservar calidad a cualquier tamaño y permitir recolorearlas vía `currentColor`.
+## Nota sobre permanencia
+Una vez sustituido el asset y los `className` de altura, el cambio queda en código. Si tras desplegarlo todavía se ve el logo viejo, será caché del navegador — basta un hard refresh (Cmd/Ctrl+Shift+R).
