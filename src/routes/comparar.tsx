@@ -127,7 +127,7 @@ function CompararPage() {
                           className={
                             p.type === "venta"
                               ? "rounded-md bg-slate-800 text-slate-50 hover:bg-slate-800"
-                              : "rounded-md bg-amber-500 text-white hover:bg-amber-500"
+                              : "rounded-md bg-[color:var(--brand-teal)] text-white hover:bg-[color:var(--brand-teal)]"
                           }
                         >
                           {p.type === "venta" ? "Venta" : "Arriendo"}

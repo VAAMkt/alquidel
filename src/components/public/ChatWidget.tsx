@@ -159,7 +159,7 @@ export function ChatWidget() {
         >
           <MessageCircle className="h-6 w-6" />
           {showBadge && (
-            <span className="absolute -right-1 -top-1 inline-flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white">
+            <span className="absolute -right-1 -top-1 inline-flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-[color:var(--brand-teal)] text-[11px] font-bold text-white">
               1
             </span>
           )}
@@ -176,7 +176,7 @@ export function ChatWidget() {
         >
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-border bg-slate-800 px-4 py-3 text-white">
-            <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-sm font-bold text-slate-900">
+            <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[color:var(--brand-teal)] text-sm font-bold text-white">
               A
             </div>
             <div className="flex-1">

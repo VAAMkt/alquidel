@@ -662,7 +662,7 @@ export function PropertyForm({ initial, mode }: Props) {
               <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
                 <img src={url} alt={`Imagen ${idx + 1}`} className="h-full w-full object-cover" />
                 {idx === 0 && (
-                  <Badge className="absolute left-2 top-2 bg-amber-500 text-white hover:bg-amber-500">Portada</Badge>
+                  <Badge className="absolute left-2 top-2 bg-[color:var(--brand-teal)] text-white hover:bg-[color:var(--brand-teal)]">Portada</Badge>
                 )}
                 <div className="absolute inset-0 flex items-end justify-between gap-1 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
                   <div className="flex gap-1">
