@@ -14,14 +14,15 @@ Tokens en `src/styles.css`: `--brand-navy`, `--brand-teal`, `--brand-teal-bright
 Mapeados a `--primary` (navy) y `--accent` (teal). El amber/dorado fue retirado.
 
 ## Logo — `<BrandLogo />`
-Ubicado en `src/components/brand/BrandLogo.tsx`. Asset color en `src/assets/alquidel-logo-full.jpg.asset.json`.
+Ubicado en `src/components/brand/BrandLogo.tsx`. Asset oficial (PNG transparente) en `src/assets/alquidel-logo.png.asset.json`.
 
 Props:
 - `variant`: `"full"` (imagotipo + wordmark) · `"mark"` (solo A) · `"wordmark"` (solo texto)
 - `tone`: `"color"` (oficial, navy+teal) · `"light"` (mismo) · `"dark"` (texto blanco + swoosh teal, para fondos oscuros)
 
 Usos:
-- Navbar público y footer: `variant="full" tone="color"` (h-9 / h-10)
+- Navbar público: `variant="full" tone="color"` con `h-16 w-auto` (header `h-24`).
+- Footer público: `variant="full" tone="color"` con `h-20 w-auto`.
 - Sidebar admin: `<BrandMark />` + texto navy
 - Hero/secciones oscuras: `variant="full" tone="dark"`
 - Detalles decorativos (loaders, separadores, marca de agua en tarjetas premium): `<BrandMark />` teal
