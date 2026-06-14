@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { COMPANY } from "@/lib/company";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 export function PublicFooter() {
   return (
@@ -9,12 +10,7 @@ export function PublicFooter() {
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-1">
-            <div className="inline-flex items-baseline gap-1">
-              <span className="text-lg font-semibold tracking-[0.2em] text-foreground">
-                ALQUIDEL
-              </span>
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            </div>
+            <BrandLogo variant="full" tone="color" className="h-10 w-auto" />
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {COMPANY.about}
             </p>

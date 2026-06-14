@@ -26,6 +26,7 @@ import { signOut } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { BrandMark } from "@/components/brand/BrandMark";
 
 const items = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, badgeKey: null },
@@ -66,8 +67,10 @@ export function AdminSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <Link to="/admin/dashboard" className="flex items-center gap-2 px-2 py-1.5">
-          <span className="text-base font-semibold tracking-[0.2em]">ALQUIDEL</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+          <BrandMark className="h-6 w-6 text-[color:var(--brand-navy)]" />
+          <span className="text-base font-bold tracking-[0.04em] text-[color:var(--brand-navy)]">
+            ALQUIDEL
+          </span>
         </Link>
       </SidebarHeader>
 

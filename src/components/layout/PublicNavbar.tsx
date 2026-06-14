@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useAuth } from "@/hooks/useAuth";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 const NAV = [
   { to: "/propiedades", label: "Propiedades" },
@@ -18,11 +19,8 @@ export function PublicNavbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="group inline-flex items-baseline gap-1">
-          <span className="text-xl font-semibold tracking-[0.2em] text-foreground">
-            ALQUIDEL
-          </span>
-          <span className="h-1.5 w-1.5 rounded-full bg-accent transition-transform group-hover:scale-125" />
+        <Link to="/" aria-label="Inicio Alquidel" className="inline-flex items-center">
+          <BrandLogo variant="full" tone="color" className="h-9 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">

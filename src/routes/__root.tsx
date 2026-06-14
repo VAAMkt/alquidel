@@ -15,6 +15,7 @@ import { CompareProvider } from "@/contexts/CompareContext";
 import { installServerFnAuthFetch } from "@/integrations/supabase/server-fn-fetch";
 
 import appCss from "../styles.css?url";
+import logoFull from "@/assets/alquidel-logo-full.jpg.asset.json";
 
 // Install the fetch interceptor as soon as this module loads in the browser
 // so that every server-fn call carries the current Supabase JWT.
@@ -80,14 +81,17 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: "description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
       { property: "og:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
       { name: "twitter:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
+      { property: "og:image", content: logoFull.url },
+      { name: "twitter:image", content: logoFull.url },
+      { name: "theme-color", content: "#0E2A47" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", type: "image/jpeg", href: logoFull.url },
+      { rel: "apple-touch-icon", href: logoFull.url },
     ],
   }),
   shellComponent: RootShell,
