@@ -15,7 +15,7 @@ import { CompareProvider } from "@/contexts/CompareContext";
 import { installServerFnAuthFetch } from "@/integrations/supabase/server-fn-fetch";
 
 import appCss from "../styles.css?url";
-import logoFull from "@/assets/alquidel-logo-full.jpg.asset.json";
+import logoFull from "@/assets/alquidel-logo.png.asset.json";
 
 // Install the fetch interceptor as soon as this module loads in the browser
 // so that every server-fn call carries the current Supabase JWT.
@@ -90,7 +90,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", type: "image/jpeg", href: logoFull.url },
+      { rel: "icon", type: "image/png", href: logoFull.url },
       { rel: "apple-touch-icon", href: logoFull.url },
     ],
   }),
