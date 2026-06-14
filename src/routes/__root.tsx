@@ -84,6 +84,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { property: "og:image", content: logoFull.url },
       { name: "twitter:image", content: logoFull.url },
       { name: "theme-color", content: "#0E2A47" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/78ef8d61-acc9-4c91-b4ba-c615232e5d0a" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/78ef8d61-acc9-4c91-b4ba-c615232e5d0a" },
     ],
     links: [
       {
