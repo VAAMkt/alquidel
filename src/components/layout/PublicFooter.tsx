@@ -10,7 +10,7 @@ export function PublicFooter() {
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-1">
-            <BrandLogo variant="full" tone="color" className="h-10 w-auto" />
+            <BrandLogo variant="full" tone="color" className="h-20 w-auto" />
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {COMPANY.about}
             </p>
