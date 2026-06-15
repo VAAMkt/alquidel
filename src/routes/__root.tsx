@@ -15,7 +15,6 @@ import { CompareProvider } from "@/contexts/CompareContext";
 import { installServerFnAuthFetch } from "@/integrations/supabase/server-fn-fetch";
 
 import appCss from "../styles.css?url";
-import logoFull from "@/assets/alquidel-logo.png.asset.json";
 
 // Install the fetch interceptor as soon as this module loads in the browser
 // so that every server-fn call carries the current Supabase JWT.
@@ -78,34 +77,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@alquidel" },
       { name: "twitter:title", content: "ALQUIDEL — Encuentra la propiedad de tus sueños" },
+      { name: "description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
+      { property: "og:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
       { name: "twitter:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
-      { property: "og:site_name", content: "ALQUIDEL" },
-      { name: "theme-color", content: "#0E2A47" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/78ef8d61-acc9-4c91-b4ba-c615232e5d0a" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/78ef8d61-acc9-4c91-b4ba-c615232e5d0a" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
-      },
-      { rel: "icon", type: "image/png", href: logoFull.url },
-      { rel: "apple-touch-icon", href: logoFull.url },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: "Alquidel Bienes Raíces S.A.S.",
-          url: "https://alquidel.com",
-          logo: "https://alquidel.com/favicon.ico",
-          sameAs: [
-            "https://www.facebook.com/alquidelbienesraices",
-            "https://www.instagram.com/alquidelbrsas/",
-          ],
-        }),
       },
     ],
   }),
