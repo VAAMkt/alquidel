@@ -290,6 +290,31 @@ function HomePage() {
         </div>
       </section>
 
+      {/* CTA PROPIETARIOS */}
+      <section className="border-y border-border bg-primary/5">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-12 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">
+              ¿Eres propietario?
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              Vende o arrienda tu inmueble con acompañamiento completo
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+              Avalúo comercial, fotografía, publicación y filtro de interesados. Te
+              contactamos en menos de 24 horas hábiles.
+            </p>
+          </div>
+          <Button asChild size="lg" className="h-12 rounded-lg px-6">
+            <Link to="/propietarios">
+              Consignar mi inmueble
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+
       {/* DESTACADAS */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between">
