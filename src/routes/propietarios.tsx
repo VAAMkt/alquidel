@@ -144,6 +144,7 @@ function PropietariosPage() {
       }
     },
     onSuccess: () => {
+      trackLeadSubmit("propietarios", { source: "propietario", intent: form.intent });
       toast.success("¡Recibido! Un asesor te contactará en menos de 24 horas hábiles.");
       setForm((f) => ({ ...f, name: "", email: "", phone: "", city: "", message: "" }));
     },

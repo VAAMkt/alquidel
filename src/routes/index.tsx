@@ -29,6 +29,7 @@ import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
 import { CITY_LANDINGS } from "@/lib/landings";
+import { trackOwnerCta } from "@/lib/analytics";
 import heroBogota from "@/assets/hero-bogota.jpg";
 
 const PROPERTY_TYPES = [
@@ -307,7 +308,10 @@ function HomePage() {
             </p>
           </div>
           <Button asChild size="lg" className="h-12 rounded-lg px-6">
-            <Link to="/propietarios">
+            <Link
+              to="/propietarios"
+              onClick={() => trackOwnerCta("consignar", "home-hero")}
+            >
               Consignar mi inmueble
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -324,7 +328,7 @@ function HomePage() {
               Selección
             </p>
             <h2 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              Propiedades destacadas
+              Selección Alquidel
             </h2>
           </div>
           <Link
