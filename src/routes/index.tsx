@@ -28,6 +28,7 @@ import { RecentViews } from "../components/public/RecentViews";
 import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
+import { CITY_LANDINGS } from "@/lib/landings";
 import heroBogota from "@/assets/hero-bogota.jpg";
 
 const PROPERTY_TYPES = [
