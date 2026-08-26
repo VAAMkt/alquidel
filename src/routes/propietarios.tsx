@@ -61,12 +61,12 @@ export const Route = createFileRoute("/propietarios")({
       },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    intencion:
-      search["intencion"] === "arrendar" || search["intencion"] === "vender"
-        ? (search["intencion"] as "arrendar" | "vender")
-        : undefined,
-  }),
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { intencion?: "vender" | "arrendar" } =>
+    search["intencion"] === "arrendar" || search["intencion"] === "vender"
+      ? { intencion: search["intencion"] as "vender" | "arrendar" }
+      : {},
   component: PropietariosPage,
 });
 
