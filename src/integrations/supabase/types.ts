@@ -259,6 +259,41 @@ export type Database = {
         }
         Relationships: []
       }
+      property_views: {
+        Row: {
+          city: string | null
+          id: string
+          property_id: string | null
+          referrer: string | null
+          slug: string
+          viewed_at: string
+        }
+        Insert: {
+          city?: string | null
+          id?: string
+          property_id?: string | null
+          referrer?: string | null
+          slug: string
+          viewed_at?: string
+        }
+        Update: {
+          city?: string | null
+          id?: string
+          property_id?: string | null
+          referrer?: string | null
+          slug?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_views_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
