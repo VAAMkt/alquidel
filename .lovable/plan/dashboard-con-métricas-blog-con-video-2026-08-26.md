@@ -2,14 +2,15 @@
 
 ## 1. Estadísticas dentro del Dashboard
 
-Todo se mueve a `/admin/dashboard` (la pestaña Analíticas deja de ser necesaria; se puede quitar del menú o dejar como redirección al dashboard).
+Todo se mueve a `/admin/dashboard` (la pestaña Analíticas deja de ser necesaria; se puede quitar del menú o dejar como redirección al dashboard).  
+R/quitemos la pestaña analiticas del menú
 
 Orden de la pantalla:
 
 1. Las 4 cajas actuales, sin cambios: Propiedades disponibles, Leads nuevos, Leads este mes, Destacadas activas.
 2. Bloque "Visitantes" con selector de período (Hoy / 7 días / 30 días / Este mes), al estilo de la imagen:
-   - Fila de métricas: Visitantes, Páginas vistas, Vistas por visita, Duración de visita, Tasa de rebote.
-   - Gráfico de área con línea (visitantes por día).
+  - Fila de métricas: Visitantes, Páginas vistas, Vistas por visita, Duración de visita, Tasa de rebote.
+  - Gráfico de área con línea (visitantes por día).
 3. Top 10 propiedades más vistas (tabla con enlace a la ficha).
 4. Leads por propiedad (tabla).
 5. Últimos leads (tabla actual, se conserva).
