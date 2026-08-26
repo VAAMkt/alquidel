@@ -107,13 +107,17 @@ export const Route = createFileRoute("/propiedades/$slug")({
     if (!loaderData?.property) return { meta: [{ title: "Propiedad | Alquidel" }] };
     const p = loaderData.property;
     const desc = (p.description ?? "").slice(0, 155);
+    const fallbackDesc = `${p.title} en ${p.neighborhood ? `${p.neighborhood}, ` : ""}${p.city}`;
     const baseMeta = [
       { title: `${p.title} | ${COMPANY.name}` },
-      { name: "description", content: desc || `${p.title} en ${p.city}` },
+      { name: "description", content: desc || fallbackDesc },
       { property: "og:title", content: `${p.title} | ${COMPANY.shortName}` },
-      { property: "og:description", content: desc || `${p.title} en ${p.city}` },
+      { property: "og:description", content: desc || fallbackDesc },
       { property: "og:type", content: "article" },
       { property: "og:url", content: `https://alquidel.com/propiedades/${p.slug}` },
+      { name: "twitter:card", content: p.images?.[0] ? "summary_large_image" : "summary" },
+      { name: "twitter:title", content: `${p.title} | ${COMPANY.shortName}` },
+      { name: "twitter:description", content: desc || fallbackDesc },
     ];
     if (p.images?.[0]) {
       baseMeta.push(
@@ -121,6 +125,25 @@ export const Route = createFileRoute("/propiedades/$slug")({
         { name: "twitter:image", content: p.images[0] },
       );
     }
+    const breadcrumbLd = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Inicio", item: "https://alquidel.com/" },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Propiedades",
+          item: "https://alquidel.com/propiedades",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: p.title,
+          item: `https://alquidel.com/propiedades/${p.slug}`,
+        },
+      ],
+    };
     const jsonLd = {
       "@context": "https://schema.org",
       "@type": "RealEstateListing",
