@@ -47,16 +47,8 @@ const PROPERTY_TYPES = [
   "bodega",
 ] as const;
 
-const CITIES = [
-  "Bogotá",
-  "Medellín",
-  "Cali",
-  "Barranquilla",
-  "Cartagena",
-  "Bucaramanga",
-  "Pereira",
-  "Manizales",
-] as const;
+// Lista cerrada: solo ciudades con inventario real.
+const CITIES = ["Bogotá", "Chía", "Cajicá", "Cali", "Mosquera"] as const;
 
 const PRICE_MAX_DEFAULT = 5_000_000_000;
 const PER_PAGE = 12;
