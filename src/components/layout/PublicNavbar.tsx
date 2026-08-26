@@ -1,10 +1,19 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, MessageCircle, LayoutDashboard } from "lucide-react";
+import { useState } from "react";
+import { Heart, MessageCircle, LayoutDashboard, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useAuth } from "@/hooks/useAuth";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { CITY_LANDINGS } from "@/lib/landings";
 
 const NAV = [
   { to: "/propiedades", label: "Propiedades" },
@@ -17,6 +26,7 @@ const NAV = [
 export function PublicNavbar() {
   const { count: favCount } = useFavorites();
   const { session } = useAuth();
+  const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
