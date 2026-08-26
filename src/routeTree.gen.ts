@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as PropietariosRouteImport } from './routes/propietarios'
 import { Route as NosotrosRouteImport } from './routes/nosotros'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
@@ -43,6 +44,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PropietariosRoute = PropietariosRouteImport.update({
+  id: '/propietarios',
+  path: '/propietarios',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NosotrosRoute = NosotrosRouteImport.update({
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
+  '/propietarios': typeof PropietariosRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
+  '/propietarios': typeof PropietariosRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
   '/nosotros': typeof NosotrosRoute
+  '/propietarios': typeof PropietariosRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/login'
     | '/nosotros'
+    | '/propietarios'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/login'
     | '/nosotros'
+    | '/propietarios'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/login'
     | '/nosotros'
+    | '/propietarios'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
@@ -336,6 +348,7 @@ export interface RootRouteChildren {
   FavoritosRoute: typeof FavoritosRoute
   LoginRoute: typeof LoginRoute
   NosotrosRoute: typeof NosotrosRoute
+  PropietariosRoute: typeof PropietariosRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/propietarios': {
+      id: '/propietarios'
+      path: '/propietarios'
+      fullPath: '/propietarios'
+      preLoaderRoute: typeof PropietariosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nosotros': {
@@ -564,6 +584,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritosRoute: FavoritosRoute,
   LoginRoute: LoginRoute,
   NosotrosRoute: NosotrosRoute,
+  PropietariosRoute: PropietariosRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogSlugRoute: BlogSlugRoute,

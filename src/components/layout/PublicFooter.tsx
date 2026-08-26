@@ -45,6 +45,7 @@ export function PublicFooter() {
             <h4 className="text-sm font-semibold text-foreground">Navegación</h4>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li><Link to="/propiedades" className="hover:text-foreground">Propiedades</Link></li>
+              <li><Link to="/propietarios" className="hover:text-foreground">Propietarios</Link></li>
               <li><Link to="/nosotros" className="hover:text-foreground">Nosotros</Link></li>
               <li><Link to="/contacto" className="hover:text-foreground">Contacto</Link></li>
               <li><Link to="/login" className="hover:text-foreground">Acceso asesores</Link></li>

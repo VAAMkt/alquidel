@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, queryOptions } from "@tanstack/react-query";
 import { useState } from "react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
@@ -47,16 +47,8 @@ const PROPERTY_TYPES = [
   "bodega",
 ] as const;
 
-const CITIES = [
-  "Bogotá",
-  "Medellín",
-  "Cali",
-  "Barranquilla",
-  "Cartagena",
-  "Bucaramanga",
-  "Pereira",
-  "Manizales",
-] as const;
+// Lista cerrada: solo ciudades con inventario real.
+const CITIES = ["Bogotá", "Chía", "Cajicá", "Cali", "Mosquera"] as const;
 
 const PRICE_MAX_DEFAULT = 5_000_000_000;
 const PER_PAGE = 12;
@@ -87,34 +79,10 @@ const DEFAULTS = {
   page: 1,
 };
 
-export const Route = createFileRoute("/propiedades/")({
-  validateSearch: zodValidator(searchSchema),
-  head: () => ({
-    meta: [
-      { title: "Propiedades en venta y arriendo | Alquidel Bienes Raíces" },
-      {
-        name: "description",
-        content:
-          "Catálogo de inmuebles para venta y arriendo en Bogotá y principales ciudades de Colombia. Apartamentos, casas, oficinas, locales y más.",
-      },
-      { property: "og:title", content: "Propiedades | Alquidel" },
-      {
-        property: "og:description",
-        content: "Inmuebles seleccionados para venta y arriendo en Colombia.",
-      },
-      { property: "og:url", content: "https://alquidel.com/propiedades" },
-    ],
-    links: [{ rel: "canonical", href: "https://alquidel.com/propiedades" }],
-  }),
-  component: PropiedadesPage,
-});
+type PropertiesSearch = z.infer<typeof searchSchema>;
 
-function PropiedadesPage() {
-  const search = Route.useSearch();
-  const navigate = useNavigate({ from: "/propiedades/" });
-  const [filtersOpen, setFiltersOpen] = useState(false);
-
-  const { data, isLoading, isError, refetch } = useQuery({
+function propertiesQueryOptions(search: PropertiesSearch) {
+  return queryOptions({
     queryKey: [
       "properties",
       "public",
@@ -167,6 +135,44 @@ function PropiedadesPage() {
       return { rows: data ?? [], total: count ?? 0 };
     },
   });
+}
+
+export const Route = createFileRoute("/propiedades/")({
+  validateSearch: zodValidator(searchSchema),
+  loaderDeps: ({ search }) => search,
+  // Precargamos en el loader para que el catálogo llegue renderizado en el
+  // HTML inicial (indexable por Google), no solo tras hidratar.
+  loader: async ({ context, deps }) => {
+    await context.queryClient.ensureQueryData(
+      propertiesQueryOptions(deps as PropertiesSearch),
+    );
+  },
+  head: () => ({
+    meta: [
+      { title: "Propiedades en venta y arriendo | Alquidel Bienes Raíces" },
+      {
+        name: "description",
+        content:
+          "Catálogo de inmuebles para venta y arriendo en Bogotá, Chía, Cajicá y Cali. Apartamentos, casas, oficinas, locales y más.",
+      },
+      { property: "og:title", content: "Propiedades | Alquidel" },
+      {
+        property: "og:description",
+        content: "Inmuebles seleccionados para venta y arriendo en Colombia.",
+      },
+      { property: "og:url", content: "https://alquidel.com/propiedades" },
+    ],
+    links: [{ rel: "canonical", href: "https://alquidel.com/propiedades" }],
+  }),
+  component: PropiedadesPage,
+});
+
+function PropiedadesPage() {
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: "/propiedades/" });
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const { data, isLoading, isError, refetch } = useQuery(propertiesQueryOptions(search));
 
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));

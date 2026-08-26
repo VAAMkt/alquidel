@@ -8,6 +8,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 
 const NAV = [
   { to: "/propiedades", label: "Propiedades" },
+  { to: "/propietarios", label: "Propietarios" },
   { to: "/blog", label: "Blog" },
   { to: "/nosotros", label: "Nosotros" },
   { to: "/contacto", label: "Contacto" },

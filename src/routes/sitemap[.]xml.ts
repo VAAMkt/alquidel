@@ -19,7 +19,15 @@ export const Route = createFileRoute("/sitemap.xml")({
             .order("updated_at", { ascending: false }),
         ]);
 
-        const staticUrls = ["/", "/propiedades", "/comparar", "/blog", "/nosotros", "/contacto"];
+        const staticUrls = [
+          "/",
+          "/propiedades",
+          "/propietarios",
+          "/comparar",
+          "/blog",
+          "/nosotros",
+          "/contacto",
+        ];
         const urls: string[] = [];
 
         for (const path of staticUrls) {

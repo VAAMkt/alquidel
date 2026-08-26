@@ -39,16 +39,8 @@ const PROPERTY_TYPES = [
   "bodega",
 ] as const;
 
-const CITIES = [
-  "Bogotá",
-  "Medellín",
-  "Cali",
-  "Barranquilla",
-  "Cartagena",
-  "Bucaramanga",
-  "Pereira",
-  "Manizales",
-] as const;
+// Lista cerrada: solo ciudades con inventario real.
+const CITIES = ["Bogotá", "Chía", "Cajicá", "Cali", "Mosquera"] as const;
 
 // Query options compartidos para que el loader y el componente compartan caché
 const featuredQueryOptions = queryOptions({
@@ -89,16 +81,20 @@ const recentSixQueryOptions = queryOptions({
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: `${COMPANY.shortName} — ${COMPANY.tagline}` },
+      { title: `${COMPANY.shortName} — Menos búsqueda. Más criterio.` },
       {
         name: "description",
         content:
-          "Alquidel Bienes Raíces: venta y arriendo de inmuebles premium en Bogotá y principales ciudades de Colombia. Asesoría inmobiliaria personalizada.",
+          "Compra, arrienda o invierte en Bogotá, Chía, Cajicá y Cali — con asesoría real en cada paso.",
       },
-      { property: "og:title", content: `${COMPANY.shortName} — ${COMPANY.tagline}` },
+      {
+        property: "og:title",
+        content: `${COMPANY.shortName} — Menos búsqueda. Más criterio.`,
+      },
       {
         property: "og:description",
-        content: "Venta y arriendo de inmuebles premium en Bogotá y Colombia.",
+        content:
+          "Compra, arrienda o invierte en Bogotá, Chía, Cajicá y Cali — con asesoría real en cada paso.",
       },
       { property: "og:type", content: "website" },
       { property: "og:image", content: heroBogota },
@@ -138,17 +134,23 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const navigate = useNavigate();
   const { featured: initialFeatured, recent: initialRecent } = Route.useLoaderData();
-  const [op, setOp] = useState<"todos" | "venta" | "arriendo">("todos");
+  // Tres intenciones de usuario: comprar, arrendar o invertir.
+  const [op, setOp] = useState<"todos" | "comprar" | "arrendar" | "invertir">("todos");
   const [tipo, setTipo] = useState<string>("todos");
   const [ciudad, setCiudad] = useState<string>("todas");
 
   function handleSearch() {
+    // "Comprar" e "Invertir" apuntan al inventario en venta; invertir además
+    // prioriza la selección destacada.
+    const operacion =
+      op === "arrendar" ? "arriendo" : op === "todos" ? undefined : "venta";
     // IMPORTANTE: pasamos search como función para que TanStack Router
     // valide correctamente con el schema de /propiedades (tipos como array).
     navigate({
       to: "/propiedades",
       search: () => ({
-        ...(op !== "todos" ? { operacion: op } : {}),
+        ...(operacion ? { operacion } : {}),
+        ...(op === "invertir" ? { sort: "destacados" as const } : {}),
         ...(tipo !== "todos" ? { tipos: [tipo as any] } : {}),
         ...(ciudad !== "todas" ? { ciudad } : {}),
         page: 1,
@@ -194,11 +196,11 @@ function HomePage() {
               Inmobiliaria colombiana · Bogotá
             </div>
             <h1 className="mt-6 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Encuentra la propiedad de tus{" "}
-              <span className="text-accent">sueños en Colombia</span>
+              Menos búsqueda. <span className="text-accent">Más criterio.</span>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
-              Venta y arriendo de inmuebles premium. Bogotá y principales ciudades.
+              Propiedades seleccionadas. Asesoría real. Decisiones inmobiliarias con
+              respaldo en Bogotá, Chía, Cajicá y Cali.
             </p>
           </div>
 
@@ -211,18 +213,19 @@ function HomePage() {
                     className="flex h-12 items-center rounded-lg border border-border bg-background px-3 text-sm text-muted-foreground"
                     aria-hidden="true"
                   >
-                    Operación
+                    ¿Qué estás buscando?
                   </div>
                 }
               >
                 <Select value={op} onValueChange={(v) => setOp(v as typeof op)}>
                   <SelectTrigger className="h-12 rounded-lg border-border">
-                    <SelectValue placeholder="Operación" />
+                    <SelectValue placeholder="¿Qué estás buscando?" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todos">Todas las operaciones</SelectItem>
-                    <SelectItem value="venta">Venta</SelectItem>
-                    <SelectItem value="arriendo">Arriendo</SelectItem>
+                    <SelectItem value="todos">Comprar, arrendar o invertir</SelectItem>
+                    <SelectItem value="comprar">Comprar</SelectItem>
+                    <SelectItem value="arrendar">Arrendar</SelectItem>
+                    <SelectItem value="invertir">Invertir</SelectItem>
                   </SelectContent>
                 </Select>
               </ClientOnly>
@@ -286,6 +289,31 @@ function HomePage() {
           </Card>
         </div>
       </section>
+
+      {/* CTA PROPIETARIOS */}
+      <section className="border-y border-border bg-primary/5">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-12 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">
+              ¿Eres propietario?
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              Vende o arrienda tu inmueble con acompañamiento completo
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+              Avalúo comercial, fotografía, publicación y filtro de interesados. Te
+              contactamos en menos de 24 horas hábiles.
+            </p>
+          </div>
+          <Button asChild size="lg" className="h-12 rounded-lg px-6">
+            <Link to="/propietarios">
+              Consignar mi inmueble
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
 
       {/* DESTACADAS */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
