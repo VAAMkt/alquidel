@@ -245,7 +245,9 @@ function PropertyDetail() {
   // Registro de vista (analíticas propias) — en segundo plano, sin bloquear el render.
   useEffect(() => {
     if (!p?.id || !p?.slug) return;
+    annotatePageView({ propertyId: p.id, city: p.city ?? null });
     void supabase
+
       .from("property_views")
       .insert({
         property_id: p.id,
