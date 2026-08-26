@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { COMPANY } from "@/lib/company";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { trackWhatsApp } from "@/lib/analytics";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 
 export function PublicFooter() {
@@ -84,6 +85,7 @@ export function PublicFooter() {
                 <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                 <a
                   href={whatsappUrl()}
+                  onClick={() => trackWhatsApp("footer")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-foreground"

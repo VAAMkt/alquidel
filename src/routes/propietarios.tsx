@@ -21,6 +21,7 @@ import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { trackWhatsApp, trackLeadSubmit } from "@/lib/analytics";
 
 const TITLE = "Vende o arrienda tu inmueble | Alquidel Bienes Raíces";
 const DESCRIPTION =
@@ -181,6 +182,7 @@ function PropietariosPage() {
 
             <a
               href={whatsappUrl("Hola, quiero consignar mi inmueble con Alquidel.")}
+              onClick={() => trackWhatsApp("propietarios")}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
