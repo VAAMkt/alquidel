@@ -1,3 +1,7 @@
+import mariaPhoto from "@/assets/maria-antonia-arroyo.jpg.asset.json";
+import freddyPhoto from "@/assets/freddy-delgado.png.asset.json";
+import marcelaPhoto from "@/assets/marcela-moreno.png.asset.json";
+
 /**
  * Datos reales de Alquidel Bienes Raíces S.A.S.
  * Centralizados aquí para usarse en footer, contacto, detalle y nosotros.
@@ -27,9 +31,6 @@ export const COMPANY = {
   },
 } as const;
 
-import mariaPhoto from "@/assets/maria-antonia-arroyo.jpg.asset.json";
-import freddyPhoto from "@/assets/freddy-delgado.png.asset.json";
-import marcelaPhoto from "@/assets/marcela-moreno.png.asset.json";
 
 /** Señales de confianza verificadas por Alquidel. */
 export const TRUST = {
