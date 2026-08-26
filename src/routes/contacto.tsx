@@ -13,6 +13,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { trackWhatsApp, trackLeadSubmit } from "@/lib/analytics";
 
 export const Route = createFileRoute("/contacto")({
   head: () => ({
@@ -93,6 +94,7 @@ function ContactoPage() {
       }
     },
     onSuccess: () => {
+      trackLeadSubmit("contacto", { source: "formulario" });
       toast.success("¡Gracias! Te contactaremos pronto.");
       setForm({ name: "", email: "", phone: "", message: "" });
     },
@@ -162,6 +164,7 @@ function ContactoPage() {
 
             <a
               href={whatsappUrl()}
+              onClick={() => trackWhatsApp("contacto")}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"

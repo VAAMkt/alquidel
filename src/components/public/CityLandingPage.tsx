@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { cityLandingQueryOptions } from "@/lib/landings.query";
 import { OPERACION_COPY, type CityLanding, type Operacion } from "@/lib/landings";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { trackWhatsApp, trackOwnerCta } from "@/lib/analytics";
 
 const TYPE_PLURAL: Record<string, string> = {
   apartamento: "Apartamentos",
@@ -202,7 +203,12 @@ export function CityLandingPage({
           </div>
           <div className="flex flex-wrap gap-3">
             <Button asChild className="rounded-lg">
-              <Link to="/propietarios">Consignar mi inmueble</Link>
+              <Link
+                to="/propietarios"
+                onClick={() => trackOwnerCta("consignar", `landing-${city.slug}`)}
+              >
+                Consignar mi inmueble
+              </Link>
             </Button>
             <Button
               asChild
@@ -213,6 +219,7 @@ export function CityLandingPage({
                 href={whatsappUrl(
                   `Hola, me interesan inmuebles ${copy.verb} en ${city.label}.`,
                 )}
+                onClick={() => trackWhatsApp(`landing-${city.slug}`)}
                 target="_blank"
                 rel="noopener noreferrer"
               >

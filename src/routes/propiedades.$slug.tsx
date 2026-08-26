@@ -56,6 +56,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCOP, formatArea, displayPrice } from "@/lib/format";
 import { COMPANY } from "@/lib/company";
 import { whatsappUrl, propertyWhatsappMessage, shareWhatsappUrl } from "@/lib/whatsapp";
+import { trackWhatsApp, trackLeadSubmit, trackVisitRequest } from "@/lib/analytics";
 import { useEffect } from "react";
 import { useRecentViews } from "@/hooks/useRecentViews";
 import { youtubeEmbedUrl } from "@/lib/youtube";
@@ -289,6 +290,7 @@ function PropertyDetail() {
       }
     },
     onSuccess: () => {
+      trackLeadSubmit("solicitar-visita", { property_id: p.id, property_slug: p.slug });
       toast.success("¡Consulta enviada! Te contactaremos pronto.");
       setForm({
         name: "",
@@ -640,6 +642,7 @@ function PropertyDetail() {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
+                    trackVisitRequest(p.id, p.slug);
                     leadMutation.mutate();
                   }}
                   className="mt-5 space-y-3"
@@ -700,6 +703,7 @@ function PropertyDetail() {
 
                 <a
                   href={waLink}
+                  onClick={() => trackWhatsApp("ficha-propiedad", { property_slug: p.slug })}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
@@ -758,6 +762,7 @@ function PropertyDetail() {
       {/* FAB móvil WhatsApp */}
       <a
         href={waLink}
+        onClick={() => trackWhatsApp("ficha-propiedad-fab", { property_slug: p.slug })}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed inset-x-4 bottom-4 z-30 inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition-colors hover:bg-emerald-700 lg:hidden"
