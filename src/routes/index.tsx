@@ -412,19 +412,19 @@ function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:grid-cols-3 sm:px-6 lg:px-8">
           {[
             {
-              icon: HomeIcon,
-              title: "8+ Propiedades exclusivas",
-              desc: "Catálogo curado de inmuebles seleccionados con criterio.",
+              icon: Award,
+              title: `${TRUST.yearsLabel} de trayectoria`,
+              desc: "Alquidel nació en 2019, pero la experiencia de sus fundadores en bienes raíces supera los 23 años.",
             },
             {
-              icon: MapPin,
-              title: "Bogotá y Colombia",
-              desc: "Presencia en las principales ciudades del país.",
+              icon: HomeIcon,
+              title: `${TRUST.propertiesLabel} inmuebles gestionados`,
+              desc: "Ventas, arriendos y administración de inmuebles en Bogotá, la Sabana y Cali.",
             },
             {
               icon: Headset,
               title: "Asesoría personalizada",
-              desc: "Acompañamiento integral en cada paso del proceso.",
+              desc: "Acompañamiento integral en cada paso del proceso, con un asesor asignado.",
             },
           ].map((item) => (
             <Card
@@ -439,7 +439,25 @@ function HomePage() {
             </Card>
           ))}
         </div>
+
+        {/* Alianzas */}
+        <div className="mx-auto max-w-7xl border-t border-border px-4 py-10 sm:px-6 lg:px-8">
+          <p className="text-center text-xs font-medium uppercase tracking-[0.25em] text-muted-foreground">
+            Aliados y portales
+          </p>
+          <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+            {PARTNERS.map((p) => (
+              <li
+                key={p}
+                className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm text-muted-foreground"
+              >
+                {p}
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
+
 
       {/* ¿POR QUÉ ALQUIDEL? */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
