@@ -134,17 +134,23 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const navigate = useNavigate();
   const { featured: initialFeatured, recent: initialRecent } = Route.useLoaderData();
-  const [op, setOp] = useState<"todos" | "venta" | "arriendo">("todos");
+  // Tres intenciones de usuario: comprar, arrendar o invertir.
+  const [op, setOp] = useState<"todos" | "comprar" | "arrendar" | "invertir">("todos");
   const [tipo, setTipo] = useState<string>("todos");
   const [ciudad, setCiudad] = useState<string>("todas");
 
   function handleSearch() {
+    // "Comprar" e "Invertir" apuntan al inventario en venta; invertir además
+    // prioriza la selección destacada.
+    const operacion =
+      op === "arrendar" ? "arriendo" : op === "todos" ? undefined : "venta";
     // IMPORTANTE: pasamos search como función para que TanStack Router
     // valide correctamente con el schema de /propiedades (tipos como array).
     navigate({
       to: "/propiedades",
       search: () => ({
-        ...(op !== "todos" ? { operacion: op } : {}),
+        ...(operacion ? { operacion } : {}),
+        ...(op === "invertir" ? { sort: "destacados" as const } : {}),
         ...(tipo !== "todos" ? { tipos: [tipo as any] } : {}),
         ...(ciudad !== "todas" ? { ciudad } : {}),
         page: 1,
