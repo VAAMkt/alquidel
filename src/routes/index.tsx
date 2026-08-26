@@ -204,7 +204,24 @@ function HomePage() {
               Propiedades seleccionadas. Asesoría real. Decisiones inmobiliarias con
               respaldo en Bogotá, Chía, Cajicá y Cali.
             </p>
+
+            {/* Señales de confianza */}
+            <div className="mx-auto mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-x-8 gap-y-4">
+              {[
+                { n: TRUST.yearsLabel, l: TRUST.yearsCaption },
+                { n: TRUST.propertiesLabel, l: TRUST.propertiesCaption },
+                { n: `${PARTNERS.length}+`, l: "alianzas con bancos y portales" },
+              ].map((s) => (
+                <div key={s.l} className="text-center">
+                  <p className="text-2xl font-semibold tracking-tight text-foreground">
+                    {s.n}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{s.l}</p>
+                </div>
+              ))}
+            </div>
           </div>
+
 
           {/* Buscador */}
           <Card className="mx-auto mt-10 max-w-4xl rounded-2xl border-border bg-background/95 p-3 shadow-sm backdrop-blur sm:p-4">
