@@ -6,6 +6,8 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PostCard } from "@/components/public/PostCard";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { youtubeEmbedUrl } from "@/lib/youtube";
+
 import {
   POST_CATEGORY_COLORS,
   POST_CATEGORY_LABELS,
