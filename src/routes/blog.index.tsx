@@ -23,8 +23,41 @@ const searchSchema = z.object({
   page: fallback(z.number().int().min(1), 1).default(1),
 });
 
+type BlogSearch = z.infer<typeof searchSchema>;
+
+function blogQueryOptions(search: BlogSearch) {
+  return queryOptions({
+    queryKey: ["blog", "list", search.cat, search.page],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const from = (search.page - 1) * PER_PAGE;
+      const to = from + PER_PAGE - 1;
+      let q = supabase
+        .from("posts")
+        .select(
+          "id, slug, title, excerpt, cover_image, category, status, author, published_at, tags",
+          { count: "exact" },
+        )
+        .eq("status", "publicado")
+        .order("published_at", { ascending: false })
+        .range(from, to);
+      if (search.cat !== "todos") {
+        q = q.eq("category", search.cat as PostCategory);
+      }
+      const { data, count, error } = await q;
+      if (error) throw error;
+      return { rows: data ?? [], total: count ?? 0 };
+    },
+  });
+}
+
 export const Route = createFileRoute("/blog/")({
   validateSearch: zodValidator(searchSchema),
+  loaderDeps: ({ search }) => search,
+  // Precarga en el loader: el listado llega en el HTML inicial para el crawler.
+  loader: async ({ context, deps }) => {
+    await context.queryClient.ensureQueryData(blogQueryOptions(deps as BlogSearch));
+  },
   head: () => ({
     meta: [
       { title: "Blog inmobiliario — ALQUIDEL" },
@@ -51,25 +84,7 @@ function BlogPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["blog", "list", search.cat, search.page],
-    queryFn: async () => {
-      const from = (search.page - 1) * PER_PAGE;
-      const to = from + PER_PAGE - 1;
-      let q = supabase
-        .from("posts")
-        .select("id, slug, title, excerpt, cover_image, category, status, author, published_at, tags", { count: "exact" })
-        .eq("status", "publicado")
-        .order("published_at", { ascending: false })
-        .range(from, to);
-      if (search.cat !== "todos") {
-        q = q.eq("category", search.cat as PostCategory);
-      }
-      const { data, count, error } = await q;
-      if (error) throw error;
-      return { rows: data ?? [], total: count ?? 0 };
-    },
-  });
+  const { data, isLoading } = useQuery(blogQueryOptions(search));
 
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PER_PAGE));
   const isEmpty = !isLoading && (data?.rows.length ?? 0) === 0;
