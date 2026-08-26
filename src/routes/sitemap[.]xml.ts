@@ -35,6 +35,14 @@ export const Route = createFileRoute("/sitemap.xml")({
             `<url><loc>${origin}${path}</loc><changefreq>weekly</changefreq><priority>${path === "/" ? "1.0" : "0.8"}</priority></url>`,
           );
         }
+        // Landings hiperlocales por ciudad y operación
+        for (const city of CITY_LANDINGS) {
+          for (const prefix of ["/arriendos", "/venta"]) {
+            urls.push(
+              `<url><loc>${origin}${prefix}/${city.slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`,
+            );
+          }
+        }
         for (const p of properties ?? []) {
           urls.push(
             `<url><loc>${origin}/propiedades/${p.slug}</loc><lastmod>${p.updated_at}</lastmod><priority>0.7</priority></url>`,
