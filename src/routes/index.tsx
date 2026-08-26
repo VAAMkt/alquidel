@@ -143,7 +143,7 @@ function HomePage() {
   function handleSearch() {
     // "Comprar" e "Invertir" apuntan al inventario en venta; invertir además
     // prioriza la selección destacada.
-    const operacion =
+    const operacion: "arriendo" | "venta" | undefined =
       op === "arrendar" ? "arriendo" : op === "todos" ? undefined : "venta";
     // IMPORTANTE: pasamos search como función para que TanStack Router
     // valide correctamente con el schema de /propiedades (tipos como array).
