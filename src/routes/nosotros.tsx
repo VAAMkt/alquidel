@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Building2, Eye, MapPin, Sparkles, Target, Users } from "lucide-react";
+import { ArrowRight, Award, Building2, Eye, MapPin, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PublicLayout } from "@/components/layout/PublicLayout";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, TRUST, PARTNERS, TEAM } from "@/lib/company";
 
 export const Route = createFileRoute("/nosotros")({
   head: () => ({
@@ -91,9 +91,9 @@ function NosotrosPage() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-6 sm:grid-cols-3">
           {[
-            { icon: Building2, n: "8+", l: "Propiedades exclusivas" },
-            { icon: MapPin, l: "Bogotá y Colombia", n: "9", caption: "Ciudades cubiertas" },
-            { icon: Users, n: "100%", l: "Asesoría personalizada" },
+            { icon: Award, n: TRUST.yearsLabel, l: TRUST.yearsCaption },
+            { icon: Building2, n: TRUST.propertiesLabel, l: TRUST.propertiesCaption },
+            { icon: MapPin, n: TRUST.foundedLabel, l: TRUST.foundedCaption },
           ].map((s) => (
             <Card key={s.l} className="rounded-xl border-border p-6 text-center">
               <s.icon className="mx-auto h-7 w-7 text-accent" />
@@ -105,6 +105,61 @@ function NosotrosPage() {
           ))}
         </div>
       </section>
+
+      {/* EQUIPO */}
+      <section className="border-y border-border bg-secondary/40">
+        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">
+              Nuestro equipo
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
+              Las personas detrás de Alquidel
+            </h2>
+          </div>
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            {TEAM.map((m) => (
+              <Card
+                key={m.name}
+                className="overflow-hidden rounded-2xl border-border bg-background p-0"
+              >
+                <img
+                  src={m.photo}
+                  alt={`${m.name}, ${m.role} de ${COMPANY.shortName}`}
+                  loading="lazy"
+                  className="aspect-square w-full object-cover object-top"
+                />
+                <div className="p-5 text-center">
+                  <h3 className="text-base font-semibold text-foreground">{m.name}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{m.role}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ALIANZAS */}
+      <section className="mx-auto max-w-5xl px-4 py-16 text-center sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+          Aliados y portales
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground">
+          Trabajamos con los principales portales inmobiliarios, aseguradoras,
+          afianzadoras y bancos del país para respaldar cada operación.
+        </p>
+        <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+          {PARTNERS.map((p) => (
+            <li
+              key={p}
+              className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm text-muted-foreground"
+            >
+              {p}
+            </li>
+          ))}
+        </ul>
+      </section>
+
 
       {/* CTA */}
       <section className="border-t border-border bg-secondary/40">

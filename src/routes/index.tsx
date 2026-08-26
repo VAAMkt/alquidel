@@ -7,7 +7,6 @@ import {
   Building2,
   Headset,
   Home as HomeIcon,
-  MapPin,
   Search,
   Sparkles,
   Users,
@@ -27,7 +26,7 @@ import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
 import { RecentViews } from "../components/public/RecentViews";
 import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, TRUST, PARTNERS } from "@/lib/company";
 import { CITY_LANDINGS } from "@/lib/landings";
 import { trackOwnerCta } from "@/lib/analytics";
 import heroBogota from "@/assets/hero-bogota.jpg";
@@ -204,7 +203,24 @@ function HomePage() {
               Propiedades seleccionadas. Asesoría real. Decisiones inmobiliarias con
               respaldo en Bogotá, Chía, Cajicá y Cali.
             </p>
+
+            {/* Señales de confianza */}
+            <div className="mx-auto mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-x-8 gap-y-4">
+              {[
+                { n: TRUST.yearsLabel, l: TRUST.yearsCaption },
+                { n: TRUST.propertiesLabel, l: TRUST.propertiesCaption },
+                { n: `${PARTNERS.length}+`, l: "alianzas con bancos y portales" },
+              ].map((s) => (
+                <div key={s.l} className="text-center">
+                  <p className="text-2xl font-semibold tracking-tight text-foreground">
+                    {s.n}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{s.l}</p>
+                </div>
+              ))}
+            </div>
           </div>
+
 
           {/* Buscador */}
           <Card className="mx-auto mt-10 max-w-4xl rounded-2xl border-border bg-background/95 p-3 shadow-sm backdrop-blur sm:p-4">
@@ -395,19 +411,19 @@ function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:grid-cols-3 sm:px-6 lg:px-8">
           {[
             {
-              icon: HomeIcon,
-              title: "8+ Propiedades exclusivas",
-              desc: "Catálogo curado de inmuebles seleccionados con criterio.",
+              icon: Award,
+              title: `${TRUST.yearsLabel} de trayectoria`,
+              desc: "Alquidel nació en 2019, pero la experiencia de sus fundadores en bienes raíces supera los 23 años.",
             },
             {
-              icon: MapPin,
-              title: "Bogotá y Colombia",
-              desc: "Presencia en las principales ciudades del país.",
+              icon: HomeIcon,
+              title: `${TRUST.propertiesLabel} inmuebles gestionados`,
+              desc: "Ventas, arriendos y administración de inmuebles en Bogotá, la Sabana y Cali.",
             },
             {
               icon: Headset,
               title: "Asesoría personalizada",
-              desc: "Acompañamiento integral en cada paso del proceso.",
+              desc: "Acompañamiento integral en cada paso del proceso, con un asesor asignado.",
             },
           ].map((item) => (
             <Card
@@ -422,7 +438,25 @@ function HomePage() {
             </Card>
           ))}
         </div>
+
+        {/* Alianzas */}
+        <div className="mx-auto max-w-7xl border-t border-border px-4 py-10 sm:px-6 lg:px-8">
+          <p className="text-center text-xs font-medium uppercase tracking-[0.25em] text-muted-foreground">
+            Aliados y portales
+          </p>
+          <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+            {PARTNERS.map((p) => (
+              <li
+                key={p}
+                className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm text-muted-foreground"
+              >
+                {p}
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
+
 
       {/* ¿POR QUÉ ALQUIDEL? */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
