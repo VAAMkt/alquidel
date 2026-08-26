@@ -242,6 +242,24 @@ function PropertyDetail() {
     if (p?.slug) pushRecent(p.slug);
   }, [p?.slug, pushRecent]);
 
+  // Registro de vista (analíticas propias) — en segundo plano, sin bloquear el render.
+  useEffect(() => {
+    if (!p?.id || !p?.slug) return;
+    void supabase
+      .from("property_views")
+      .insert({
+        property_id: p.id,
+        slug: p.slug,
+        city: p.city ?? null,
+        referrer:
+          typeof document !== "undefined" && document.referrer
+            ? document.referrer.slice(0, 500)
+            : null,
+      })
+      .then(() => undefined, () => undefined);
+  }, [p?.id, p?.slug, p?.city]);
+
+
   const waLink = whatsappUrl(propertyWhatsappMessage(p.title));
   const shareUrl =
     typeof window !== "undefined"
