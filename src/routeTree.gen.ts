@@ -28,6 +28,7 @@ import { Route as ArriendosCiudadRouteImport } from './routes/arriendos.$ciudad'
 import { Route as AdminEquipoRouteImport } from './routes/admin/equipo'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminConfiguracionRouteImport } from './routes/admin/configuracion'
+import { Route as AdminAnaliticasRouteImport } from './routes/admin/analiticas'
 import { Route as AdminAlertasRouteImport } from './routes/admin/alertas'
 import { Route as AdminPropiedadesIndexRouteImport } from './routes/admin/propiedades.index'
 import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads.index'
@@ -133,6 +134,11 @@ const AdminConfiguracionRoute = AdminConfiguracionRouteImport.update({
   path: '/configuracion',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAnaliticasRoute = AdminAnaliticasRouteImport.update({
+  id: '/analiticas',
+  path: '/analiticas',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAlertasRoute = AdminAlertasRouteImport.update({
   id: '/alertas',
   path: '/alertas',
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/analiticas': typeof AdminAnaliticasRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/equipo': typeof AdminEquipoRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/analiticas': typeof AdminAnaliticasRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/equipo': typeof AdminEquipoRoute
@@ -253,6 +261,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/analiticas': typeof AdminAnaliticasRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/equipo': typeof AdminEquipoRoute
@@ -285,6 +294,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
+    | '/admin/analiticas'
     | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/equipo'
@@ -315,6 +325,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
+    | '/admin/analiticas'
     | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/equipo'
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/alertas'
+    | '/admin/analiticas'
     | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/equipo'
@@ -518,6 +530,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConfiguracionRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/analiticas': {
+      id: '/admin/analiticas'
+      path: '/analiticas'
+      fullPath: '/admin/analiticas'
+      preLoaderRoute: typeof AdminAnaliticasRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/alertas': {
       id: '/admin/alertas'
       path: '/alertas'
@@ -586,6 +605,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAlertasRoute: typeof AdminAlertasRoute
+  AdminAnaliticasRoute: typeof AdminAnaliticasRoute
   AdminConfiguracionRoute: typeof AdminConfiguracionRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminEquipoRoute: typeof AdminEquipoRoute
@@ -601,6 +621,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAlertasRoute: AdminAlertasRoute,
+  AdminAnaliticasRoute: AdminAnaliticasRoute,
   AdminConfiguracionRoute: AdminConfiguracionRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminEquipoRoute: AdminEquipoRoute,
