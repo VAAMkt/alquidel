@@ -184,6 +184,10 @@ export const Route = createFileRoute("/propiedades/$slug")({
           type: "application/ld+json",
           children: JSON.stringify(jsonLd),
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(breadcrumbLd),
+        },
       ],
     };
   },
