@@ -196,11 +196,11 @@ function HomePage() {
               Inmobiliaria colombiana · Bogotá
             </div>
             <h1 className="mt-6 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Encuentra la propiedad de tus{" "}
-              <span className="text-accent">sueños en Colombia</span>
+              Menos búsqueda. <span className="text-accent">Más criterio.</span>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
-              Venta y arriendo de inmuebles premium. Bogotá y principales ciudades.
+              Propiedades seleccionadas. Asesoría real. Decisiones inmobiliarias con
+              respaldo en Bogotá, Chía, Cajicá y Cali.
             </p>
           </div>
 
@@ -213,18 +213,19 @@ function HomePage() {
                     className="flex h-12 items-center rounded-lg border border-border bg-background px-3 text-sm text-muted-foreground"
                     aria-hidden="true"
                   >
-                    Operación
+                    ¿Qué estás buscando?
                   </div>
                 }
               >
                 <Select value={op} onValueChange={(v) => setOp(v as typeof op)}>
                   <SelectTrigger className="h-12 rounded-lg border-border">
-                    <SelectValue placeholder="Operación" />
+                    <SelectValue placeholder="¿Qué estás buscando?" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todos">Todas las operaciones</SelectItem>
-                    <SelectItem value="venta">Venta</SelectItem>
-                    <SelectItem value="arriendo">Arriendo</SelectItem>
+                    <SelectItem value="todos">Comprar, arrendar o invertir</SelectItem>
+                    <SelectItem value="comprar">Comprar</SelectItem>
+                    <SelectItem value="arrendar">Arrendar</SelectItem>
+                    <SelectItem value="invertir">Invertir</SelectItem>
                   </SelectContent>
                 </Select>
               </ClientOnly>
