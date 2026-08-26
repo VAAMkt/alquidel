@@ -61,6 +61,12 @@ export const Route = createFileRoute("/propietarios")({
       },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    intencion:
+      search["intencion"] === "arrendar" || search["intencion"] === "vender"
+        ? (search["intencion"] as "arrendar" | "vender")
+        : undefined,
+  }),
   component: PropietariosPage,
 });
 
@@ -98,11 +104,12 @@ const BENEFITS = [
 ];
 
 function PropietariosPage() {
+  const { intencion } = Route.useSearch();
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
-    intent: "vender" as "vender" | "arrendar",
+    intent: (intencion ?? "vender") as "vender" | "arrendar",
     propertyType: "apartamento",
     city: "",
     message: "",

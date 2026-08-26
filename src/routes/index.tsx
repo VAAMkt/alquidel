@@ -307,15 +307,27 @@ function HomePage() {
               contactamos en menos de 24 horas hábiles.
             </p>
           </div>
-          <Button asChild size="lg" className="h-12 rounded-lg px-6">
-            <Link
-              to="/propietarios"
-              onClick={() => trackOwnerCta("consignar", "home-hero")}
-            >
-              Consignar mi inmueble
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild size="lg" className="h-12 rounded-lg px-6">
+              <Link
+                to="/propietarios"
+                search={{ intencion: "vender" as const }}
+                onClick={() => trackOwnerCta("vender", "home-propietarios")}
+              >
+                Quiero vender
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-12 rounded-lg px-6">
+              <Link
+                to="/propietarios"
+                search={{ intencion: "arrendar" as const }}
+                onClick={() => trackOwnerCta("arrendar", "home-propietarios")}
+              >
+                Quiero arrendar
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
