@@ -28,6 +28,7 @@ import { RecentViews } from "../components/public/RecentViews";
 import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
+import { CITY_LANDINGS } from "@/lib/landings";
 import heroBogota from "@/assets/hero-bogota.jpg";
 
 const PROPERTY_TYPES = [
@@ -142,7 +143,7 @@ function HomePage() {
   function handleSearch() {
     // "Comprar" e "Invertir" apuntan al inventario en venta; invertir además
     // prioriza la selección destacada.
-    const operacion =
+    const operacion: "arriendo" | "venta" | undefined =
       op === "arrendar" ? "arriendo" : op === "todos" ? undefined : "venta";
     // IMPORTANTE: pasamos search como función para que TanStack Router
     // valide correctamente con el schema de /propiedades (tipos como array).
@@ -458,6 +459,40 @@ function HomePage() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
+        </div>
+      </section>
+
+      {/* BÚSQUEDAS POR CIUDAD */}
+      <section className="border-t border-border bg-secondary/30">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            Busca por ciudad
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Inventario disponible en las ciudades donde operamos.
+          </p>
+          <div className="mt-6 grid gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+            {CITY_LANDINGS.map((c) => (
+              <div key={c.slug} className="flex flex-wrap items-center gap-x-3 text-sm">
+                <span className="font-medium text-foreground">{c.label}:</span>
+                <Link
+                  to="/arriendos/$ciudad"
+                  params={{ ciudad: c.slug }}
+                  className="text-muted-foreground hover:text-accent"
+                >
+                  arriendo
+                </Link>
+                <span className="text-border">·</span>
+                <Link
+                  to="/venta/$ciudad"
+                  params={{ ciudad: c.slug }}
+                  className="text-muted-foreground hover:text-accent"
+                >
+                  venta
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </PublicLayout>

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { CITY_LANDINGS } from "@/lib/landings";
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
@@ -34,6 +35,14 @@ export const Route = createFileRoute("/sitemap.xml")({
           urls.push(
             `<url><loc>${origin}${path}</loc><changefreq>weekly</changefreq><priority>${path === "/" ? "1.0" : "0.8"}</priority></url>`,
           );
+        }
+        // Landings hiperlocales por ciudad y operación
+        for (const city of CITY_LANDINGS) {
+          for (const prefix of ["/arriendos", "/venta"]) {
+            urls.push(
+              `<url><loc>${origin}${prefix}/${city.slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`,
+            );
+          }
         }
         for (const p of properties ?? []) {
           urls.push(

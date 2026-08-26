@@ -21,8 +21,10 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropiedadesIndexRouteImport } from './routes/propiedades.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as VentaCiudadRouteImport } from './routes/venta.$ciudad'
 import { Route as PropiedadesSlugRouteImport } from './routes/propiedades.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as ArriendosCiudadRouteImport } from './routes/arriendos.$ciudad'
 import { Route as AdminEquipoRouteImport } from './routes/admin/equipo'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminConfiguracionRouteImport } from './routes/admin/configuracion'
@@ -96,6 +98,11 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VentaCiudadRoute = VentaCiudadRouteImport.update({
+  id: '/venta/$ciudad',
+  path: '/venta/$ciudad',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PropiedadesSlugRoute = PropiedadesSlugRouteImport.update({
   id: '/propiedades/$slug',
   path: '/propiedades/$slug',
@@ -104,6 +111,11 @@ const PropiedadesSlugRoute = PropiedadesSlugRouteImport.update({
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog/$slug',
   path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArriendosCiudadRoute = ArriendosCiudadRouteImport.update({
+  id: '/arriendos/$ciudad',
+  path: '/arriendos/$ciudad',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEquipoRoute = AdminEquipoRouteImport.update({
@@ -183,8 +195,10 @@ export interface FileRoutesByFullPath {
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/equipo': typeof AdminEquipoRoute
+  '/arriendos/$ciudad': typeof ArriendosCiudadRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
+  '/venta/$ciudad': typeof VentaCiudadRoute
   '/blog/': typeof BlogIndexRoute
   '/propiedades/': typeof PropiedadesIndexRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
@@ -211,8 +225,10 @@ export interface FileRoutesByTo {
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/equipo': typeof AdminEquipoRoute
+  '/arriendos/$ciudad': typeof ArriendosCiudadRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
+  '/venta/$ciudad': typeof VentaCiudadRoute
   '/blog': typeof BlogIndexRoute
   '/propiedades': typeof PropiedadesIndexRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
@@ -240,8 +256,10 @@ export interface FileRoutesById {
   '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/equipo': typeof AdminEquipoRoute
+  '/arriendos/$ciudad': typeof ArriendosCiudadRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/propiedades/$slug': typeof PropiedadesSlugRoute
+  '/venta/$ciudad': typeof VentaCiudadRoute
   '/blog/': typeof BlogIndexRoute
   '/propiedades/': typeof PropiedadesIndexRoute
   '/admin/blog/nuevo': typeof AdminBlogNuevoRoute
@@ -270,8 +288,10 @@ export interface FileRouteTypes {
     | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/equipo'
+    | '/arriendos/$ciudad'
     | '/blog/$slug'
     | '/propiedades/$slug'
+    | '/venta/$ciudad'
     | '/blog/'
     | '/propiedades/'
     | '/admin/blog/nuevo'
@@ -298,8 +318,10 @@ export interface FileRouteTypes {
     | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/equipo'
+    | '/arriendos/$ciudad'
     | '/blog/$slug'
     | '/propiedades/$slug'
+    | '/venta/$ciudad'
     | '/blog'
     | '/propiedades'
     | '/admin/blog/nuevo'
@@ -326,8 +348,10 @@ export interface FileRouteTypes {
     | '/admin/configuracion'
     | '/admin/dashboard'
     | '/admin/equipo'
+    | '/arriendos/$ciudad'
     | '/blog/$slug'
     | '/propiedades/$slug'
+    | '/venta/$ciudad'
     | '/blog/'
     | '/propiedades/'
     | '/admin/blog/nuevo'
@@ -351,8 +375,10 @@ export interface RootRouteChildren {
   PropietariosRoute: typeof PropietariosRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ArriendosCiudadRoute: typeof ArriendosCiudadRoute
   BlogSlugRoute: typeof BlogSlugRoute
   PropiedadesSlugRoute: typeof PropiedadesSlugRoute
+  VentaCiudadRoute: typeof VentaCiudadRoute
   BlogIndexRoute: typeof BlogIndexRoute
   PropiedadesIndexRoute: typeof PropiedadesIndexRoute
 }
@@ -443,6 +469,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/venta/$ciudad': {
+      id: '/venta/$ciudad'
+      path: '/venta/$ciudad'
+      fullPath: '/venta/$ciudad'
+      preLoaderRoute: typeof VentaCiudadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/propiedades/$slug': {
       id: '/propiedades/$slug'
       path: '/propiedades/$slug'
@@ -455,6 +488,13 @@ declare module '@tanstack/react-router' {
       path: '/blog/$slug'
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/arriendos/$ciudad': {
+      id: '/arriendos/$ciudad'
+      path: '/arriendos/$ciudad'
+      fullPath: '/arriendos/$ciudad'
+      preLoaderRoute: typeof ArriendosCiudadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/equipo': {
@@ -587,8 +627,10 @@ const rootRouteChildren: RootRouteChildren = {
   PropietariosRoute: PropietariosRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ArriendosCiudadRoute: ArriendosCiudadRoute,
   BlogSlugRoute: BlogSlugRoute,
   PropiedadesSlugRoute: PropiedadesSlugRoute,
+  VentaCiudadRoute: VentaCiudadRoute,
   BlogIndexRoute: BlogIndexRoute,
   PropiedadesIndexRoute: PropiedadesIndexRoute,
 }
