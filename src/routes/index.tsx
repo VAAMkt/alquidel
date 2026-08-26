@@ -81,16 +81,20 @@ const recentSixQueryOptions = queryOptions({
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: `${COMPANY.shortName} — ${COMPANY.tagline}` },
+      { title: `${COMPANY.shortName} — Menos búsqueda. Más criterio.` },
       {
         name: "description",
         content:
-          "Alquidel Bienes Raíces: venta y arriendo de inmuebles premium en Bogotá y principales ciudades de Colombia. Asesoría inmobiliaria personalizada.",
+          "Compra, arrienda o invierte en Bogotá, Chía, Cajicá y Cali — con asesoría real en cada paso.",
       },
-      { property: "og:title", content: `${COMPANY.shortName} — ${COMPANY.tagline}` },
+      {
+        property: "og:title",
+        content: `${COMPANY.shortName} — Menos búsqueda. Más criterio.`,
+      },
       {
         property: "og:description",
-        content: "Venta y arriendo de inmuebles premium en Bogotá y Colombia.",
+        content:
+          "Compra, arrienda o invierte en Bogotá, Chía, Cajicá y Cali — con asesoría real en cada paso.",
       },
       { property: "og:type", content: "website" },
       { property: "og:image", content: heroBogota },
