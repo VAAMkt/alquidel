@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Building2, Eye, MapPin, Sparkles, Target, Users } from "lucide-react";
+import { ArrowRight, Award, Building2, Eye, MapPin, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PublicLayout } from "@/components/layout/PublicLayout";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, TRUST, PARTNERS, TEAM } from "@/lib/company";
 
 export const Route = createFileRoute("/nosotros")({
   head: () => ({
