@@ -39,16 +39,8 @@ const PROPERTY_TYPES = [
   "bodega",
 ] as const;
 
-const CITIES = [
-  "Bogotá",
-  "Medellín",
-  "Cali",
-  "Barranquilla",
-  "Cartagena",
-  "Bucaramanga",
-  "Pereira",
-  "Manizales",
-] as const;
+// Lista cerrada: solo ciudades con inventario real.
+const CITIES = ["Bogotá", "Chía", "Cajicá", "Cali", "Mosquera"] as const;
 
 // Query options compartidos para que el loader y el componente compartan caché
 const featuredQueryOptions = queryOptions({
