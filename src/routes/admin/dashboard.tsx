@@ -135,6 +135,17 @@ function DashboardPage() {
         />
       </div>
 
+      <div className="mt-6 flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Propiedades más vistas esta semana →
+        </p>
+        <Link to="/admin/analiticas" className="text-sm text-accent hover:underline">
+          Ver analíticas completas
+        </Link>
+      </div>
+
+
+
       <div className="mt-10">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-foreground">Últimos leads</h2>

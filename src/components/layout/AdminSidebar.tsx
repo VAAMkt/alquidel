@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
+  BarChart2,
   Building2,
   Users,
   FileText,
@@ -30,6 +31,7 @@ import { BrandMark } from "@/components/brand/BrandMark";
 
 const items = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, badgeKey: null },
+  { title: "Analíticas", url: "/admin/analiticas", icon: BarChart2, badgeKey: null },
   { title: "Propiedades", url: "/admin/propiedades", icon: Building2, badgeKey: null },
   { title: "Leads", url: "/admin/leads", icon: Users, badgeKey: "newLeads" },
   { title: "Alertas", url: "/admin/alertas", icon: Bell, badgeKey: null },
