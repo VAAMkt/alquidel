@@ -7,7 +7,6 @@ import {
   Building2,
   Headset,
   Home as HomeIcon,
-  MapPin,
   Search,
   Sparkles,
   Users,
@@ -27,7 +26,7 @@ import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
 import { RecentViews } from "../components/public/RecentViews";
 import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, TRUST, PARTNERS } from "@/lib/company";
 import { CITY_LANDINGS } from "@/lib/landings";
 import { trackOwnerCta } from "@/lib/analytics";
 import heroBogota from "@/assets/hero-bogota.jpg";
