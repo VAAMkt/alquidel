@@ -91,6 +91,85 @@ export function PublicNavbar() {
               WhatsApp
             </a>
           </Button>
+
+          {/* Menú móvil */}
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                aria-label="Abrir menú"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[85vw] max-w-sm overflow-y-auto">
+              <SheetHeader className="text-left">
+                <SheetTitle>
+                  <BrandLogo variant="full" tone="color" className="h-10 w-auto" />
+                </SheetTitle>
+              </SheetHeader>
+
+              <nav className="mt-6 flex flex-col gap-1">
+                {NAV.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setOpen(false)}
+                    className="rounded-md px-3 py-2.5 text-base font-medium text-foreground hover:bg-muted"
+                    activeProps={{ className: "bg-muted text-accent" }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Link
+                  to="/favoritos"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2.5 text-base font-medium text-foreground hover:bg-muted"
+                >
+                  Favoritos{favCount > 0 ? ` (${favCount})` : ""}
+                </Link>
+                <Link
+                  to={session ? "/admin/dashboard" : "/login"}
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2.5 text-base font-medium text-muted-foreground hover:bg-muted"
+                >
+                  {session ? "Ir al panel" : "Acceder"}
+                </Link>
+              </nav>
+
+              <div className="mt-6 border-t border-border pt-5">
+                <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Busca por ciudad
+                </p>
+                <div className="mt-2 flex flex-col gap-1">
+                  {CITY_LANDINGS.map((c) => (
+                    <div key={c.slug} className="flex items-center gap-2 px-3 py-1.5 text-sm">
+                      <span className="font-medium text-foreground">{c.label}</span>
+                      <Link
+                        to="/arriendos/$ciudad"
+                        params={{ ciudad: c.slug }}
+                        onClick={() => setOpen(false)}
+                        className="text-muted-foreground hover:text-accent"
+                      >
+                        arriendo
+                      </Link>
+                      <span className="text-border">·</span>
+                      <Link
+                        to="/venta/$ciudad"
+                        params={{ ciudad: c.slug }}
+                        onClick={() => setOpen(false)}
+                        className="text-muted-foreground hover:text-accent"
+                      >
+                        venta
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
