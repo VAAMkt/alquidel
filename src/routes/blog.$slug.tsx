@@ -175,9 +175,32 @@ function PostPage() {
           />
         )}
 
+        {youtubeEmbedUrl(post.video_url) && (
+          <div className="mt-8 aspect-video w-full overflow-hidden rounded-2xl border border-border">
+            <iframe
+              src={youtubeEmbedUrl(post.video_url)!}
+              title={`Video: ${post.title}`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+              className="h-full w-full"
+            />
+          </div>
+        )}
+
         <div className="prose prose-neutral mt-10 max-w-none prose-headings:tracking-tight prose-a:text-primary">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              a: ({ node, ...props }) => (
+                <a {...props} target="_blank" rel="noopener noreferrer" />
+              ),
+            }}
+          >
+            {post.content}
+          </ReactMarkdown>
         </div>
+
 
         {post.tags.length > 0 && (
           <div className="mt-10 flex flex-wrap gap-2 border-t border-border pt-6">
