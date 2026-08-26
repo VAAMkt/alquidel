@@ -58,6 +58,8 @@ import { COMPANY } from "@/lib/company";
 import { whatsappUrl, propertyWhatsappMessage, shareWhatsappUrl } from "@/lib/whatsapp";
 import { trackWhatsApp, trackLeadSubmit, trackVisitRequest } from "@/lib/analytics";
 import { useEffect } from "react";
+import { annotatePageView } from "@/lib/page-views";
+
 import { useRecentViews } from "@/hooks/useRecentViews";
 import { youtubeEmbedUrl } from "@/lib/youtube";
 
