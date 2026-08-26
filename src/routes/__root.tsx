@@ -65,23 +65,28 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         name: "description",
         content:
-          "Venta y arriendo de propiedades premium en Bogotá. Apartamentos, casas, oficinas y locales seleccionados.",
+          "Venta y arriendo de inmuebles premium en Bogotá y principales ciudades de Colombia.",
       },
       { name: "author", content: "ALQUIDEL" },
       { property: "og:title", content: "ALQUIDEL — Encuentra la propiedad de tus sueños" },
       {
         property: "og:description",
-        content: "Venta y arriendo de propiedades premium en Bogotá.",
+        content:
+          "Venta y arriendo de inmuebles premium en Bogotá y principales ciudades de Colombia.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:site_name", content: "ALQUIDEL" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@alquidel" },
       { name: "twitter:title", content: "ALQUIDEL — Encuentra la propiedad de tus sueños" },
-      { name: "description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
-      { property: "og:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
-      { name: "twitter:description", content: "Venta y arriendo de inmuebles premium. Bogotá y principales ciudades." },
+      {
+        name: "twitter:description",
+        content:
+          "Venta y arriendo de inmuebles premium en Bogotá y principales ciudades de Colombia.",
+      },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
+
     ],
     links: [
       {
