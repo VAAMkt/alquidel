@@ -28,6 +28,7 @@ const schema = z.object({
   excerpt: z.string().max(500).default(""),
   content: z.string().min(10, "Contenido requerido"),
   cover_image: z.string().optional().or(z.literal("")),
+  video_url: z.string().max(500).optional().or(z.literal("")),
   category: z.enum(POST_CATEGORIES as [PostCategory, ...PostCategory[]]),
   tags: z.array(z.string()),
   status: z.enum(POST_STATUSES as [PostStatus, ...PostStatus[]]),
@@ -44,6 +45,7 @@ const blank: Values = {
   excerpt: "",
   content: "",
   cover_image: "",
+  video_url: "",
   category: "consejos",
   tags: [],
   status: "borrador",
@@ -70,6 +72,7 @@ export function PostForm({ initial, mode }: Props) {
           excerpt: initial.excerpt ?? "",
           content: initial.content ?? "",
           cover_image: initial.cover_image ?? "",
+          video_url: initial.video_url ?? "",
           category: initial.category,
           tags: initial.tags ?? [],
           status: initial.status,
@@ -101,6 +104,7 @@ export function PostForm({ initial, mode }: Props) {
         tags,
         excerpt: vals.excerpt || "",
         cover_image: vals.cover_image || null,
+        video_url: vals.video_url || null,
         meta_title: vals.meta_title || null,
         meta_description: vals.meta_description || null,
         published_at:
@@ -349,6 +353,20 @@ export function PostForm({ initial, mode }: Props) {
             onChange={(e) => setV({ ...v, cover_image: e.target.value })}
             placeholder="o pega una URL"
           />
+        </Card>
+
+        <Card className="space-y-3 p-6">
+          <Label htmlFor="video_url">Video (URL de YouTube)</Label>
+          <Input
+            id="video_url"
+            value={v.video_url ?? ""}
+            onChange={(e) => setV({ ...v, video_url: e.target.value })}
+            placeholder="https://www.youtube.com/watch?v=..."
+          />
+          <p className="text-xs text-muted-foreground">
+            Ideal para presentar proyectos de inversión. Se mostrará dentro del
+            artículo.
+          </p>
         </Card>
 
         <div className="flex flex-col gap-2">

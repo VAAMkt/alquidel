@@ -91,6 +91,50 @@ export type Database = {
           },
         ]
       }
+      page_views: {
+        Row: {
+          city: string | null
+          duration_ms: number | null
+          id: string
+          path: string
+          property_id: string | null
+          referrer: string | null
+          session_id: string
+          viewed_at: string
+          visitor_id: string
+        }
+        Insert: {
+          city?: string | null
+          duration_ms?: number | null
+          id?: string
+          path: string
+          property_id?: string | null
+          referrer?: string | null
+          session_id: string
+          viewed_at?: string
+          visitor_id: string
+        }
+        Update: {
+          city?: string | null
+          duration_ms?: number | null
+          id?: string
+          path?: string
+          property_id?: string | null
+          referrer?: string | null
+          session_id?: string
+          viewed_at?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_views_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           author: string
@@ -108,6 +152,7 @@ export type Database = {
           tags: string[]
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           author?: string
@@ -125,6 +170,7 @@ export type Database = {
           tags?: string[]
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           author?: string
@@ -142,6 +188,7 @@ export type Database = {
           tags?: string[]
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -345,6 +392,7 @@ export type Database = {
         | "consejos"
         | "mercado"
         | "legal"
+        | "proyectos"
       post_status: "borrador" | "publicado" | "programado"
       property_status: "disponible" | "vendido" | "arrendado" | "reservado"
       property_type:
@@ -497,6 +545,7 @@ export const Constants = {
         "consejos",
         "mercado",
         "legal",
+        "proyectos",
       ],
       post_status: ["borrador", "publicado", "programado"],
       property_status: ["disponible", "vendido", "arrendado", "reservado"],

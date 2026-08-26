@@ -58,6 +58,8 @@ import { COMPANY } from "@/lib/company";
 import { whatsappUrl, propertyWhatsappMessage, shareWhatsappUrl } from "@/lib/whatsapp";
 import { trackWhatsApp, trackLeadSubmit, trackVisitRequest } from "@/lib/analytics";
 import { useEffect } from "react";
+import { annotatePageView } from "@/lib/page-views";
+
 import { useRecentViews } from "@/hooks/useRecentViews";
 import { youtubeEmbedUrl } from "@/lib/youtube";
 
@@ -245,7 +247,9 @@ function PropertyDetail() {
   // Registro de vista (analíticas propias) — en segundo plano, sin bloquear el render.
   useEffect(() => {
     if (!p?.id || !p?.slug) return;
+    annotatePageView({ propertyId: p.id, city: p.city ?? null });
     void supabase
+
       .from("property_views")
       .insert({
         property_id: p.id,
