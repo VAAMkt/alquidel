@@ -8,11 +8,19 @@ const SITE_URL = Deno.env.get("SITE_URL");
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": SITE_URL || "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, apikey",
+  "Access-Control-Allow-Headers":
+    "authorization, content-type, x-client-info, apikey",
   Vary: "Origin",
 };
 
-const VALID_CATEGORIES = ["compra", "venta", "inversion", "consejos", "mercado", "legal"];
+const VALID_CATEGORIES = [
+  "compra",
+  "venta",
+  "inversion",
+  "consejos",
+  "mercado",
+  "legal",
+];
 
 // Límites de longitud para inputs
 const MAX_TITLE = 200;
@@ -146,7 +154,7 @@ Deno.serve(async (req) => {
     return json({ error: "title and content are required" }, 400);
   }
 
-  let category = typeof body.category === "string" ? body.category : "consejos";
+  let category = (typeof body.category === "string" ? body.category : "consejos");
   if (!VALID_CATEGORIES.includes(category)) category = "consejos";
 
   const tags: string[] = Array.isArray(body.tags)
@@ -185,21 +193,32 @@ Deno.serve(async (req) => {
     content,
     excerpt: asString(body.excerpt, MAX_EXCERPT),
     cover_image:
-      typeof body.cover_image === "string" ? body.cover_image.slice(0, MAX_COVER_IMAGE) : null,
+      typeof body.cover_image === "string"
+        ? body.cover_image.slice(0, MAX_COVER_IMAGE)
+        : null,
     category,
     tags,
     meta_title:
-      typeof body.meta_title === "string" ? body.meta_title.slice(0, MAX_META_TITLE) : null,
+      typeof body.meta_title === "string"
+        ? body.meta_title.slice(0, MAX_META_TITLE)
+        : null,
     meta_description:
       typeof body.meta_description === "string"
         ? body.meta_description.slice(0, MAX_META_DESCRIPTION)
         : null,
-    author: typeof body.author === "string" ? body.author.slice(0, MAX_AUTHOR) : "Equipo Alquidel",
+    author:
+      typeof body.author === "string"
+        ? body.author.slice(0, MAX_AUTHOR)
+        : "Equipo Alquidel",
     status: "publicado",
     published_at: new Date().toISOString(),
   };
 
-  const { data, error } = await supabase.from("posts").insert(payload).select().single();
+  const { data, error } = await supabase
+    .from("posts")
+    .insert(payload)
+    .select()
+    .single();
   if (error) {
     console.error("DB insert error in create-post:", error);
     return json({ error: "Error al crear el artículo" }, 500);

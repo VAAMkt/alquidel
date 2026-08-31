@@ -17,8 +17,7 @@ export const Route = createFileRoute("/nosotros")({
       { property: "og:title", content: `Nosotros | ${COMPANY.shortName}` },
       {
         property: "og:description",
-        content:
-          "Empresa colombiana dedicada a la comercialización de bienes raíces con asesoría integral.",
+        content: "Empresa colombiana dedicada a la comercialización de bienes raíces con asesoría integral.",
       },
       { property: "og:url", content: "https://alquidel.com/nosotros" },
     ],
@@ -45,8 +44,8 @@ function NosotrosPage() {
             {COMPANY.tagline}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-pretty text-lg text-muted-foreground">
-            Somos {COMPANY.name}, una empresa colombiana enfocada en formar relaciones duraderas a
-            través del mejor servicio inmobiliario.
+            Somos {COMPANY.name}, una empresa colombiana enfocada en formar relaciones
+            duraderas a través del mejor servicio inmobiliario.
           </p>
         </div>
       </section>
@@ -59,7 +58,9 @@ function NosotrosPage() {
         <h2 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
           Quiénes somos
         </h2>
-        <p className="mt-6 text-base leading-relaxed text-muted-foreground">{COMPANY.about}</p>
+        <p className="mt-6 text-base leading-relaxed text-muted-foreground">
+          {COMPANY.about}
+        </p>
       </section>
 
       {/* MISIÓN Y VISIÓN */}
@@ -70,14 +71,18 @@ function NosotrosPage() {
             <h3 className="mt-4 text-xl font-semibold tracking-tight text-foreground">
               Nuestra misión
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{COMPANY.mission}</p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {COMPANY.mission}
+            </p>
           </Card>
           <Card className="rounded-2xl border-border bg-background p-8">
             <Eye className="h-7 w-7 text-accent" />
             <h3 className="mt-4 text-xl font-semibold tracking-tight text-foreground">
               Nuestra visión
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{COMPANY.vision}</p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {COMPANY.vision}
+            </p>
           </Card>
         </div>
       </section>
@@ -92,7 +97,9 @@ function NosotrosPage() {
           ].map((s) => (
             <Card key={s.l} className="rounded-xl border-border p-6 text-center">
               <s.icon className="mx-auto h-7 w-7 text-accent" />
-              <p className="mt-4 text-3xl font-semibold tracking-tight text-foreground">{s.n}</p>
+              <p className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
+                {s.n}
+              </p>
               <p className="mt-1 text-sm text-muted-foreground">{s.l}</p>
             </Card>
           ))}
@@ -138,8 +145,8 @@ function NosotrosPage() {
           Aliados y portales
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground">
-          Trabajamos con los principales portales inmobiliarios, aseguradoras, afianzadoras y bancos
-          del país para respaldar cada operación.
+          Trabajamos con los principales portales inmobiliarios, aseguradoras,
+          afianzadoras y bancos del país para respaldar cada operación.
         </p>
         <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
           {PARTNERS.map((p) => (
@@ -152,6 +159,7 @@ function NosotrosPage() {
           ))}
         </ul>
       </section>
+
 
       {/* CTA */}
       <section className="border-t border-border bg-secondary/40">

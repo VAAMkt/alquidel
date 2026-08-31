@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Calendar } from "lucide-react";
-import { POST_CATEGORY_COLORS, POST_CATEGORY_LABELS, formatPostDate, type Post } from "@/lib/posts";
+import {
+  POST_CATEGORY_COLORS,
+  POST_CATEGORY_LABELS,
+  formatPostDate,
+  type Post,
+} from "@/lib/posts";
 
 type PostCardData = Pick<
   Post,

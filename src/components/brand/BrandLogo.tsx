@@ -46,7 +46,13 @@ export function BrandLogo({
   const textColor = tone === "dark" ? "#FFFFFF" : "var(--brand-navy)";
 
   if (variant === "mark") {
-    return <BrandMark className={className} style={{ color: textColor }} title={alt} />;
+    return (
+      <BrandMark
+        className={className}
+        style={{ color: textColor }}
+        title={alt}
+      />
+    );
   }
 
   if (variant === "wordmark") {
@@ -57,7 +63,8 @@ export function BrandLogo({
           color: textColor,
           fontWeight: 800,
           letterSpacing: "0.04em",
-          fontFamily: '"Urbanist", "Inter", system-ui, -apple-system, sans-serif',
+          fontFamily:
+            '"Urbanist", "Inter", system-ui, -apple-system, sans-serif',
         }}
       >
         ALQUIDEL
@@ -77,7 +84,10 @@ export function BrandLogo({
       }}
       aria-label={alt}
     >
-      <BrandMark style={{ color: textColor, height: "1.4em", width: "auto" }} title={alt} />
+      <BrandMark
+        style={{ color: textColor, height: "1.4em", width: "auto" }}
+        title={alt}
+      />
       <span
         style={{
           display: "inline-flex",
@@ -89,7 +99,8 @@ export function BrandLogo({
           style={{
             fontWeight: 800,
             letterSpacing: "0.04em",
-            fontFamily: '"Urbanist", "Inter", system-ui, -apple-system, sans-serif',
+            fontFamily:
+              '"Urbanist", "Inter", system-ui, -apple-system, sans-serif',
             fontSize: "1.1em",
           }}
         >

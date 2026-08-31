@@ -1,11 +1,4 @@
-import {
-  createFileRoute,
-  Outlet,
-  useRouter,
-  useNavigate,
-  useLocation,
-  Link,
-} from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouter, useNavigate, useLocation, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";

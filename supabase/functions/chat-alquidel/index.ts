@@ -8,7 +8,8 @@ const SITE_URL = Deno.env.get("SITE_URL");
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": SITE_URL || "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, apikey",
+  "Access-Control-Allow-Headers":
+    "authorization, content-type, x-client-info, apikey",
   Vary: "Origin",
 };
 
@@ -125,7 +126,9 @@ Deno.serve(async (req) => {
     ? body.history
         .filter(
           (m) =>
-            m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
+            m &&
+            (m.role === "user" || m.role === "assistant") &&
+            typeof m.content === "string",
         )
         .slice(-10)
     : [];
@@ -197,20 +200,23 @@ INSTRUCCIONES:
 
   let reply = "";
   try {
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
+    const aiResp = await fetch(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages,
+          max_tokens: 500,
+          temperature: 0.7,
+        }),
       },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages,
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
-    });
+    );
 
     if (!aiResp.ok) {
       if (aiResp.status === 429) {
@@ -253,7 +259,8 @@ INSTRUCCIONES:
     const aiJson = await aiResp.json();
     reply = aiJson?.choices?.[0]?.message?.content ?? "";
     if (!reply) {
-      reply = "No pude generar una respuesta en este momento. ¿Puedes reformular tu pregunta?";
+      reply =
+        "No pude generar una respuesta en este momento. ¿Puedes reformular tu pregunta?";
     }
   } catch (err) {
     const aborted = (err as { name?: string })?.name === "AbortError";

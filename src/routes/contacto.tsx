@@ -125,9 +125,7 @@ function ContactoPage() {
                   <MapPin className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Dirección
-                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dirección</p>
                   <p className="mt-1 text-base font-medium text-foreground">{COMPANY.address}</p>
                 </div>
               </div>
@@ -139,19 +137,11 @@ function ContactoPage() {
                   <Phone className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Teléfonos
-                  </p>
-                  <a
-                    href={COMPANY.phoneHref}
-                    className="mt-1 block text-base font-medium text-foreground hover:text-accent"
-                  >
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Teléfonos</p>
+                  <a href={COMPANY.phoneHref} className="mt-1 block text-base font-medium text-foreground hover:text-accent">
                     {COMPANY.phone}
                   </a>
-                  <a
-                    href={COMPANY.pbxHref}
-                    className="mt-0.5 block text-sm text-muted-foreground hover:text-foreground"
-                  >
+                  <a href={COMPANY.pbxHref} className="mt-0.5 block text-sm text-muted-foreground hover:text-foreground">
                     PBX {COMPANY.pbx}
                   </a>
                 </div>
@@ -164,13 +154,8 @@ function ContactoPage() {
                   <Mail className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Email
-                  </p>
-                  <a
-                    href={COMPANY.emailHref}
-                    className="mt-1 block text-base font-medium text-foreground hover:text-accent"
-                  >
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</p>
+                  <a href={COMPANY.emailHref} className="mt-1 block text-base font-medium text-foreground hover:text-accent">
                     {COMPANY.email}
                   </a>
                 </div>
@@ -277,15 +262,8 @@ function ContactoPage() {
                   </p>
                 )}
               </div>
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full rounded-lg"
-                disabled={mutation.isPending}
-              >
-                {mutation.isPending ? (
-                  "Enviando…"
-                ) : (
+              <Button type="submit" size="lg" className="w-full rounded-lg" disabled={mutation.isPending}>
+                {mutation.isPending ? "Enviando…" : (
                   <>
                     <Send className="mr-2 h-4 w-4" />
                     Enviar mensaje

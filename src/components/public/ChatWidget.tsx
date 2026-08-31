@@ -202,7 +202,9 @@ export function ChatWidget() {
               >
                 <div
                   className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm leading-snug ${
-                    m.role === "user" ? "bg-slate-800 text-white" : "bg-zinc-100 text-zinc-900"
+                    m.role === "user"
+                      ? "bg-slate-800 text-white"
+                      : "bg-zinc-100 text-zinc-900"
                   }`}
                 >
                   {m.content}

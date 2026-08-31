@@ -55,13 +55,8 @@ export function InviteMemberDialog() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const reset = () => {
-    setEmail("");
-    setPassword("");
-    setShowPassword(false);
-    setFullName("");
-    setPhone("");
-    setRole("agente");
-    setErrors({});
+    setEmail(""); setPassword(""); setShowPassword(false);
+    setFullName(""); setPhone(""); setRole("agente"); setErrors({});
   };
 
   const mutation = useMutation({
@@ -75,9 +70,7 @@ export function InviteMemberDialog() {
       });
       if (!parsed.success) {
         const errs: Record<string, string> = {};
-        parsed.error.issues.forEach((i) => {
-          errs[i.path[0] as string] = i.message;
-        });
+        parsed.error.issues.forEach((i) => { errs[i.path[0] as string] = i.message; });
         setErrors(errs);
         throw new Error("Revisa los datos");
       }
@@ -85,9 +78,10 @@ export function InviteMemberDialog() {
       return await createFn({ data: parsed.data });
     },
     onSuccess: () => {
-      toast.success(`Miembro creado. Comparte la contraseña con ${email} de forma segura.`, {
-        duration: 6000,
-      });
+      toast.success(
+        `Miembro creado. Comparte la contraseña con ${email} de forma segura.`,
+        { duration: 6000 },
+      );
       qc.invalidateQueries({ queryKey: ["admin", "team"] });
       reset();
       setOpen(false);
@@ -117,13 +111,7 @@ export function InviteMemberDialog() {
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v);
-        if (!v) reset();
-      }}
-    >
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
       <DialogTrigger asChild>
         <Button>
           <UserPlus className="mr-2 h-4 w-4" />
@@ -134,36 +122,24 @@ export function InviteMemberDialog() {
         <DialogHeader>
           <DialogTitle>Crear nuevo miembro</DialogTitle>
           <DialogDescription>
-            El miembro podrá acceder de inmediato con el email y contraseña que definas. Compártele
-            estos datos por un canal seguro (WhatsApp, llamada, etc.).
+            El miembro podrá acceder de inmediato con el email y contraseña que definas.
+            Compártele estos datos por un canal seguro (WhatsApp, llamada, etc.).
           </DialogDescription>
         </DialogHeader>
 
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            mutation.mutate();
-          }}
+          onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}
           className="space-y-4"
         >
           <div className="space-y-1.5">
             <Label htmlFor="invite-name">Nombre completo *</Label>
-            <Input
-              id="invite-name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-            />
+            <Input id="invite-name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
             {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="invite-email">Email *</Label>
-            <Input
-              id="invite-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <Input id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
           </div>
 
@@ -220,11 +196,7 @@ export function InviteMemberDialog() {
                   onClick={() => setShowPassword((s) => !s)}
                   aria-label={showPassword ? "Ocultar" : "Mostrar"}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-3.5 w-3.5" />
-                  ) : (
-                    <Eye className="h-3.5 w-3.5" />
-                  )}
+                  {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                 </Button>
               </div>
             </div>
@@ -235,13 +207,9 @@ export function InviteMemberDialog() {
           <div className="space-y-1.5">
             <Label>Rol</Label>
             <Select value={role} onValueChange={(v) => setRole(v as "admin" | "agente")}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="agente">
-                  Agente — gestión diaria de leads y propiedades
-                </SelectItem>
+                <SelectItem value="agente">Agente — gestión diaria de leads y propiedades</SelectItem>
                 <SelectItem value="admin">Admin — acceso total + gestión de equipo</SelectItem>
               </SelectContent>
             </Select>

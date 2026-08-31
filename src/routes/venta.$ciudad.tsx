@@ -7,7 +7,9 @@ export const Route = createFileRoute("/venta/$ciudad")({
   loader: async ({ params, context }) => {
     const city = findCityLanding(params.ciudad);
     if (!city) throw notFound();
-    await context.queryClient.ensureQueryData(cityLandingQueryOptions(city.city, "venta"));
+    await context.queryClient.ensureQueryData(
+      cityLandingQueryOptions(city.city, "venta"),
+    );
     return { city };
   },
   head: ({ params, loaderData }) => {

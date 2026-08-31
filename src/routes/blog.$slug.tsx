@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { youtubeEmbedUrl } from "@/lib/youtube";
 
-import { POST_CATEGORY_COLORS, POST_CATEGORY_LABELS, formatPostDate, type Post } from "@/lib/posts";
+import {
+  POST_CATEGORY_COLORS,
+  POST_CATEGORY_LABELS,
+  formatPostDate,
+  type Post,
+} from "@/lib/posts";
 
 async function fetchPost(slug: string) {
   const { data: post, error } = await supabase
@@ -148,7 +153,9 @@ function PostPage() {
           {post.title}
         </h1>
 
-        {post.excerpt && <p className="mt-4 text-lg text-muted-foreground">{post.excerpt}</p>}
+        {post.excerpt && (
+          <p className="mt-4 text-lg text-muted-foreground">{post.excerpt}</p>
+        )}
 
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
@@ -187,12 +194,15 @@ function PostPage() {
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+              a: ({ node, ...props }) => (
+                <a {...props} target="_blank" rel="noopener noreferrer" />
+              ),
             }}
           >
             {post.content}
           </ReactMarkdown>
         </div>
+
 
         {post.tags.length > 0 && (
           <div className="mt-10 flex flex-wrap gap-2 border-t border-border pt-6">
@@ -208,7 +218,9 @@ function PostPage() {
         )}
 
         <div className="mt-12 rounded-2xl border border-border bg-muted/40 p-8 text-center">
-          <h3 className="text-xl font-semibold tracking-tight">¿Buscas propiedad en Colombia?</h3>
+          <h3 className="text-xl font-semibold tracking-tight">
+            ¿Buscas propiedad en Colombia?
+          </h3>
           <p className="mt-2 text-sm text-muted-foreground">
             Explora nuestro catálogo de apartamentos, casas y oficinas seleccionadas.
           </p>

@@ -18,7 +18,11 @@ export function installServerFnAuthFetch() {
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     try {
       const url =
-        typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url;
 
       if (url && url.includes("/_serverFn/")) {
         const { data } = await supabase.auth.getSession();

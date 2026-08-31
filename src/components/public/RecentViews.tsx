@@ -22,7 +22,9 @@ export function RecentViews() {
         .in("slug", slugs);
       if (error) throw error;
       // Mantener orden según el array original
-      return (data ?? []).sort((a, b) => slugs.indexOf(a.slug) - slugs.indexOf(b.slug));
+      return (data ?? []).sort(
+        (a, b) => slugs.indexOf(a.slug) - slugs.indexOf(b.slug),
+      );
     },
     enabled: hydrated && slugs.length > 0,
   });
@@ -31,7 +33,9 @@ export function RecentViews() {
 
   return (
     <div className="mt-16 border-t border-border pt-12">
-      <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">Tu historial</p>
+      <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">
+        Tu historial
+      </p>
       <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
         Viste recientemente
       </h2>

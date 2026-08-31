@@ -2,14 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Plus,
-  Search,
-  Pencil,
-  Trash2,
-  Star,
-  Building2,
-  ChevronLeft,
-  ChevronRight,
+  Plus, Search, Pencil, Trash2, Star, Building2, ChevronLeft, ChevronRight,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -18,29 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,9 +58,7 @@ function PropiedadesAdmin() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select(
-          "id, title, type, status, price, city, neighborhood, address, images, is_featured, created_at",
-        )
+        .select("id, title, type, status, price, city, neighborhood, address, images, is_featured, created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Property[];
@@ -102,8 +78,7 @@ function PropiedadesAdmin() {
       if (filterType !== "all" && p.type !== filterType) return false;
       if (filterStatus !== "all" && p.status !== filterStatus) return false;
       if (filterCity !== "all" && p.city !== filterCity) return false;
-      if (q && !`${p.title} ${p.address ?? ""} ${p.neighborhood ?? ""}`.toLowerCase().includes(q))
-        return false;
+      if (q && !`${p.title} ${p.address ?? ""} ${p.neighborhood ?? ""}`.toLowerCase().includes(q)) return false;
       return true;
     });
   }, [data, search, filterType, filterStatus, filterCity]);
@@ -113,7 +88,10 @@ function PropiedadesAdmin() {
   const pageItems = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
 
   const hasActiveFilters =
-    search.trim() !== "" || filterType !== "all" || filterStatus !== "all" || filterCity !== "all";
+    search.trim() !== "" ||
+    filterType !== "all" ||
+    filterStatus !== "all" ||
+    filterCity !== "all";
 
   const clearFilters = () => {
     setSearch("");
@@ -183,64 +161,33 @@ function PropiedadesAdmin() {
             <Input
               placeholder="Buscar por título o dirección…"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="pl-9"
             />
           </div>
-          <Select
-            value={filterType}
-            onValueChange={(v) => {
-              setFilterType(v as typeof filterType);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Operación" />
-            </SelectTrigger>
+          <Select value={filterType} onValueChange={(v) => { setFilterType(v as typeof filterType); setPage(1); }}>
+            <SelectTrigger><SelectValue placeholder="Operación" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas las operaciones</SelectItem>
               <SelectItem value="venta">Venta</SelectItem>
               <SelectItem value="arriendo">Arriendo</SelectItem>
             </SelectContent>
           </Select>
-          <Select
-            value={filterStatus}
-            onValueChange={(v) => {
-              setFilterStatus(v as typeof filterStatus);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Estado" />
-            </SelectTrigger>
+          <Select value={filterStatus} onValueChange={(v) => { setFilterStatus(v as typeof filterStatus); setPage(1); }}>
+            <SelectTrigger><SelectValue placeholder="Estado" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los estados</SelectItem>
               {STATUS_OPTIONS.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">
-                  {s}
-                </SelectItem>
+                <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select
-            value={filterCity}
-            onValueChange={(v) => {
-              setFilterCity(v);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Ciudad" />
-            </SelectTrigger>
+          <Select value={filterCity} onValueChange={(v) => { setFilterCity(v); setPage(1); }}>
+            <SelectTrigger><SelectValue placeholder="Ciudad" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas las ciudades</SelectItem>
               {cities.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
-                </SelectItem>
+                <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -287,14 +234,10 @@ function PropiedadesAdmin() {
                   <div className="flex flex-col items-center justify-center text-center">
                     <Building2 className="h-10 w-10 text-muted-foreground" />
                     <p className="mt-3 text-sm font-medium text-foreground">
-                      {data && data.length > 0
-                        ? "Sin resultados con esos filtros"
-                        : "Aún no hay propiedades"}
+                      {data && data.length > 0 ? "Sin resultados con esos filtros" : "Aún no hay propiedades"}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {data && data.length > 0
-                        ? "Intenta ajustar los filtros."
-                        : "Empieza creando tu primera propiedad."}
+                      {data && data.length > 0 ? "Intenta ajustar los filtros." : "Empieza creando tu primera propiedad."}
                     </p>
                   </div>
                 </TableCell>
@@ -304,13 +247,7 @@ function PropiedadesAdmin() {
                 <TableRow key={p.id} className="group">
                   <TableCell>
                     {p.images?.[0] ? (
-                      <img
-                        src={p.images[0]}
-                        alt={p.title}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-12 w-12 rounded-md object-cover"
-                      />
+                      <img src={p.images[0]} alt={p.title} loading="lazy" decoding="async" className="h-12 w-12 rounded-md object-cover" />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted">
                         <Building2 className="h-5 w-5 text-muted-foreground" />
@@ -319,9 +256,7 @@ function PropiedadesAdmin() {
                   </TableCell>
                   <TableCell className="max-w-[260px]">
                     <div className="truncate font-medium text-foreground">{p.title}</div>
-                    <div className="truncate text-xs text-muted-foreground">
-                      {p.neighborhood ?? p.address ?? "—"}
-                    </div>
+                    <div className="truncate text-xs text-muted-foreground">{p.neighborhood ?? p.address ?? "—"}</div>
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -335,9 +270,7 @@ function PropiedadesAdmin() {
                       {p.type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-medium text-foreground">
-                    {displayPrice(p.price)}
-                  </TableCell>
+                  <TableCell className="font-medium text-foreground">{displayPrice(p.price)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{p.city}</TableCell>
                   <TableCell>
                     <Select
@@ -351,9 +284,7 @@ function PropiedadesAdmin() {
                       </SelectTrigger>
                       <SelectContent>
                         {STATUS_OPTIONS.map((s) => (
-                          <SelectItem key={s} value={s} className="capitalize">
-                            {s}
-                          </SelectItem>
+                          <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -373,11 +304,7 @@ function PropiedadesAdmin() {
                     </button>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {new Date(p.created_at).toLocaleDateString("es-CO", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    {new Date(p.created_at).toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" })}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
@@ -388,11 +315,7 @@ function PropiedadesAdmin() {
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                          >
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
@@ -400,9 +323,7 @@ function PropiedadesAdmin() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>¿Eliminar propiedad?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Esta acción borrará permanentemente{" "}
-                              <span className="font-medium text-foreground">{p.title}</span> y todas
-                              sus imágenes asociadas. No se puede deshacer.
+                              Esta acción borrará permanentemente <span className="font-medium text-foreground">{p.title}</span> y todas sus imágenes asociadas. No se puede deshacer.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>

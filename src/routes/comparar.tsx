@@ -31,7 +31,9 @@ function CompararPage() {
     <PublicLayout>
       <section className="border-b border-border bg-secondary/30">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">Comparador</p>
+          <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">
+            Comparador
+          </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
             Comparar propiedades
           </h1>
@@ -73,7 +75,10 @@ function CompararPage() {
                       Propiedad
                     </th>
                     {items.map((p) => (
-                      <th key={p.id} className="border-b border-border px-3 py-3 align-top">
+                      <th
+                        key={p.id}
+                        className="border-b border-border px-3 py-3 align-top"
+                      >
                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-muted">
                           {p.images?.[0] ? (
                             <img
@@ -114,10 +119,7 @@ function CompararPage() {
                 <tbody>
                   <Row label="Precio">
                     {items.map((p) => (
-                      <td
-                        key={p.id}
-                        className="border-b border-border px-3 py-3 align-top text-sm font-semibold text-foreground"
-                      >
+                      <td key={p.id} className="border-b border-border px-3 py-3 align-top text-sm font-semibold text-foreground">
                         {displayPrice(p.price)}
                       </td>
                     ))}
@@ -139,10 +141,7 @@ function CompararPage() {
                   </Row>
                   <Row label="Área">
                     {items.map((p) => (
-                      <td
-                        key={p.id}
-                        className="border-b border-border px-3 py-3 align-top text-sm text-foreground"
-                      >
+                      <td key={p.id} className="border-b border-border px-3 py-3 align-top text-sm text-foreground">
                         <span className="inline-flex items-center gap-1">
                           <Maximize className="h-3.5 w-3.5 text-muted-foreground" />
                           {formatArea(Number(p.area_m2))}
@@ -152,10 +151,7 @@ function CompararPage() {
                   </Row>
                   <Row label="Habitaciones">
                     {items.map((p) => (
-                      <td
-                        key={p.id}
-                        className="border-b border-border px-3 py-3 align-top text-sm text-foreground"
-                      >
+                      <td key={p.id} className="border-b border-border px-3 py-3 align-top text-sm text-foreground">
                         <span className="inline-flex items-center gap-1">
                           <Bed className="h-3.5 w-3.5 text-muted-foreground" />
                           {p.bedrooms}
@@ -165,10 +161,7 @@ function CompararPage() {
                   </Row>
                   <Row label="Baños">
                     {items.map((p) => (
-                      <td
-                        key={p.id}
-                        className="border-b border-border px-3 py-3 align-top text-sm text-foreground"
-                      >
+                      <td key={p.id} className="border-b border-border px-3 py-3 align-top text-sm text-foreground">
                         <span className="inline-flex items-center gap-1">
                           <Bath className="h-3.5 w-3.5 text-muted-foreground" />
                           {p.bathrooms}
@@ -178,10 +171,7 @@ function CompararPage() {
                   </Row>
                   <Row label="Ubicación">
                     {items.map((p) => (
-                      <td
-                        key={p.id}
-                        className="border-b border-border px-3 py-3 align-top text-sm text-foreground"
-                      >
+                      <td key={p.id} className="border-b border-border px-3 py-3 align-top text-sm text-foreground">
                         {p.neighborhood ? `${p.neighborhood}, ${p.city}` : p.city}
                       </td>
                     ))}

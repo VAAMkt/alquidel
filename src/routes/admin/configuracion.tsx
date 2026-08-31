@@ -13,11 +13,20 @@ import { useAuth } from "@/hooks/useAuth";
 
 const schema = z.object({
   full_name: z.string().trim().min(2, "Nombre mínimo 2 caracteres").max(120),
-  phone: z.string().trim().max(30).optional().or(z.literal("")),
+  phone: z
+    .string()
+    .trim()
+    .max(30)
+    .optional()
+    .or(z.literal("")),
 });
 
 async function fetchAgent(userId: string, email: string) {
-  const { data, error } = await supabase.from("agents").select("*").eq("id", userId).maybeSingle();
+  const { data, error } = await supabase
+    .from("agents")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
   if (error) throw error;
   return { agent: data, email };
 }
@@ -116,7 +125,9 @@ function ConfiguracionPage() {
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Ej: Juan Pérez"
             />
-            {errors.full_name && <p className="text-xs text-destructive">{errors.full_name}</p>}
+            {errors.full_name && (
+              <p className="text-xs text-destructive">{errors.full_name}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -127,7 +138,9 @@ function ConfiguracionPage() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Ej: 3001234567"
             />
-            {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
+            {errors.phone && (
+              <p className="text-xs text-destructive">{errors.phone}</p>
+            )}
           </div>
 
           <div className="flex justify-end pt-2">

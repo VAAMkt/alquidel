@@ -31,7 +31,12 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { SourceBadge, StatusBadge, type LeadStatus, type LeadSource } from "@/lib/leads";
+import {
+  SourceBadge,
+  StatusBadge,
+  type LeadStatus,
+  type LeadSource,
+} from "@/lib/leads";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin/dashboard")({
@@ -87,7 +92,9 @@ function StatCard({
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         <Icon className="h-4 w-4 text-accent" />
       </div>
-      <p className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{value}</p>
+      <p className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+        {value}
+      </p>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </Card>
   );
@@ -109,7 +116,9 @@ function Metric({
       }`}
     >
       <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
+      <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+        {value}
+      </p>
     </div>
   );
 }
@@ -147,20 +156,10 @@ function DashboardPage() {
       monthStart.setHours(0, 0, 0, 0);
 
       const [props, featured, newLeads, monthLeads] = await Promise.all([
-        supabase
-          .from("properties")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "disponible"),
-        supabase
-          .from("properties")
-          .select("*", { count: "exact", head: true })
-          .eq("is_featured", true)
-          .eq("status", "disponible"),
+        supabase.from("properties").select("*", { count: "exact", head: true }).eq("status", "disponible"),
+        supabase.from("properties").select("*", { count: "exact", head: true }).eq("is_featured", true).eq("status", "disponible"),
         supabase.from("leads").select("*", { count: "exact", head: true }).eq("status", "nuevo"),
-        supabase
-          .from("leads")
-          .select("*", { count: "exact", head: true })
-          .gte("created_at", monthStart.toISOString()),
+        supabase.from("leads").select("*", { count: "exact", head: true }).gte("created_at", monthStart.toISOString()),
       ]);
       return {
         propsCount: props.count ?? 0,
@@ -207,7 +206,9 @@ function DashboardPage() {
     enabled: isReady,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("properties").select("id, slug, title, city");
+      const { data, error } = await supabase
+        .from("properties")
+        .select("id, slug, title, city");
       if (error) throw error;
       return data ?? [];
     },
@@ -311,8 +312,12 @@ function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Resumen de actividad de ALQUIDEL.</p>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        Dashboard
+      </h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Resumen de actividad de ALQUIDEL.
+      </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -326,8 +331,16 @@ function DashboardPage() {
           icon={Inbox}
           hint="Sin atender"
         />
-        <StatCard label="Leads este mes" value={stats?.monthLeadsCount ?? "—"} icon={TrendingUp} />
-        <StatCard label="Destacadas activas" value={stats?.featuredCount ?? "—"} icon={Star} />
+        <StatCard
+          label="Leads este mes"
+          value={stats?.monthLeadsCount ?? "—"}
+          icon={TrendingUp}
+        />
+        <StatCard
+          label="Destacadas activas"
+          value={stats?.featuredCount ?? "—"}
+          icon={Star}
+        />
       </div>
 
       <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
@@ -358,7 +371,10 @@ function DashboardPage() {
             label="Duración de visita"
             value={loadingVisits ? "—" : formatDuration(avgDuration)}
           />
-          <Metric label="Tasa de rebote" value={loadingVisits ? "—" : `${bounceRate}%`} />
+          <Metric
+            label="Tasa de rebote"
+            value={loadingVisits ? "—" : `${bounceRate}%`}
+          />
         </div>
 
         <div className="p-6">
@@ -373,22 +389,12 @@ function DashboardPage() {
                   <defs>
                     <linearGradient id="visitFill" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--brand-teal, #1AA6B7)" stopOpacity={0.25} />
-                      <stop
-                        offset="100%"
-                        stopColor="var(--brand-teal, #1AA6B7)"
-                        stopOpacity={0.02}
-                      />
+                      <stop offset="100%" stopColor="var(--brand-teal, #1AA6B7)" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
                   <XAxis dataKey="day" tickLine={false} axisLine={false} fontSize={12} />
-                  <YAxis
-                    allowDecimals={false}
-                    tickLine={false}
-                    axisLine={false}
-                    fontSize={12}
-                    width={32}
-                  />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} width={32} />
                   <Tooltip
                     labelFormatter={(l) => `${l}`}
                     formatter={(v: number) => [v, "Visitantes"]}
@@ -424,10 +430,7 @@ function DashboardPage() {
               <TableBody>
                 {topViewed.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={3}
-                      className="py-10 text-center text-sm text-muted-foreground"
-                    >
+                    <TableCell colSpan={3} className="py-10 text-center text-sm text-muted-foreground">
                       Aún no hay vistas registradas en este período.
                     </TableCell>
                   </TableRow>
@@ -468,10 +471,7 @@ function DashboardPage() {
               <TableBody>
                 {topLeads.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={2}
-                      className="py-10 text-center text-sm text-muted-foreground"
-                    >
+                    <TableCell colSpan={2} className="py-10 text-center text-sm text-muted-foreground">
                       Aún no hay leads asociados a propiedades en este período.
                     </TableCell>
                   </TableRow>
@@ -500,7 +500,10 @@ function DashboardPage() {
       <div className="mt-10">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-foreground">Últimos leads</h2>
-          <Link to="/admin/leads" className="text-sm text-accent hover:underline">
+          <Link
+            to="/admin/leads"
+            className="text-sm text-accent hover:underline"
+          >
             Ver todos los leads →
           </Link>
         </div>
@@ -519,10 +522,7 @@ function DashboardPage() {
             <TableBody>
               {(recentLeads ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="py-10 text-center text-sm text-muted-foreground"
-                  >
+                  <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
                     Aún no hay leads.
                   </TableCell>
                 </TableRow>

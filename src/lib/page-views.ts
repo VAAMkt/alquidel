@@ -8,7 +8,8 @@ const VISITOR_KEY = "alquidel-visitor-id";
 const SESSION_KEY = "alquidel-session";
 const SESSION_TTL_MS = 30 * 60 * 1000;
 
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? "";
+const SUPABASE_URL =
+  (import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? "";
 const SUPABASE_KEY =
   (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ??
   (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ??
@@ -42,7 +43,10 @@ function getSessionId(): string {
     if (raw) {
       const parsed = JSON.parse(raw) as { id: string; last: number };
       if (parsed?.id && now - parsed.last < SESSION_TTL_MS) {
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ id: parsed.id, last: now }));
+        localStorage.setItem(
+          SESSION_KEY,
+          JSON.stringify({ id: parsed.id, last: now }),
+        );
         return parsed.id;
       }
     }

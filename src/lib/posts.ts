@@ -34,6 +34,7 @@ export const POST_CATEGORY_COLORS: Record<PostCategory, string> = {
   legal: "bg-slate-100 text-slate-800 border-slate-200",
 };
 
+
 export const POST_STATUSES: PostStatus[] = ["borrador", "publicado", "programado"];
 
 export const POST_STATUS_LABELS: Record<PostStatus, string> = {

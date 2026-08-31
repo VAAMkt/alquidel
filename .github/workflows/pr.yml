@@ -19,8 +19,7 @@ jobs:
         run: bun install
 
       - name: Check formatting
-        run: bun run format
-        continue-on-error: true
+        run: bun x prettier --check .
 
       - name: Lint
         run: bun run lint

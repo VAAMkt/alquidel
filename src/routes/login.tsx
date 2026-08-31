@@ -110,15 +110,25 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-secondary/40 px-4">
       <div className="w-full max-w-md rounded-lg border border-border bg-background p-8 shadow-sm">
         <Link to="/" className="mb-8 inline-flex items-baseline gap-1">
-          <span className="text-lg font-semibold tracking-[0.2em] text-foreground">ALQUIDEL</span>
+          <span className="text-lg font-semibold tracking-[0.2em] text-foreground">
+            ALQUIDEL
+          </span>
           <span className="h-1.5 w-1.5 rounded-full bg-accent" />
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Acceso de agentes</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Acceso de agentes
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Ingresa con tu cuenta corporativa para gestionar propiedades y leads.
         </p>
 
-        <form onSubmit={onSubmit} method="post" action="#" noValidate className="mt-8 space-y-5">
+        <form
+          onSubmit={onSubmit}
+          method="post"
+          action="#"
+          noValidate
+          className="mt-8 space-y-5"
+        >
           <div>
             <Label htmlFor="email">Email</Label>
             <Input

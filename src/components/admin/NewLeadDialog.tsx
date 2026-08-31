@@ -71,25 +71,16 @@ export function NewLeadDialog() {
   });
 
   const reset = () => {
-    setName("");
-    setEmail("");
-    setPhone("");
-    setMessage("");
-    setSource("manual");
-    setStatus("nuevo");
-    setPropertyId("none");
+    setName(""); setEmail(""); setPhone(""); setMessage("");
+    setSource("manual"); setStatus("nuevo"); setPropertyId("none");
     setErrors({});
   };
 
   const create = useMutation({
     mutationFn: async () => {
       const parsed = schema.safeParse({
-        name,
-        email,
-        phone,
-        message,
-        source,
-        status,
+        name, email, phone, message,
+        source, status,
         property_id: propertyId === "none" ? null : propertyId,
       });
       if (!parsed.success) {
@@ -125,13 +116,7 @@ export function NewLeadDialog() {
   });
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v);
-        if (!v) reset();
-      }}
-    >
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
       <DialogTrigger asChild>
         <Button className="rounded-lg">
           <Plus className="mr-2 h-4 w-4" />
@@ -147,10 +132,7 @@ export function NewLeadDialog() {
         </DialogHeader>
 
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            create.mutate();
-          }}
+          onSubmit={(e) => { e.preventDefault(); create.mutate(); }}
           className="space-y-4"
         >
           <div className="space-y-1.5">
@@ -162,12 +144,7 @@ export function NewLeadDialog() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="lead-email">Email *</Label>
-              <Input
-                id="lead-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <Input id="lead-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
             <div className="space-y-1.5">
@@ -180,14 +157,10 @@ export function NewLeadDialog() {
             <div className="space-y-1.5">
               <Label>Fuente</Label>
               <Select value={source} onValueChange={(v) => setSource(v as LeadSource)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {LEAD_SOURCES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {LEAD_SOURCE_LABELS[s]}
-                    </SelectItem>
+                    <SelectItem key={s} value={s}>{LEAD_SOURCE_LABELS[s]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -195,14 +168,10 @@ export function NewLeadDialog() {
             <div className="space-y-1.5">
               <Label>Estado</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as LeadStatus)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {LEAD_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {LEAD_STATUS_LABELS[s]}
-                    </SelectItem>
+                    <SelectItem key={s} value={s}>{LEAD_STATUS_LABELS[s]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -212,9 +181,7 @@ export function NewLeadDialog() {
           <div className="space-y-1.5">
             <Label>Propiedad de interés (opcional)</Label>
             <Select value={propertyId} onValueChange={setPropertyId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Ninguna" />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Ninguna" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Sin propiedad asociada</SelectItem>
                 {(properties ?? []).map((p) => (

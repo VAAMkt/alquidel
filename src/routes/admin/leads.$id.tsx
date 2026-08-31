@@ -67,7 +67,9 @@ function LeadDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("*, properties:property_id(id, slug, title, city, neighborhood, price)")
+        .select(
+          "*, properties:property_id(id, slug, title, city, neighborhood, price)",
+        )
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
@@ -94,7 +96,10 @@ function LeadDetailPage() {
 
   const statusMutation = useMutation({
     mutationFn: async (status: LeadStatus) => {
-      const { error } = await supabase.from("leads").update({ status }).eq("id", id);
+      const { error } = await supabase
+        .from("leads")
+        .update({ status })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -106,7 +111,10 @@ function LeadDetailPage() {
 
   const assignMutation = useMutation({
     mutationFn: async (agentId: string | null) => {
-      const { error } = await supabase.from("leads").update({ assigned_to: agentId }).eq("id", id);
+      const { error } = await supabase
+        .from("leads")
+        .update({ assigned_to: agentId })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -124,7 +132,10 @@ function LeadDetailPage() {
       const previous = lead?.notes ?? "";
       const newEntry = `[${stamp}] ${trimmed}`;
       const next = previous ? `${newEntry}\n---\n${previous}` : newEntry;
-      const { error } = await supabase.from("leads").update({ notes: next }).eq("id", id);
+      const { error } = await supabase
+        .from("leads")
+        .update({ notes: next })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -169,7 +180,9 @@ function LeadDetailPage() {
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{lead.name}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            {lead.name}
+          </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <StatusBadge status={lead.status as LeadStatus} />
             <SourceBadge source={lead.source as LeadSource} />
@@ -273,7 +286,9 @@ function LeadDetailPage() {
               Mensaje
             </h2>
             <p className="mt-3 whitespace-pre-wrap text-sm text-foreground">
-              {lead.message || <span className="italic text-muted-foreground">Sin mensaje.</span>}
+              {lead.message || (
+                <span className="italic text-muted-foreground">Sin mensaje.</span>
+              )}
             </p>
           </Card>
         </div>
@@ -310,7 +325,9 @@ function LeadDetailPage() {
                 <Label className="text-xs">Agente asignado</Label>
                 <Select
                   value={lead.assigned_to ?? "none"}
-                  onValueChange={(v) => assignMutation.mutate(v === "none" ? null : v)}
+                  onValueChange={(v) =>
+                    assignMutation.mutate(v === "none" ? null : v)
+                  }
                   disabled={assignMutation.isPending}
                 >
                   <SelectTrigger className="mt-1.5">

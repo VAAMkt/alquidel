@@ -7,14 +7,19 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PostCard } from "@/components/public/PostCard";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { POST_CATEGORIES, POST_CATEGORY_LABELS, type PostCategory } from "@/lib/posts";
+import {
+  POST_CATEGORIES,
+  POST_CATEGORY_LABELS,
+  type PostCategory,
+} from "@/lib/posts";
 
 const PER_PAGE = 12;
 
 const searchSchema = z.object({
-  cat: fallback(z.enum(["todos", ...POST_CATEGORIES] as [string, ...string[]]), "todos").default(
+  cat: fallback(
+    z.enum(["todos", ...POST_CATEGORIES] as [string, ...string[]]),
     "todos",
-  ),
+  ).default("todos"),
   page: fallback(z.number().int().min(1), 1).default(1),
 });
 
@@ -64,7 +69,8 @@ export const Route = createFileRoute("/blog/")({
       { property: "og:title", content: "Blog inmobiliario — ALQUIDEL" },
       {
         property: "og:description",
-        content: "Consejos de compra, tendencias del mercado y guías inmobiliarias en Colombia.",
+        content:
+          "Consejos de compra, tendencias del mercado y guías inmobiliarias en Colombia.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://alquidel.com/blog" },
@@ -197,8 +203,8 @@ function EmptyState() {
         Estamos preparando el primer contenido
       </h2>
       <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-        Contenido inmobiliario para ayudarte a tomar mejores decisiones. Consejos de compra,
-        tendencias del mercado y más.
+        Contenido inmobiliario para ayudarte a tomar mejores decisiones. Consejos de
+        compra, tendencias del mercado y más.
       </p>
       <div className="mt-6">
         <Button asChild>
