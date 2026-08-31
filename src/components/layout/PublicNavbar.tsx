@@ -79,7 +79,7 @@ export function PublicNavbar() {
           <Button
             asChild
             size="sm"
-            className="rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
+            className="h-11 w-11 rounded-lg bg-emerald-600 px-0 text-white hover:bg-emerald-700 sm:h-8 sm:w-auto sm:px-3"
           >
             <a
               href={whatsappUrl()}
@@ -87,8 +87,8 @@ export function PublicNavbar() {
               rel="noopener noreferrer"
               aria-label="Contactar por WhatsApp"
             >
-              <MessageCircle className="mr-1.5 h-4 w-4" />
-              WhatsApp
+              <MessageCircle className="h-4 w-4 sm:mr-1.5" />
+              <span className="sr-only sm:not-sr-only">WhatsApp</span>
             </a>
           </Button>
 
@@ -98,7 +98,7 @@ export function PublicNavbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden"
+                className="h-11 w-11 md:hidden"
                 aria-label="Abrir menú"
               >
                 <Menu className="h-5 w-5" />
