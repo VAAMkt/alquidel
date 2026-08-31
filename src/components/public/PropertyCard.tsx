@@ -87,7 +87,7 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
               aria-label={fav ? "Quitar de favoritos" : "Guardar en favoritos"}
               aria-pressed={fav}
               className={cn(
-                "inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-colors hover:bg-background",
+                "inline-flex h-11 w-11 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-colors hover:bg-background sm:h-8 sm:w-8",
                 "active:[animation:heart-pop_220ms_ease-out]",
                 fav ? "text-rose-500" : "text-foreground",
               )}
@@ -100,7 +100,7 @@ export function PropertyCard({ p }: { p: PropertyCardData }) {
               aria-label={cmp ? "Quitar de comparación" : "Agregar a comparación"}
               aria-pressed={cmp}
               className={cn(
-                "inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-colors hover:bg-background",
+                "inline-flex h-11 w-11 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-colors hover:bg-background sm:h-8 sm:w-8",
                 cmp ? "text-slate-900" : "text-foreground",
               )}
             >

@@ -4,6 +4,22 @@
 // postMessage so the project's preview surfaces share one login; else localStorage.
 export function brokeredPreviewStorage() {
   if (typeof window === 'undefined') return undefined;
+  const memory = new Map<string, string>();
+  const fallbackStorage = {
+    getItem: (key: string) => memory.get(key) ?? null,
+    setItem: (key: string, value: string) => { memory.set(key, value); },
+    removeItem: (key: string) => { memory.delete(key); },
+  };
+  let storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> = fallbackStorage;
+  try {
+    const candidate = window.localStorage;
+    const testKey = '__alquidel_storage_test__';
+    candidate.setItem(testKey, '1');
+    candidate.removeItem(testKey);
+    storage = candidate;
+  } catch {
+    // Safari private browsing or blocked storage: keep auth in memory.
+  }
   const host = location.hostname;
   const PREVIEW_ZONES = ['lovableproject.com', 'lovableproject-dev.com', 'lovable.app', 'gpt-eng.com', 'gptengineer.run'];
   const onPreviewZone = PREVIEW_ZONES.some((z) => host === z || host.endsWith('.' + z));
@@ -15,7 +31,7 @@ export function brokeredPreviewStorage() {
         ?? host.match(new RegExp('^(' + UUID + ')(?=[.-])', 'i'))?.[1])
     : undefined;
   const framed = window.parent && window.parent !== window;
-  if (!projectId || !framed) return localStorage;
+  if (!projectId || !framed) return storage;
 
   // Post only to the real editor ancestor, validated as a Lovable origin, so the
   // session token can never reach an untrusted embedder.
@@ -35,7 +51,6 @@ export function brokeredPreviewStorage() {
     new Promise((resolve) => {
       const requestId = newId();
       let done = false;
-      let timer: ReturnType<typeof setTimeout>;
       const finish = (r: { ok: boolean; value?: string | null } | null) => {
         if (done) return;
         done = true;
@@ -53,7 +68,7 @@ export function brokeredPreviewStorage() {
       if (value !== undefined) msg['value'] = value;
       // targetOrigin per trusted editor origin, so a session token never reaches an arbitrary embedder.
       for (const origin of editorOrigins) window.parent.postMessage(msg, origin);
-      timer = setTimeout(() => finish(null), TIMEOUT);
+      const timer = setTimeout(() => finish(null), TIMEOUT);
     });
 
   // The editor may not be listening yet at the first getItem, so retry once.
@@ -71,17 +86,17 @@ export function brokeredPreviewStorage() {
       // '' is the logout tombstone: clear the local copy too so it can't resurrect if
       // the broker later goes silent. A null reply means never-synced -> keep local.
       if (res && res.ok && typeof res.value === 'string') {
-        if (res.value === '') { localStorage.removeItem(key); return null; }
+        if (res.value === '') { storage.removeItem(key); return null; }
         return res.value;
       }
-      return localStorage.getItem(key);
+      return storage.getItem(key);
     },
     setItem: (key: string, value: string) => {
-      localStorage.setItem(key, value);
+      storage.setItem(key, value);
       return request('lovable-preview-auth:set', key, value).then(() => undefined);
     },
     removeItem: (key: string) => {
-      localStorage.removeItem(key);
+      storage.removeItem(key);
       return request('lovable-preview-auth:remove', key).then(() => undefined);
     },
   };
