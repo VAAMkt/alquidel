@@ -13,11 +13,20 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import { COLOMBIA_CITIES } from "@/lib/colombia-cities";
 import { cn } from "@/lib/utils";
@@ -31,18 +40,35 @@ type PropertyType = Database["public"]["Enums"]["property_type"];
 type ListingType = Database["public"]["Enums"]["listing_type"];
 type PropertyStatus = Database["public"]["Enums"]["property_status"];
 
-const PROPERTY_TYPES: PropertyType[] = ["apartamento","casa","local","oficina","lote","bodega"];
-const STATUS_OPTIONS: PropertyStatus[] = ["disponible","vendido","arrendado","reservado"];
+const PROPERTY_TYPES: PropertyType[] = [
+  "apartamento",
+  "casa",
+  "local",
+  "oficina",
+  "lote",
+  "bodega",
+];
+const STATUS_OPTIONS: PropertyStatus[] = ["disponible", "vendido", "arrendado", "reservado"];
 const SUGGESTED_AMENITIES = [
-  "Parqueadero","Balcón","Piscina","Vigilancia 24h","Gimnasio","Ascensor",
-  "Depósito","Terraza","Chimenea","Walk-in closet","Cocina integral","Cuarto de servicio",
+  "Parqueadero",
+  "Balcón",
+  "Piscina",
+  "Vigilancia 24h",
+  "Gimnasio",
+  "Ascensor",
+  "Depósito",
+  "Terraza",
+  "Chimenea",
+  "Walk-in closet",
+  "Cocina integral",
+  "Cuarto de servicio",
 ];
 
 const schema = z.object({
   title: z.string().trim().min(3, "Título mínimo 3 caracteres").max(200),
   description: z.string().trim().min(10, "Descripción mínimo 10 caracteres").max(5000),
-  type: z.enum(["venta","arriendo"]),
-  property_type: z.enum(["apartamento","casa","local","oficina","lote","bodega"]),
+  type: z.enum(["venta", "arriendo"]),
+  property_type: z.enum(["apartamento", "casa", "local", "oficina", "lote", "bodega"]),
   price: z.number().positive("Precio requerido"),
   area_m2: z.number().positive("Área requerida"),
   bedrooms: z.number().int().min(0),
@@ -50,9 +76,12 @@ const schema = z.object({
   city: z.string().min(1),
   neighborhood: z.string().max(200).optional(),
   address: z.string().max(300).optional(),
-  slug: z.string().min(3, "Slug requerido").regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"),
+  slug: z
+    .string()
+    .min(3, "Slug requerido")
+    .regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"),
   amenities: z.array(z.string()),
-  status: z.enum(["disponible","vendido","arrendado","reservado"]),
+  status: z.enum(["disponible", "vendido", "arrendado", "reservado"]),
   is_featured: z.boolean(),
   images: z.array(z.string()),
   administration_fee: z.number().min(0).nullable().optional(),
@@ -133,7 +162,7 @@ export function PropertyForm({ initial, mode }: Props) {
           garages: initial.garages ?? 0,
           storage_rooms: initial.storage_rooms ?? 0,
         }
-      : blank
+      : blank,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [slugTouched, setSlugTouched] = useState(mode === "edit");
@@ -176,7 +205,10 @@ export function PropertyForm({ initial, mode }: Props) {
   }
 
   function removeAmenity(value: string) {
-    update("amenities", values.amenities.filter((a) => a !== value));
+    update(
+      "amenities",
+      values.amenities.filter((a) => a !== value),
+    );
   }
 
   // Image upload
@@ -201,7 +233,9 @@ export function PropertyForm({ initial, mode }: Props) {
         setUploadProgress(Math.round(((i + 1) / arr.length) * 100));
       }
       update("images", [...values.images, ...uploaded]);
-      toast.success(`${uploaded.length} imagen${uploaded.length === 1 ? "" : "es"} subida${uploaded.length === 1 ? "" : "s"}`);
+      toast.success(
+        `${uploaded.length} imagen${uploaded.length === 1 ? "" : "es"} subida${uploaded.length === 1 ? "" : "s"}`,
+      );
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Error al subir";
       toast.error(msg);
@@ -216,7 +250,10 @@ export function PropertyForm({ initial, mode }: Props) {
     if (path) {
       await supabase.storage.from("property-images").remove([path]);
     }
-    update("images", values.images.filter((u) => u !== url));
+    update(
+      "images",
+      values.images.filter((u) => u !== url),
+    );
   }
 
   function moveImage(from: number, to: number) {
@@ -250,7 +287,7 @@ export function PropertyForm({ initial, mode }: Props) {
             is_featured: payload.is_featured,
             images: payload.images,
             administration_fee:
-              payload.type === "venta" ? payload.administration_fee ?? null : null,
+              payload.type === "venta" ? (payload.administration_fee ?? null) : null,
             video_url: payload.video_url || null,
             stratum: payload.stratum ?? null,
             built_year: payload.built_year ?? null,
@@ -282,7 +319,7 @@ export function PropertyForm({ initial, mode }: Props) {
             is_featured: payload.is_featured,
             images: payload.images,
             administration_fee:
-              payload.type === "venta" ? payload.administration_fee ?? null : null,
+              payload.type === "venta" ? (payload.administration_fee ?? null) : null,
             video_url: payload.video_url || null,
             stratum: payload.stratum ?? null,
             built_year: payload.built_year ?? null,
@@ -323,7 +360,9 @@ export function PropertyForm({ initial, mode }: Props) {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Sección 1: Información básica */}
       <Card className="rounded-lg border-border p-6">
-        <h2 className="text-base font-semibold tracking-tight text-foreground">Información básica</h2>
+        <h2 className="text-base font-semibold tracking-tight text-foreground">
+          Información básica
+        </h2>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <Label htmlFor="title">Título *</Label>
@@ -346,12 +385,16 @@ export function PropertyForm({ initial, mode }: Props) {
               className="mt-1.5"
               placeholder="Detalles, acabados, ubicación, vistas…"
             />
-            {errors.description && <p className="mt-1 text-xs text-destructive">{errors.description}</p>}
+            {errors.description && (
+              <p className="mt-1 text-xs text-destructive">{errors.description}</p>
+            )}
           </div>
           <div>
             <Label>Tipo de operación *</Label>
             <Select value={values.type} onValueChange={(v) => update("type", v as ListingType)}>
-              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="mt-1.5">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="venta">Venta</SelectItem>
                 <SelectItem value="arriendo">Arriendo</SelectItem>
@@ -360,11 +403,18 @@ export function PropertyForm({ initial, mode }: Props) {
           </div>
           <div>
             <Label>Tipo de inmueble *</Label>
-            <Select value={values.property_type} onValueChange={(v) => update("property_type", v as PropertyType)}>
-              <SelectTrigger className="mt-1.5 capitalize"><SelectValue /></SelectTrigger>
+            <Select
+              value={values.property_type}
+              onValueChange={(v) => update("property_type", v as PropertyType)}
+            >
+              <SelectTrigger className="mt-1.5 capitalize">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {PROPERTY_TYPES.map((t) => (
-                  <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                  <SelectItem key={t} value={t} className="capitalize">
+                    {t}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -507,11 +557,16 @@ export function PropertyForm({ initial, mode }: Props) {
             <Input
               id="slug"
               value={values.slug}
-              onChange={(e) => { setSlugTouched(true); update("slug", slugify(e.target.value)); }}
+              onChange={(e) => {
+                setSlugTouched(true);
+                update("slug", slugify(e.target.value));
+              }}
               onBlur={checkSlugUnique}
               className="mt-1.5 font-mono text-sm"
             />
-            <p className="mt-1 text-xs text-muted-foreground">/propiedades/{values.slug || "tu-propiedad"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              /propiedades/{values.slug || "tu-propiedad"}
+            </p>
             {errors.slug && <p className="mt-1 text-xs text-destructive">{errors.slug}</p>}
           </div>
         </div>
@@ -528,14 +583,21 @@ export function PropertyForm({ initial, mode }: Props) {
             <Select
               value={values.stratum != null ? String(values.stratum) : "none"}
               onValueChange={(v) =>
-                update("stratum", v === "none" ? null : (Number(v) as PropertyFormValues["stratum"]))
+                update(
+                  "stratum",
+                  v === "none" ? null : (Number(v) as PropertyFormValues["stratum"]),
+                )
               }
             >
-              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="mt-1.5">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Sin especificar</SelectItem>
                 {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                  <SelectItem key={n} value={String(n)}>
+                    {n}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -626,8 +688,13 @@ export function PropertyForm({ initial, mode }: Props) {
         <p className="mt-1 text-xs text-muted-foreground">La primera imagen se usa como portada.</p>
 
         <div
-          onDragOver={(e) => { e.preventDefault(); }}
-          onDrop={(e) => { e.preventDefault(); if (e.dataTransfer.files) handleFiles(e.dataTransfer.files); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+          }}
           onClick={() => fileInputRef.current?.click()}
           className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 transition-colors hover:border-accent hover:bg-accent/5"
         >
@@ -642,7 +709,9 @@ export function PropertyForm({ initial, mode }: Props) {
           {uploading ? (
             <>
               <Loader2 className="h-8 w-8 animate-spin text-accent" />
-              <p className="mt-3 text-sm font-medium text-foreground">Subiendo… {uploadProgress}%</p>
+              <p className="mt-3 text-sm font-medium text-foreground">
+                Subiendo… {uploadProgress}%
+              </p>
               <Progress value={uploadProgress} className="mt-3 w-64" />
             </>
           ) : (
@@ -651,7 +720,9 @@ export function PropertyForm({ initial, mode }: Props) {
               <p className="mt-3 text-sm font-medium text-foreground">
                 Arrastra imágenes aquí o <span className="text-accent">haz clic</span>
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">PNG, JPG, WEBP (sin límite de cantidad)</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                PNG, JPG, WEBP (sin límite de cantidad)
+              </p>
             </>
           )}
         </div>
@@ -659,24 +730,40 @@ export function PropertyForm({ initial, mode }: Props) {
         {values.images.length > 0 && (
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {values.images.map((url, idx) => (
-              <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
+              <div
+                key={url}
+                className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
+              >
                 <img src={url} alt={`Imagen ${idx + 1}`} className="h-full w-full object-cover" />
                 {idx === 0 && (
-                  <Badge className="absolute left-2 top-2 bg-[color:var(--brand-teal)] text-white hover:bg-[color:var(--brand-teal)]">Portada</Badge>
+                  <Badge className="absolute left-2 top-2 bg-[color:var(--brand-teal)] text-white hover:bg-[color:var(--brand-teal)]">
+                    Portada
+                  </Badge>
                 )}
                 <div className="absolute inset-0 flex items-end justify-between gap-1 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
                   <div className="flex gap-1">
-                    <button type="button" onClick={() => moveImage(idx, idx - 1)} disabled={idx === 0}
-                      className="rounded bg-background/90 p-1 text-foreground disabled:opacity-30">
+                    <button
+                      type="button"
+                      onClick={() => moveImage(idx, idx - 1)}
+                      disabled={idx === 0}
+                      className="rounded bg-background/90 p-1 text-foreground disabled:opacity-30"
+                    >
                       <GripVertical className="h-3 w-3 -rotate-90" />
                     </button>
-                    <button type="button" onClick={() => moveImage(idx, idx + 1)} disabled={idx === values.images.length - 1}
-                      className="rounded bg-background/90 p-1 text-foreground disabled:opacity-30">
+                    <button
+                      type="button"
+                      onClick={() => moveImage(idx, idx + 1)}
+                      disabled={idx === values.images.length - 1}
+                      className="rounded bg-background/90 p-1 text-foreground disabled:opacity-30"
+                    >
                       <GripVertical className="h-3 w-3 rotate-90" />
                     </button>
                   </div>
-                  <button type="button" onClick={() => removeImage(url)}
-                    className="rounded bg-destructive p-1 text-destructive-foreground">
+                  <button
+                    type="button"
+                    onClick={() => removeImage(url)}
+                    className="rounded bg-destructive p-1 text-destructive-foreground"
+                  >
                     <X className="h-3 w-3" />
                   </button>
                 </div>
@@ -696,7 +783,11 @@ export function PropertyForm({ initial, mode }: Props) {
             {values.amenities.map((a) => (
               <Badge key={a} variant="secondary" className="gap-1 rounded-md">
                 {a}
-                <button type="button" onClick={() => removeAmenity(a)} className="ml-1 hover:text-destructive">
+                <button
+                  type="button"
+                  onClick={() => removeAmenity(a)}
+                  className="ml-1 hover:text-destructive"
+                >
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
@@ -734,7 +825,9 @@ export function PropertyForm({ initial, mode }: Props) {
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
           <div className="flex items-center justify-between rounded-lg border border-border p-4">
             <div>
-              <Label htmlFor="featured" className="text-sm font-medium">Propiedad destacada</Label>
+              <Label htmlFor="featured" className="text-sm font-medium">
+                Propiedad destacada
+              </Label>
               <p className="text-xs text-muted-foreground">Aparece en la home</p>
             </div>
             <Switch
@@ -745,11 +838,18 @@ export function PropertyForm({ initial, mode }: Props) {
           </div>
           <div>
             <Label>Estado</Label>
-            <Select value={values.status} onValueChange={(v) => update("status", v as PropertyStatus)}>
-              <SelectTrigger className="mt-1.5 capitalize"><SelectValue /></SelectTrigger>
+            <Select
+              value={values.status}
+              onValueChange={(v) => update("status", v as PropertyStatus)}
+            >
+              <SelectTrigger className="mt-1.5 capitalize">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {STATUS_OPTIONS.map((s) => (
-                  <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                  <SelectItem key={s} value={s} className="capitalize">
+                    {s}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -758,11 +858,19 @@ export function PropertyForm({ initial, mode }: Props) {
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={() => navigate({ to: "/admin/propiedades" })}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => navigate({ to: "/admin/propiedades" })}
+        >
           Cancelar
         </Button>
         <Button type="submit" disabled={saveMutation.isPending} className="rounded-lg">
-          {saveMutation.isPending ? "Guardando…" : mode === "create" ? "Crear propiedad" : "Guardar cambios"}
+          {saveMutation.isPending
+            ? "Guardando…"
+            : mode === "create"
+              ? "Crear propiedad"
+              : "Guardar cambios"}
         </Button>
       </div>
     </form>

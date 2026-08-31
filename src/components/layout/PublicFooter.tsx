@@ -12,9 +12,7 @@ export function PublicFooter() {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-1">
             <BrandLogo variant="full" tone="color" className="h-20 w-auto" />
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {COMPANY.about}
-            </p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{COMPANY.about}</p>
             <div className="mt-5">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 Síguenos
@@ -45,11 +43,31 @@ export function PublicFooter() {
           <div>
             <h4 className="text-sm font-semibold text-foreground">Navegación</h4>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/propiedades" className="hover:text-foreground">Propiedades</Link></li>
-              <li><Link to="/propietarios" className="hover:text-foreground">Propietarios</Link></li>
-              <li><Link to="/nosotros" className="hover:text-foreground">Nosotros</Link></li>
-              <li><Link to="/contacto" className="hover:text-foreground">Contacto</Link></li>
-              <li><Link to="/login" className="hover:text-foreground">Acceso asesores</Link></li>
+              <li>
+                <Link to="/propiedades" className="hover:text-foreground">
+                  Propiedades
+                </Link>
+              </li>
+              <li>
+                <Link to="/propietarios" className="hover:text-foreground">
+                  Propietarios
+                </Link>
+              </li>
+              <li>
+                <Link to="/nosotros" className="hover:text-foreground">
+                  Nosotros
+                </Link>
+              </li>
+              <li>
+                <Link to="/contacto" className="hover:text-foreground">
+                  Contacto
+                </Link>
+              </li>
+              <li>
+                <Link to="/login" className="hover:text-foreground">
+                  Acceso asesores
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -73,13 +91,19 @@ export function PublicFooter() {
               <li className="flex items-start gap-2">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0" />
                 <div className="space-y-0.5">
-                  <a href={COMPANY.phoneHref} className="block hover:text-foreground">{COMPANY.phone}</a>
-                  <a href={COMPANY.pbxHref} className="block hover:text-foreground">PBX {COMPANY.pbx}</a>
+                  <a href={COMPANY.phoneHref} className="block hover:text-foreground">
+                    {COMPANY.phone}
+                  </a>
+                  <a href={COMPANY.pbxHref} className="block hover:text-foreground">
+                    PBX {COMPANY.pbx}
+                  </a>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0" />
-                <a href={COMPANY.emailHref} className="hover:text-foreground">{COMPANY.email}</a>
+                <a href={COMPANY.emailHref} className="hover:text-foreground">
+                  {COMPANY.email}
+                </a>
               </li>
               <li className="flex items-start gap-2">
                 <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />

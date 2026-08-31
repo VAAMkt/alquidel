@@ -74,7 +74,7 @@ function AlertasPage() {
     const rows = filtered.map((a) => [
       a.email,
       a.city ?? "",
-      a.type ? TYPE_LABELS[a.type] ?? a.type : "",
+      a.type ? (TYPE_LABELS[a.type] ?? a.type) : "",
       a.max_price ? String(a.max_price) : "",
       format(new Date(a.created_at), "yyyy-MM-dd HH:mm"),
     ]);
@@ -122,9 +122,7 @@ function AlertasPage() {
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card className="border-border p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Total</p>
-          <p className="mt-1 text-2xl font-semibold text-foreground">
-            {alerts?.length ?? 0}
-          </p>
+          <p className="mt-1 text-2xl font-semibold text-foreground">{alerts?.length ?? 0}</p>
         </Card>
         <Card className="border-border p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Mostrando</p>

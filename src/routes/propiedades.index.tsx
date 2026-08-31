@@ -3,13 +3,7 @@ import { useQuery, queryOptions } from "@tanstack/react-query";
 import { useState } from "react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import {
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,13 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
@@ -38,14 +26,7 @@ import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCOP } from "@/lib/format";
 
-const PROPERTY_TYPES = [
-  "apartamento",
-  "casa",
-  "local",
-  "oficina",
-  "lote",
-  "bodega",
-] as const;
+const PROPERTY_TYPES = ["apartamento", "casa", "local", "oficina", "lote", "bodega"] as const;
 
 // Lista cerrada: solo ciudades con inventario real.
 const CITIES = ["Bogotá", "Chía", "Cajicá", "Cali", "Mosquera"] as const;
@@ -55,12 +36,12 @@ const PER_PAGE = 12;
 
 const searchSchema = z.object({
   operacion: fallback(z.enum(["todos", "venta", "arriendo"]), "todos").default("todos"),
-  tipos: fallback(
-    z.array(z.enum(PROPERTY_TYPES)),
-    [],
-  ).default([]),
+  tipos: fallback(z.array(z.enum(PROPERTY_TYPES)), []).default([]),
   ciudad: fallback(z.string(), "todas").default("todas"),
-  precioMax: fallback(z.number().int().min(100_000_000).max(PRICE_MAX_DEFAULT), PRICE_MAX_DEFAULT).default(PRICE_MAX_DEFAULT),
+  precioMax: fallback(
+    z.number().int().min(100_000_000).max(PRICE_MAX_DEFAULT),
+    PRICE_MAX_DEFAULT,
+  ).default(PRICE_MAX_DEFAULT),
   habMin: fallback(z.number().int().min(0).max(4), 0).default(0),
   sort: fallback(
     z.enum(["recientes", "precio-asc", "precio-desc", "destacados"]),
@@ -143,9 +124,7 @@ export const Route = createFileRoute("/propiedades/")({
   // Precargamos en el loader para que el catálogo llegue renderizado en el
   // HTML inicial (indexable por Google), no solo tras hidratar.
   loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(
-      propertiesQueryOptions(deps as PropertiesSearch),
-    );
+    await context.queryClient.ensureQueryData(propertiesQueryOptions(deps as PropertiesSearch));
   },
   head: () => ({
     meta: [
@@ -249,7 +228,10 @@ function PropiedadesPage() {
                 checked={search.tipos.includes(t)}
                 onCheckedChange={() => toggleTipo(t)}
               />
-              <Label htmlFor={`tipo-${t}`} className="cursor-pointer text-sm font-normal capitalize">
+              <Label
+                htmlFor={`tipo-${t}`}
+                className="cursor-pointer text-sm font-normal capitalize"
+              >
                 {t}
               </Label>
             </div>
@@ -263,11 +245,15 @@ function PropiedadesPage() {
           Ciudad
         </Label>
         <Select value={search.ciudad} onValueChange={(v) => setSearch({ ciudad: v })}>
-          <SelectTrigger className="mt-3"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="mt-3">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="todas">Todas las ciudades</SelectItem>
             {CITIES.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
+              <SelectItem key={c} value={c}>
+                {c}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -279,9 +265,7 @@ function PropiedadesPage() {
           <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Precio máximo
           </Label>
-          <span className="text-xs font-medium text-foreground">
-            {formatCOP(search.precioMax)}
-          </span>
+          <span className="text-xs font-medium text-foreground">{formatCOP(search.precioMax)}</span>
         </div>
         <Slider
           value={[search.precioMax]}
@@ -335,9 +319,7 @@ function PropiedadesPage() {
     <PublicLayout>
       <section className="border-b border-border bg-secondary/30">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">
-            Catálogo
-          </p>
+          <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">Catálogo</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Propiedades disponibles
           </h1>
@@ -386,25 +368,25 @@ function PropiedadesPage() {
                     </Button>
                   }
                 >
-                <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="sm" className="lg:hidden">
-                      <SlidersHorizontal className="mr-1.5 h-4 w-4" />
-                      Filtros
-                      {activeFilterCount > 0 && (
-                        <span className="ml-1.5 rounded-full bg-foreground px-1.5 text-[10px] font-semibold text-background">
-                          {activeFilterCount}
-                        </span>
-                      )}
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-[320px] overflow-y-auto sm:w-[380px]">
-                    <SheetHeader>
-                      <SheetTitle>Filtros</SheetTitle>
-                    </SheetHeader>
-                    <div className="mt-6">{FiltersPanel}</div>
-                  </SheetContent>
-                </Sheet>
+                  <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" size="sm" className="lg:hidden">
+                        <SlidersHorizontal className="mr-1.5 h-4 w-4" />
+                        Filtros
+                        {activeFilterCount > 0 && (
+                          <span className="ml-1.5 rounded-full bg-foreground px-1.5 text-[10px] font-semibold text-background">
+                            {activeFilterCount}
+                          </span>
+                        )}
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-[320px] overflow-y-auto sm:w-[380px]">
+                      <SheetHeader>
+                        <SheetTitle>Filtros</SheetTitle>
+                      </SheetHeader>
+                      <div className="mt-6">{FiltersPanel}</div>
+                    </SheetContent>
+                  </Sheet>
                 </ClientOnly>
 
                 <p className="text-sm text-muted-foreground">
@@ -424,7 +406,10 @@ function PropiedadesPage() {
                   </div>
                 }
               >
-                <Select value={search.sort} onValueChange={(v) => setSearch({ sort: v as typeof DEFAULTS.sort })}>
+                <Select
+                  value={search.sort}
+                  onValueChange={(v) => setSearch({ sort: v as typeof DEFAULTS.sort })}
+                >
                   <SelectTrigger className="w-[200px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -524,7 +509,8 @@ function PropiedadesPage() {
                 ¿No encontraste lo que buscas?
               </h2>
               <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-                Regístrate y te avisamos cuando publiquemos algo nuevo que coincida con tus criterios.
+                Regístrate y te avisamos cuando publiquemos algo nuevo que coincida con tus
+                criterios.
               </p>
               <div className="mt-5 flex justify-center">
                 <AlertsModal />

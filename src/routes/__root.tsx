@@ -84,9 +84,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         content:
           "Venta y arriendo de inmuebles premium en Bogotá y principales ciudades de Colombia.",
       },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6" },
-
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9b2798f5-cd6c-42e4-b8b4-917e637cfcc6",
+      },
     ],
     links: [
       {

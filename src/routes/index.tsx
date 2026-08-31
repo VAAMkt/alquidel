@@ -31,14 +31,7 @@ import { CITY_LANDINGS } from "@/lib/landings";
 import { trackOwnerCta } from "@/lib/analytics";
 import heroBogota from "@/assets/hero-bogota.jpg";
 
-const PROPERTY_TYPES = [
-  "apartamento",
-  "casa",
-  "local",
-  "oficina",
-  "lote",
-  "bodega",
-] as const;
+const PROPERTY_TYPES = ["apartamento", "casa", "local", "oficina", "lote", "bodega"] as const;
 
 // Lista cerrada: solo ciudades con inventario real.
 const CITIES = ["Bogotá", "Chía", "Cajicá", "Cali", "Mosquera"] as const;
@@ -200,8 +193,8 @@ function HomePage() {
               Menos búsqueda. <span className="text-accent">Más criterio.</span>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
-              Propiedades seleccionadas. Asesoría real. Decisiones inmobiliarias con
-              respaldo en Bogotá, Chía, Cajicá y Cali.
+              Propiedades seleccionadas. Asesoría real. Decisiones inmobiliarias con respaldo en
+              Bogotá, Chía, Cajicá y Cali.
             </p>
 
             {/* Señales de confianza */}
@@ -212,15 +205,12 @@ function HomePage() {
                 { n: `${PARTNERS.length}+`, l: "alianzas con bancos y portales" },
               ].map((s) => (
                 <div key={s.l} className="text-center">
-                  <p className="text-2xl font-semibold tracking-tight text-foreground">
-                    {s.n}
-                  </p>
+                  <p className="text-2xl font-semibold tracking-tight text-foreground">{s.n}</p>
                   <p className="text-xs text-muted-foreground">{s.l}</p>
                 </div>
               ))}
             </div>
           </div>
-
 
           {/* Buscador */}
           <Card className="mx-auto mt-10 max-w-4xl rounded-2xl border-border bg-background/95 p-3 shadow-sm backdrop-blur sm:p-4">
@@ -295,11 +285,7 @@ function HomePage() {
                   </SelectContent>
                 </Select>
               </ClientOnly>
-              <Button
-                size="lg"
-                onClick={handleSearch}
-                className="h-12 rounded-lg px-6"
-              >
+              <Button size="lg" onClick={handleSearch} className="h-12 rounded-lg px-6">
                 <Search className="mr-2 h-4 w-4" />
                 Buscar
               </Button>
@@ -319,8 +305,8 @@ function HomePage() {
               Vende o arrienda tu inmueble con acompañamiento completo
             </h2>
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-              Avalúo comercial, fotografía, publicación y filtro de interesados. Te
-              contactamos en menos de 24 horas hábiles.
+              Avalúo comercial, fotografía, publicación y filtro de interesados. Te contactamos en
+              menos de 24 horas hábiles.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -347,14 +333,11 @@ function HomePage() {
         </div>
       </section>
 
-
       {/* DESTACADAS */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">
-              Selección
-            </p>
+            <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">Selección</p>
             <h2 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               Selección Alquidel
             </h2>
@@ -426,14 +409,9 @@ function HomePage() {
               desc: "Acompañamiento integral en cada paso del proceso, con un asesor asignado.",
             },
           ].map((item) => (
-            <Card
-              key={item.title}
-              className="rounded-xl border-border bg-background p-6"
-            >
+            <Card key={item.title} className="rounded-xl border-border bg-background p-6">
               <item.icon className="h-6 w-6 text-accent" />
-              <h3 className="mt-4 text-base font-semibold text-foreground">
-                {item.title}
-              </h3>
+              <h3 className="mt-4 text-base font-semibold text-foreground">{item.title}</h3>
               <p className="mt-1.5 text-sm text-muted-foreground">{item.desc}</p>
             </Card>
           ))}
@@ -457,7 +435,6 @@ function HomePage() {
         </div>
       </section>
 
-
       {/* ¿POR QUÉ ALQUIDEL? */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="text-center">
@@ -472,32 +449,26 @@ function HomePage() {
         <div className="mt-12 grid gap-8 md:grid-cols-3">
           <div>
             <Award className="h-7 w-7 text-accent" />
-            <h3 className="mt-4 text-lg font-semibold text-foreground">
-              Experiencia
-            </h3>
+            <h3 className="mt-4 text-lg font-semibold text-foreground">Experiencia</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Trabajamos profesionalmente para prestar el mejor y más completo
-              servicio inmobiliario.
+              Trabajamos profesionalmente para prestar el mejor y más completo servicio
+              inmobiliario.
             </p>
           </div>
           <div>
             <Building2 className="h-7 w-7 text-accent" />
-            <h3 className="mt-4 text-lg font-semibold text-foreground">
-              Servicio integral
-            </h3>
+            <h3 className="mt-4 text-lg font-semibold text-foreground">Servicio integral</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Servicios completos basados en las necesidades de cada cliente, para
-              brindar la mejor asesoría inmobiliaria.
+              Servicios completos basados en las necesidades de cada cliente, para brindar la mejor
+              asesoría inmobiliaria.
             </p>
           </div>
           <div>
             <Users className="h-7 w-7 text-accent" />
-            <h3 className="mt-4 text-lg font-semibold text-foreground">
-              Clientes de por vida
-            </h3>
+            <h3 className="mt-4 text-lg font-semibold text-foreground">Clientes de por vida</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              No buscamos transacciones, buscamos relaciones duraderas que mejoren
-              la calidad de vida de nuestros clientes.
+              No buscamos transacciones, buscamos relaciones duraderas que mejoren la calidad de
+              vida de nuestros clientes.
             </p>
           </div>
         </div>
@@ -515,9 +486,7 @@ function HomePage() {
       {/* BÚSQUEDAS POR CIUDAD */}
       <section className="border-t border-border bg-secondary/30">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-          <h2 className="text-xl font-semibold tracking-tight text-foreground">
-            Busca por ciudad
-          </h2>
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">Busca por ciudad</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Inventario disponible en las ciudades donde operamos.
           </p>

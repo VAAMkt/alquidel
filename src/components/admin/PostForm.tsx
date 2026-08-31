@@ -13,18 +13,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/lib/slugify";
 import {
-  POST_CATEGORIES, POST_CATEGORY_LABELS, POST_STATUSES, POST_STATUS_LABELS,
-  type Post, type PostCategory, type PostStatus,
+  POST_CATEGORIES,
+  POST_CATEGORY_LABELS,
+  POST_STATUSES,
+  POST_STATUS_LABELS,
+  type Post,
+  type PostCategory,
+  type PostStatus,
 } from "@/lib/posts";
 
 const schema = z.object({
   title: z.string().trim().min(3, "Título mínimo 3 caracteres").max(200),
-  slug: z.string().min(3).regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"),
+  slug: z
+    .string()
+    .min(3)
+    .regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"),
   excerpt: z.string().max(500).default(""),
   content: z.string().min(10, "Contenido requerido"),
   cover_image: z.string().optional().or(z.literal("")),
@@ -109,17 +121,14 @@ export function PostForm({ initial, mode }: Props) {
         meta_description: vals.meta_description || null,
         published_at:
           vals.status === "publicado"
-            ? initial?.published_at ?? new Date().toISOString()
-            : initial?.published_at ?? null,
+            ? (initial?.published_at ?? new Date().toISOString())
+            : (initial?.published_at ?? null),
       };
       if (mode === "create") {
         const { error } = await supabase.from("posts").insert(payload);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from("posts")
-          .update(payload)
-          .eq("id", initial!.id);
+        const { error } = await supabase.from("posts").update(payload).eq("id", initial!.id);
         if (error) throw error;
       }
     },
@@ -220,9 +229,7 @@ export function PostForm({ initial, mode }: Props) {
                 placeholder="# Mi artículo&#10;&#10;Escribe aquí tu contenido en Markdown..."
                 className="font-mono text-sm"
               />
-              {errors.content && (
-                <p className="mt-1 text-xs text-destructive">{errors.content}</p>
-              )}
+              {errors.content && <p className="mt-1 text-xs text-destructive">{errors.content}</p>}
             </TabsContent>
             <TabsContent value="preview">
               <div className="prose prose-neutral min-h-[400px] max-w-none rounded-md border border-border p-4">
@@ -266,10 +273,14 @@ export function PostForm({ initial, mode }: Props) {
               value={v.status}
               onValueChange={(val) => setV({ ...v, status: val as PostStatus })}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {POST_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{POST_STATUS_LABELS[s]}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {POST_STATUS_LABELS[s]}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -280,20 +291,21 @@ export function PostForm({ initial, mode }: Props) {
               value={v.category}
               onValueChange={(val) => setV({ ...v, category: val as PostCategory })}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {POST_CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>{POST_CATEGORY_LABELS[c]}</SelectItem>
+                  <SelectItem key={c} value={c}>
+                    {POST_CATEGORY_LABELS[c]}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label>Autor</Label>
-            <Input
-              value={v.author}
-              onChange={(e) => setV({ ...v, author: e.target.value })}
-            />
+            <Input value={v.author} onChange={(e) => setV({ ...v, author: e.target.value })} />
           </div>
           <div className="space-y-2">
             <Label>Tags (separados por coma)</Label>
@@ -364,8 +376,7 @@ export function PostForm({ initial, mode }: Props) {
             placeholder="https://www.youtube.com/watch?v=..."
           />
           <p className="text-xs text-muted-foreground">
-            Ideal para presentar proyectos de inversión. Se mostrará dentro del
-            artículo.
+            Ideal para presentar proyectos de inversión. Se mostrará dentro del artículo.
           </p>
         </Card>
 
@@ -374,11 +385,7 @@ export function PostForm({ initial, mode }: Props) {
             {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {mode === "create" ? "Crear artículo" : "Guardar cambios"}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate({ to: "/admin/blog" })}
-          >
+          <Button type="button" variant="outline" onClick={() => navigate({ to: "/admin/blog" })}>
             Cancelar
           </Button>
         </div>

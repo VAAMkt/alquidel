@@ -2,13 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Heart, MessageCircle, LayoutDashboard, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -95,12 +89,7 @@ export function PublicNavbar() {
           {/* Menú móvil */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                aria-label="Abrir menú"
-              >
+              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Abrir menú">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>

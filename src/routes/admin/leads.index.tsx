@@ -57,14 +57,12 @@ type LeadWithProperty = LeadRow & {
 };
 
 const searchSchema = z.object({
-  status: fallback(
-    z.enum(["todos", ...LEAD_STATUSES] as [string, ...string[]]),
+  status: fallback(z.enum(["todos", ...LEAD_STATUSES] as [string, ...string[]]), "todos").default(
     "todos",
-  ).default("todos"),
-  source: fallback(
-    z.enum(["todas", ...LEAD_SOURCES] as [string, ...string[]]),
+  ),
+  source: fallback(z.enum(["todas", ...LEAD_SOURCES] as [string, ...string[]]), "todas").default(
     "todas",
-  ).default("todas"),
+  ),
   q: fallback(z.string(), "").default(""),
   page: fallback(z.number().int().min(1), 1).default(1),
 });
@@ -104,9 +102,7 @@ function LeadsListPage() {
     queryKey: ["admin", "leads", "counts"],
     queryFn: async () => {
       const result: Record<string, number> = { todos: 0 };
-      const totalRes = await supabase
-        .from("leads")
-        .select("*", { count: "exact", head: true });
+      const totalRes = await supabase.from("leads").select("*", { count: "exact", head: true });
       result.todos = totalRes.count ?? 0;
       await Promise.all(
         LEAD_STATUSES.map(async (s) => {
@@ -211,10 +207,26 @@ function LeadsListPage() {
           ¿Cómo llegan los leads?
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <ChannelHint icon={FileText} title="Formulario web" desc="Contacto desde /contacto y fichas de propiedad." />
-          <ChannelHint icon={MessageCircle} title="Alquibot" desc="Conversaciones del chatbot del sitio." />
-          <ChannelHint icon={Smartphone} title="WhatsApp" desc="Clics al botón flotante de WhatsApp." />
-          <ChannelHint icon={Hand} title="Manual" desc="Llamadas, walk-ins o referidos registrados aquí." />
+          <ChannelHint
+            icon={FileText}
+            title="Formulario web"
+            desc="Contacto desde /contacto y fichas de propiedad."
+          />
+          <ChannelHint
+            icon={MessageCircle}
+            title="Alquibot"
+            desc="Conversaciones del chatbot del sitio."
+          />
+          <ChannelHint
+            icon={Smartphone}
+            title="WhatsApp"
+            desc="Clics al botón flotante de WhatsApp."
+          />
+          <ChannelHint
+            icon={Hand}
+            title="Manual"
+            desc="Llamadas, walk-ins o referidos registrados aquí."
+          />
         </div>
       </Card>
 
@@ -246,10 +258,7 @@ function LeadsListPage() {
       {/* Filtros */}
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <SearchInput value={search.q} onChange={(q) => setSearch({ q })} />
-        <Select
-          value={search.source}
-          onValueChange={(v) => setSearch({ source: v })}
-        >
+        <Select value={search.source} onValueChange={(v) => setSearch({ source: v })}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Fuente" />
           </SelectTrigger>
@@ -301,11 +310,7 @@ function LeadsListPage() {
                 return (
                   <TableRow key={lead.id} className="cursor-pointer">
                     <TableCell>
-                      <Link
-                        to="/admin/leads/$id"
-                        params={{ id: lead.id }}
-                        className="block"
-                      >
+                      <Link to="/admin/leads/$id" params={{ id: lead.id }} className="block">
                         <div className="font-medium text-foreground">{lead.name}</div>
                         <div className="text-xs text-muted-foreground">{lead.email}</div>
                       </Link>
@@ -395,7 +400,6 @@ function LeadsListPage() {
     </div>
   );
 }
-
 
 function SearchInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [local, setLocal] = useState(value);

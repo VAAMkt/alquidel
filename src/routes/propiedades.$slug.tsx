@@ -1,9 +1,4 @@
-import {
-  createFileRoute,
-  Link,
-  notFound,
-  useRouter,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { z } from "zod";
@@ -179,9 +174,7 @@ export const Route = createFileRoute("/propiedades/$slug")({
     };
     return {
       meta: baseMeta,
-      links: [
-        { rel: "canonical", href: `https://alquidel.com/propiedades/${p.slug}` },
-      ],
+      links: [{ rel: "canonical", href: `https://alquidel.com/propiedades/${p.slug}` }],
       scripts: [
         {
           type: "application/ld+json",
@@ -199,7 +192,9 @@ export const Route = createFileRoute("/propiedades/$slug")({
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
         <h1 className="text-2xl font-semibold text-foreground">Algo salió mal</h1>
         <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
-        <Button asChild className="mt-6"><Link to="/propiedades">Volver al catálogo</Link></Button>
+        <Button asChild className="mt-6">
+          <Link to="/propiedades">Volver al catálogo</Link>
+        </Button>
       </div>
     </PublicLayout>
   ),
@@ -207,13 +202,13 @@ export const Route = createFileRoute("/propiedades/$slug")({
     <PublicLayout>
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
         <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
-        <h1 className="mt-4 text-2xl font-semibold text-foreground">
-          Propiedad no encontrada
-        </h1>
+        <h1 className="mt-4 text-2xl font-semibold text-foreground">Propiedad no encontrada</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           La propiedad que buscas no existe o fue retirada del catálogo.
         </p>
-        <Button asChild className="mt-6"><Link to="/propiedades">Ver propiedades disponibles</Link></Button>
+        <Button asChild className="mt-6">
+          <Link to="/propiedades">Ver propiedades disponibles</Link>
+        </Button>
       </div>
     </PublicLayout>
   ),
@@ -260,9 +255,11 @@ function PropertyDetail() {
             ? document.referrer.slice(0, 500)
             : null,
       })
-      .then(() => undefined, () => undefined);
+      .then(
+        () => undefined,
+        () => undefined,
+      );
   }, [p?.id, p?.slug, p?.city]);
-
 
   const waLink = whatsappUrl(propertyWhatsappMessage(p.title));
   const shareUrl =
@@ -334,20 +331,14 @@ function PropertyDetail() {
     const monto = calcValor * (1 - calcEnganche / 100);
     const i = calcTasa / 100 / 12;
     const n = calcPlazo * 12;
-    const cuota =
-      i === 0 ? monto / n : (monto * i) / (1 - Math.pow(1 + i, -n));
+    const cuota = i === 0 ? monto / n : (monto * i) / (1 - Math.pow(1 + i, -n));
     return { monto, cuota: Number.isFinite(cuota) ? cuota : 0 };
   }, [calcValor, calcEnganche, calcTasa, calcPlazo]);
 
   return (
     <PublicLayout>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Breadcrumbs
-          items={[
-            { label: "Propiedades", to: "/propiedades" },
-            { label: p.title },
-          ]}
-        />
+        <Breadcrumbs items={[{ label: "Propiedades", to: "/propiedades" }, { label: p.title }]} />
         <button
           type="button"
           onClick={() => router.history.back()}
@@ -403,7 +394,11 @@ function PropertyDetail() {
                         idx === activeImg ? "ring-foreground" : "ring-transparent hover:ring-border"
                       }`}
                     >
-                      <img src={img} alt={`${p.title} ${idx + 1}`} className="h-full w-full object-cover" />
+                      <img
+                        src={img}
+                        alt={`${p.title} ${idx + 1}`}
+                        className="h-full w-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
@@ -439,11 +434,17 @@ function PropertyDetail() {
               <p className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                 {displayPrice(p.price)}
               </p>
-              {p.type === "venta" && p.administration_fee != null && Number(p.administration_fee) > 0 && (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  + Administración: <span className="font-medium text-foreground">{formatCOP(Number(p.administration_fee))}</span> / mes
-                </p>
-              )}
+              {p.type === "venta" &&
+                p.administration_fee != null &&
+                Number(p.administration_fee) > 0 && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    + Administración:{" "}
+                    <span className="font-medium text-foreground">
+                      {formatCOP(Number(p.administration_fee))}
+                    </span>{" "}
+                    / mes
+                  </p>
+                )}
             </div>
 
             {/* Chips datos clave */}
@@ -500,7 +501,9 @@ function PropertyDetail() {
             {/* Descripción */}
             {p.description && (
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-foreground">Descripción</h2>
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  Descripción
+                </h2>
                 <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                   {p.description}
                 </p>
@@ -592,10 +595,14 @@ function PropertyDetail() {
                         value={String(calcPlazo)}
                         onValueChange={(v) => setCalcPlazo(Number(v))}
                       >
-                        <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="mt-1.5">
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
                           {[5, 10, 15, 20].map((y) => (
-                            <SelectItem key={y} value={String(y)}>{y} años</SelectItem>
+                            <SelectItem key={y} value={String(y)}>
+                              {y} años
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -633,11 +640,15 @@ function PropertyDetail() {
                       <p className="text-xs uppercase tracking-wider text-muted-foreground">
                         Monto financiado
                       </p>
-                      <p className="mt-1 text-xl font-semibold text-foreground">{formatCOP(monto)}</p>
+                      <p className="mt-1 text-xl font-semibold text-foreground">
+                        {formatCOP(monto)}
+                      </p>
                     </Card>
                     <Card className="rounded-lg border-border bg-accent/10 p-4">
                       <p className="text-xs uppercase tracking-wider text-accent">Cuota mensual</p>
-                      <p className="mt-1 text-xl font-semibold text-foreground">{formatCOP(cuota)}</p>
+                      <p className="mt-1 text-xl font-semibold text-foreground">
+                        {formatCOP(cuota)}
+                      </p>
                     </Card>
                   </div>
                   <p className="mt-3 text-xs text-muted-foreground">
@@ -670,7 +681,9 @@ function PropertyDetail() {
                   className="mt-5 space-y-3"
                 >
                   <div>
-                    <Label htmlFor="visit-name" className="sr-only">Nombre</Label>
+                    <Label htmlFor="visit-name" className="sr-only">
+                      Nombre
+                    </Label>
                     <Input
                       id="visit-name"
                       name="name"
@@ -683,7 +696,9 @@ function PropertyDetail() {
                     {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
                   </div>
                   <div>
-                    <Label htmlFor="visit-email" className="sr-only">Email</Label>
+                    <Label htmlFor="visit-email" className="sr-only">
+                      Email
+                    </Label>
                     <Input
                       id="visit-email"
                       name="email"
@@ -694,9 +709,13 @@ function PropertyDetail() {
                       value={form.email}
                       onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                     />
-                    {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="mt-1 text-xs text-destructive">{errors.email}</p>
+                    )}
                   </div>
-                  <Label htmlFor="visit-phone" className="sr-only">Teléfono</Label>
+                  <Label htmlFor="visit-phone" className="sr-only">
+                    Teléfono
+                  </Label>
                   <Input
                     id="visit-phone"
                     name="phone"
@@ -707,7 +726,9 @@ function PropertyDetail() {
                     value={form.phone}
                     onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                   />
-                  <Label htmlFor="visit-message" className="sr-only">Mensaje</Label>
+                  <Label htmlFor="visit-message" className="sr-only">
+                    Mensaje
+                  </Label>
                   <Textarea
                     id="visit-message"
                     name="message"

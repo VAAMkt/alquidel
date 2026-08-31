@@ -81,8 +81,7 @@ export function AdminSidebar() {
             <SidebarMenu>
               {items.map((item) => {
                 const isActive = location.pathname.startsWith(item.url);
-                const showBadge =
-                  item.badgeKey === "newLeads" && (newLeadsCount ?? 0) > 0;
+                const showBadge = item.badgeKey === "newLeads" && (newLeadsCount ?? 0) > 0;
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>

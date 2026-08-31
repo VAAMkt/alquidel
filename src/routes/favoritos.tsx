@@ -54,9 +54,7 @@ function FavoritosPage() {
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent">
             Mi colección
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Mis favoritos
-          </h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Mis favoritos</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
             {count > 0
               ? `${count} ${count === 1 ? "propiedad guardada" : "propiedades guardadas"}.`

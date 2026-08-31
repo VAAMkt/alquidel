@@ -8,35 +8,54 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  POST_CATEGORIES, POST_CATEGORY_LABELS, POST_STATUSES, POST_STATUS_LABELS,
-  POST_STATUS_COLORS, POST_CATEGORY_COLORS, formatPostDate,
-  type PostCategory, type PostStatus,
+  POST_CATEGORIES,
+  POST_CATEGORY_LABELS,
+  POST_STATUSES,
+  POST_STATUS_LABELS,
+  POST_STATUS_COLORS,
+  POST_CATEGORY_COLORS,
+  formatPostDate,
+  type PostCategory,
+  type PostStatus,
 } from "@/lib/posts";
 
 const PAGE_SIZE = 20;
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
-  status: fallback(
-    z.enum(["todos", ...POST_STATUSES] as [string, ...string[]]),
+  status: fallback(z.enum(["todos", ...POST_STATUSES] as [string, ...string[]]), "todos").default(
     "todos",
-  ).default("todos"),
-  cat: fallback(
-    z.enum(["todos", ...POST_CATEGORIES] as [string, ...string[]]),
+  ),
+  cat: fallback(z.enum(["todos", ...POST_CATEGORIES] as [string, ...string[]]), "todos").default(
     "todos",
-  ).default("todos"),
+  ),
   page: fallback(z.number().int().min(1), 1).default(1),
 });
 
@@ -132,20 +151,28 @@ function AdminBlogPage() {
             className="max-w-xs"
           />
           <Select value={search.status} onValueChange={(v) => setSearch({ status: v })}>
-            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos los estados</SelectItem>
               {POST_STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>{POST_STATUS_LABELS[s]}</SelectItem>
+                <SelectItem key={s} value={s}>
+                  {POST_STATUS_LABELS[s]}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={search.cat} onValueChange={(v) => setSearch({ cat: v })}>
-            <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todas las categorías</SelectItem>
               {POST_CATEGORIES.map((c) => (
-                <SelectItem key={c} value={c}>{POST_CATEGORY_LABELS[c]}</SelectItem>
+                <SelectItem key={c} value={c}>
+                  {POST_CATEGORY_LABELS[c]}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

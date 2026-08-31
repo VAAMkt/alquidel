@@ -20,13 +20,7 @@ const TYPE_PLURAL: Record<string, string> = {
   lote: "Lotes",
 };
 
-export function CityLandingPage({
-  city,
-  operacion,
-}: {
-  city: CityLanding;
-  operacion: Operacion;
-}) {
+export function CityLandingPage({ city, operacion }: { city: CityLanding; operacion: Operacion }) {
   const copy = OPERACION_COPY[operacion];
   const other: Operacion = operacion === "arriendo" ? "venta" : "arriendo";
   const otherCopy = OPERACION_COPY[other];
@@ -65,16 +59,12 @@ export function CityLandingPage({
           <p className="mt-3 max-w-3xl text-muted-foreground">{city.intro}</p>
           {total > 0 && (
             <p className="mt-3 text-sm text-muted-foreground">
-              {total === 1
-                ? "1 inmueble disponible"
-                : `${total} inmuebles disponibles`}{" "}
-              {copy.verb} en {city.label}
+              {total === 1 ? "1 inmueble disponible" : `${total} inmuebles disponibles`} {copy.verb}{" "}
+              en {city.label}
               {tipos.length > 0 && (
                 <>
                   {" · "}
-                  {tipos
-                    .map((t) => (TYPE_PLURAL[t] ?? t).toLowerCase())
-                    .join(", ")}
+                  {tipos.map((t) => (TYPE_PLURAL[t] ?? t).toLowerCase()).join(", ")}
                 </>
               )}
               .
@@ -125,10 +115,7 @@ export function CityLandingPage({
         {total > rows.length && (
           <div className="mt-10 text-center">
             <Button asChild size="lg" variant="outline" className="rounded-lg">
-              <Link
-                to="/propiedades"
-                search={{ operacion, ciudad: city.city, page: 1 }}
-              >
+              <Link to="/propiedades" search={{ operacion, ciudad: city.city, page: 1 }}>
                 Ver todo el inventario {copy.verb} en {city.label}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -216,9 +203,7 @@ export function CityLandingPage({
               className="rounded-lg border-emerald-600 text-emerald-700 hover:bg-emerald-50"
             >
               <a
-                href={whatsappUrl(
-                  `Hola, me interesan inmuebles ${copy.verb} en ${city.label}.`,
-                )}
+                href={whatsappUrl(`Hola, me interesan inmuebles ${copy.verb} en ${city.label}.`)}
                 onClick={() => trackWhatsApp(`landing-${city.slug}`)}
                 target="_blank"
                 rel="noopener noreferrer"

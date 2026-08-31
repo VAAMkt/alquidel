@@ -68,8 +68,7 @@ export function AlertsModal() {
       setOpen(false);
     },
     onError: (e: any) => {
-      const msg =
-        e?.issues?.[0]?.message ?? e?.message ?? "No pudimos registrar tu alerta";
+      const msg = e?.issues?.[0]?.message ?? e?.message ?? "No pudimos registrar tu alerta";
       toast.error(msg);
     },
   });
@@ -86,8 +85,8 @@ export function AlertsModal() {
         <SheetHeader>
           <SheetTitle>Alertas de nuevas propiedades</SheetTitle>
           <SheetDescription>
-            Te notificaremos por email cuando publiquemos propiedades que coincidan
-            con tus criterios.
+            Te notificaremos por email cuando publiquemos propiedades que coincidan con tus
+            criterios.
           </SheetDescription>
         </SheetHeader>
         <form

@@ -61,9 +61,7 @@ export const Route = createFileRoute("/propietarios")({
       },
     ],
   }),
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { intencion?: "vender" | "arrendar" } =>
+  validateSearch: (search: Record<string, unknown>): { intencion?: "vender" | "arrendar" } =>
     search["intencion"] === "arrendar" || search["intencion"] === "vender"
       ? { intencion: search["intencion"] as "vender" | "arrendar" }
       : {},
@@ -169,8 +167,8 @@ function PropietariosPage() {
             Vende o arrienda tu inmueble sin desgaste
           </h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Nos encargamos del avalúo, la publicación, las visitas y el cierre. Tú
-            decides; nosotros hacemos el trabajo pesado.
+            Nos encargamos del avalúo, la publicación, las visitas y el cierre. Tú decides; nosotros
+            hacemos el trabajo pesado.
           </p>
         </div>
       </section>
@@ -320,13 +318,11 @@ function PropietariosPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {["apartamento", "casa", "oficina", "local", "lote", "bodega"].map(
-                          (t) => (
-                            <SelectItem key={t} value={t} className="capitalize">
-                              {t}
-                            </SelectItem>
-                          ),
-                        )}
+                        {["apartamento", "casa", "oficina", "local", "lote", "bodega"].map((t) => (
+                          <SelectItem key={t} value={t} className="capitalize">
+                            {t}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </ClientOnly>
@@ -370,7 +366,9 @@ function PropietariosPage() {
                 className="w-full rounded-lg"
                 disabled={mutation.isPending}
               >
-                {mutation.isPending ? "Enviando…" : (
+                {mutation.isPending ? (
+                  "Enviando…"
+                ) : (
                   <>
                     <Send className="mr-2 h-4 w-4" />
                     Quiero que me contacten

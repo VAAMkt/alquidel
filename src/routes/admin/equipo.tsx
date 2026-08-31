@@ -38,11 +38,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { InviteMemberDialog } from "@/components/admin/InviteMemberDialog";
-import {
-  deleteTeamMember,
-  listTeam,
-  setTeamMemberAdmin,
-} from "@/lib/team.functions";
+import { deleteTeamMember, listTeam, setTeamMemberAdmin } from "@/lib/team.functions";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export const Route = createFileRoute("/admin/equipo")({
@@ -92,8 +88,7 @@ function EquipoPage() {
   });
 
   const setAdmin = useMutation({
-    mutationFn: (input: { userId: string; makeAdmin: boolean }) =>
-      setAdminFn({ data: input }),
+    mutationFn: (input: { userId: string; makeAdmin: boolean }) => setAdminFn({ data: input }),
     onSuccess: () => {
       toast.success("Rol actualizado");
       qc.invalidateQueries({ queryKey: ["admin", "team"] });
@@ -124,8 +119,8 @@ function EquipoPage() {
         <Shield className="mx-auto h-10 w-10 text-muted-foreground" />
         <h2 className="mt-3 text-lg font-semibold">Acceso restringido</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Solo administradores pueden gestionar el equipo. Pídele a un admin que te
-          promueva si necesitas acceso.
+          Solo administradores pueden gestionar el equipo. Pídele a un admin que te promueva si
+          necesitas acceso.
         </p>
       </Card>
     );
@@ -195,21 +190,25 @@ function EquipoPage() {
                         size="sm"
                         variant="outline"
                         disabled={setAdmin.isPending}
-                        onClick={() =>
-                          setAdmin.mutate({ userId: m.id, makeAdmin: !m.isAdmin })
-                        }
+                        onClick={() => setAdmin.mutate({ userId: m.id, makeAdmin: !m.isAdmin })}
                       >
                         {m.isAdmin ? "Quitar admin" : "Hacer admin"}
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>¿Eliminar a {m.full_name || m.email}?</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              ¿Eliminar a {m.full_name || m.email}?
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
                               Su cuenta será eliminada de Lovable Cloud y perderá acceso inmediato.
                               Esta acción no se puede deshacer.

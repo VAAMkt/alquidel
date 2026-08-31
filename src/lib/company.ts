@@ -31,7 +31,6 @@ export const COMPANY = {
   },
 } as const;
 
-
 /** Señales de confianza verificadas por Alquidel. */
 export const TRUST = {
   yearsLabel: "+23 años",
