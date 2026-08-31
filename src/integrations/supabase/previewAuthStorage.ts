@@ -10,16 +10,42 @@ export function brokeredPreviewStorage() {
     setItem: (key: string, value: string) => { memory.set(key, value); },
     removeItem: (key: string) => { memory.delete(key); },
   };
-  let storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> = fallbackStorage;
+  let activeStorage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> = fallbackStorage;
   try {
     const candidate = window.localStorage;
     const testKey = '__alquidel_storage_test__';
     candidate.setItem(testKey, '1');
     candidate.removeItem(testKey);
-    storage = candidate;
+    activeStorage = candidate;
   } catch {
     // Safari private browsing or blocked storage: keep auth in memory.
   }
+  const storage = {
+    getItem: (key: string) => {
+      try {
+        return activeStorage.getItem(key);
+      } catch {
+        activeStorage = fallbackStorage;
+        return fallbackStorage.getItem(key);
+      }
+    },
+    setItem: (key: string, value: string) => {
+      try {
+        activeStorage.setItem(key, value);
+      } catch {
+        activeStorage = fallbackStorage;
+        fallbackStorage.setItem(key, value);
+      }
+    },
+    removeItem: (key: string) => {
+      try {
+        activeStorage.removeItem(key);
+      } catch {
+        activeStorage = fallbackStorage;
+        fallbackStorage.removeItem(key);
+      }
+    },
+  };
   const host = location.hostname;
   const PREVIEW_ZONES = ['lovableproject.com', 'lovableproject-dev.com', 'lovable.app', 'gpt-eng.com', 'gptengineer.run'];
   const onPreviewZone = PREVIEW_ZONES.some((z) => host === z || host.endsWith('.' + z));
