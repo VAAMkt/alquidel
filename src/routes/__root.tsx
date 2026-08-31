@@ -102,7 +102,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="es-CO">
       <head>
         <HeadContent />
       </head>

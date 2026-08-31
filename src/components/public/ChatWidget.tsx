@@ -112,7 +112,10 @@ export function ChatWidget() {
     } catch (e: unknown) {
       const aborted =
         (e instanceof DOMException && e.name === "AbortError") ||
-        (typeof e === "object" && e !== null && "name" in e && (e as any).name === "AbortError");
+        (typeof e === "object" &&
+          e !== null &&
+          "name" in e &&
+          (e as { name?: unknown }).name === "AbortError");
       const errorMsg = aborted
         ? "Lo siento, intenta de nuevo en un momento."
         : "Ocurrió un error al contactar al asistente. Por favor escríbenos al WhatsApp 321 491 0400.";
@@ -154,7 +157,7 @@ export function ChatWidget() {
           type="button"
           onClick={openChat}
           aria-label="Abrir chat con Alquibot"
-          className="no-print group fixed bottom-6 right-6 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-white shadow-lg transition-transform hover:scale-105 hover:bg-slate-900"
+          className="no-print group fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-white shadow-lg transition-transform hover:scale-105 hover:bg-slate-900"
           title="¿En qué te ayudamos?"
         >
           <MessageCircle className="h-6 w-6" />
@@ -169,7 +172,7 @@ export function ChatWidget() {
       {/* Panel abierto */}
       {open && (
         <div
-          className="no-print fixed bottom-6 right-6 z-50 flex h-[calc(100vh-3rem)] max-h-[520px] w-[calc(100vw-3rem)] max-w-[380px] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
+          className="no-print fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-50 flex h-[calc(100vh-2rem)] max-h-[520px] w-[calc(100vw-2rem)] max-w-[380px] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl supports-[height:100dvh]:h-[calc(100dvh-2rem)]"
           role="dialog"
           aria-label="Chat con Alquibot"
           aria-modal="false"
