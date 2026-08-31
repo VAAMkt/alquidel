@@ -102,7 +102,10 @@ export const Route = createFileRoute("/")({
       { name: "twitter:image", content: heroBogota },
       { property: "og:url", content: "https://alquidel.com/" },
     ],
-    links: [{ rel: "canonical", href: "https://alquidel.com/" }],
+    links: [
+      { rel: "canonical", href: "https://alquidel.com/" },
+      { rel: "preload", as: "image", href: heroBogota },
+    ],
     scripts: [
       {
         type: "application/ld+json",
@@ -152,7 +155,7 @@ function HomePage() {
       search: () => ({
         ...(operacion ? { operacion } : {}),
         ...(op === "invertir" ? { sort: "destacados" as const } : {}),
-        ...(tipo !== "todos" ? { tipos: [tipo as any] } : {}),
+        ...(tipo !== "todos" ? { tipos: [tipo as (typeof PROPERTY_TYPES)[number]] } : {}),
         ...(ciudad !== "todas" ? { ciudad } : {}),
         page: 1,
       }),

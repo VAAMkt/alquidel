@@ -35,6 +35,8 @@ export function BrandLogo({
       <img
         src={logoFullColor.url}
         alt={alt}
+        width={526}
+        height={155}
         className={className}
         loading="eager"
         decoding="async"

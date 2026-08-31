@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import { fallback, zodValidator } from "@tanstack/zod-adapter";
@@ -54,10 +54,11 @@ function blogQueryOptions(search: BlogSearch) {
 export const Route = createFileRoute("/blog/")({
   validateSearch: zodValidator(searchSchema),
   loaderDeps: ({ search }) => search,
-  // Precarga en el loader: el listado llega en el HTML inicial para el crawler.
-  loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(blogQueryOptions(deps as BlogSearch));
-  },
+  // Devolver la misma data que se precarga permite que el cliente la hidrate
+  // sin reemplazar el HTML del servidor por el estado de carga.
+  loader: async ({ context, deps }) => ({
+    posts: await context.queryClient.ensureQueryData(blogQueryOptions(deps as BlogSearch)),
+  }),
   head: () => ({
     meta: [
       { title: "Blog inmobiliario — ALQUIDEL" },
@@ -77,20 +78,25 @@ export const Route = createFileRoute("/blog/")({
     ],
     links: [{ rel: "canonical", href: "https://alquidel.com/blog" }],
   }),
+  errorComponent: BlogLoadError,
   component: BlogPage,
 });
 
 function BlogPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
+  const { posts: initialData } = Route.useLoaderData();
 
-  const { data, isLoading } = useQuery(blogQueryOptions(search));
+  const { data, isLoading } = useQuery({
+    ...blogQueryOptions(search),
+    initialData,
+  });
 
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PER_PAGE));
   const isEmpty = !isLoading && (data?.rows.length ?? 0) === 0;
 
-  function setCat(cat: string) {
-    navigate({ search: { cat: cat as any, page: 1 } });
+  function setCat(cat: PostCategory | "todos") {
+    navigate({ search: { cat, page: 1 } });
   }
 
   return (
@@ -141,9 +147,7 @@ function BlogPage() {
                   variant="outline"
                   size="sm"
                   disabled={search.page <= 1}
-                  onClick={() =>
-                    navigate({ search: { cat: search.cat as any, page: search.page - 1 } })
-                  }
+                  onClick={() => navigate({ search: { cat: search.cat, page: search.page - 1 } })}
                 >
                   Anterior
                 </Button>
@@ -154,9 +158,7 @@ function BlogPage() {
                   variant="outline"
                   size="sm"
                   disabled={search.page >= totalPages}
-                  onClick={() =>
-                    navigate({ search: { cat: search.cat as any, page: search.page + 1 } })
-                  }
+                  onClick={() => navigate({ search: { cat: search.cat, page: search.page + 1 } })}
                 >
                   Siguiente
                 </Button>
@@ -215,5 +217,38 @@ function EmptyState() {
         </Button>
       </div>
     </div>
+  );
+}
+
+function BlogLoadError({ reset }: { reset: () => void }) {
+  const router = useRouter();
+
+  return (
+    <PublicLayout>
+      <section className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-4 py-24 text-center">
+        <p className="text-sm font-medium uppercase tracking-[0.3em] text-muted-foreground">
+          Blog
+        </p>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
+          No pudimos cargar el contenido
+        </h1>
+        <p className="mt-3 max-w-md text-muted-foreground" role="alert">
+          Inténtalo nuevamente en unos segundos.
+        </p>
+        <div className="mt-6 flex gap-3">
+          <Button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+          >
+            Intentar otra vez
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/">Ir a casa</Link>
+          </Button>
+        </div>
+      </section>
+    </PublicLayout>
   );
 }
