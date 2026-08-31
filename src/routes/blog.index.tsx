@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import { fallback, zodValidator } from "@tanstack/zod-adapter";
@@ -221,6 +221,8 @@ function EmptyState() {
 }
 
 function BlogLoadError({ reset }: { reset: () => void }) {
+  const router = useRouter();
+
   return (
     <PublicLayout>
       <section className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-4 py-24 text-center">
@@ -234,7 +236,14 @@ function BlogLoadError({ reset }: { reset: () => void }) {
           Inténtalo nuevamente en unos segundos.
         </p>
         <div className="mt-6 flex gap-3">
-          <Button onClick={reset}>Intentar otra vez</Button>
+          <Button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+          >
+            Intentar otra vez
+          </Button>
           <Button asChild variant="outline">
             <Link to="/">Ir a casa</Link>
           </Button>
