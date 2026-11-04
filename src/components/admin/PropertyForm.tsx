@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/lib/slugify";
 import { formatCOP } from "@/lib/format";
+import { watermarkImage, WATERMARK_TYPES } from "@/lib/watermark";
 import type { Database } from "@/integrations/supabase/types";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
@@ -54,6 +55,7 @@ const schema = z.object({
   amenities: z.array(z.string()),
   status: z.enum(["disponible","vendido","arrendado","reservado"]),
   is_featured: z.boolean(),
+  is_property_of_week: z.boolean(),
   images: z.array(z.string()),
   administration_fee: z.number().min(0).nullable().optional(),
   video_url: z.string().trim().url("URL inválida").or(z.literal("")).optional(),
@@ -86,6 +88,7 @@ const blank: PropertyFormValues = {
   amenities: [],
   status: "disponible",
   is_featured: false,
+  is_property_of_week: false,
   images: [],
   administration_fee: null,
   video_url: "",
@@ -124,6 +127,7 @@ export function PropertyForm({ initial, mode }: Props) {
           amenities: initial.amenities ?? [],
           status: initial.status as PropertyStatus,
           is_featured: initial.is_featured,
+          is_property_of_week: initial.is_property_of_week ?? false,
           images: initial.images ?? [],
           administration_fee:
             initial.administration_fee != null ? Number(initial.administration_fee) : null,
@@ -181,7 +185,9 @@ export function PropertyForm({ initial, mode }: Props) {
 
   // Image upload
   async function handleFiles(files: FileList | File[]) {
-    const arr = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    const all = Array.from(files);
+    const arr = all.filter((f) => (WATERMARK_TYPES as readonly string[]).includes(f.type));
+    if (arr.length < all.length) toast.error("Solo se aceptan imágenes JPG, PNG o WEBP");
     if (arr.length === 0) return;
     setUploading(true);
     setUploadProgress(0);
@@ -189,12 +195,13 @@ export function PropertyForm({ initial, mode }: Props) {
     try {
       for (let i = 0; i < arr.length; i++) {
         const file = arr[i];
-        const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+        const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+        const marked = await watermarkImage(file);
         const fileName = `${crypto.randomUUID()}.${ext}`;
         const path = `${initial?.id ?? "draft"}/${fileName}`;
         const { error } = await supabase.storage
           .from("property-images")
-          .upload(path, file, { contentType: file.type, upsert: false });
+          .upload(path, marked, { contentType: file.type, upsert: false });
         if (error) throw error;
         const { data } = supabase.storage.from("property-images").getPublicUrl(path);
         uploaded.push(data.publicUrl);
@@ -229,6 +236,13 @@ export function PropertyForm({ initial, mode }: Props) {
 
   const saveMutation = useMutation({
     mutationFn: async (payload: PropertyFormValues) => {
+      // Solo una propiedad de la semana: desactivar las demás antes de guardar.
+      if (payload.is_property_of_week) {
+        let q = supabase.from("properties").update({ is_property_of_week: false }).eq("is_property_of_week", true);
+        if (initial?.id) q = q.neq("id", initial.id);
+        const { error: clearErr } = await q;
+        if (clearErr) throw clearErr;
+      }
       if (mode === "create") {
         const { data, error } = await supabase
           .from("properties")
@@ -248,6 +262,7 @@ export function PropertyForm({ initial, mode }: Props) {
             amenities: payload.amenities,
             status: payload.status,
             is_featured: payload.is_featured,
+            is_property_of_week: payload.is_property_of_week,
             images: payload.images,
             administration_fee:
               payload.type === "venta" ? payload.administration_fee ?? null : null,
@@ -280,6 +295,7 @@ export function PropertyForm({ initial, mode }: Props) {
             amenities: payload.amenities,
             status: payload.status,
             is_featured: payload.is_featured,
+            is_property_of_week: payload.is_property_of_week,
             images: payload.images,
             administration_fee:
               payload.type === "venta" ? payload.administration_fee ?? null : null,
@@ -635,7 +651,7 @@ export function PropertyForm({ initial, mode }: Props) {
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             className="hidden"
             onChange={(e) => e.target.files && handleFiles(e.target.files)}
           />
@@ -741,6 +757,19 @@ export function PropertyForm({ initial, mode }: Props) {
               id="featured"
               checked={values.is_featured}
               onCheckedChange={(c) => update("is_featured", c)}
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-border p-4">
+            <div>
+              <Label htmlFor="property_of_week" className="text-sm font-medium">Propiedad de la semana</Label>
+              <p className="text-xs text-muted-foreground">
+                Solo una puede estar activa: al activarla aquí se desactiva la anterior.
+              </p>
+            </div>
+            <Switch
+              id="property_of_week"
+              checked={values.is_property_of_week}
+              onCheckedChange={(c) => update("is_property_of_week", c)}
             />
           </div>
           <div>

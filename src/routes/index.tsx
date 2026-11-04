@@ -23,6 +23,7 @@ import {
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
+import { PropertyOfWeek } from "@/components/public/PropertyOfWeek";
 import { RecentViews } from "../components/public/RecentViews";
 import { ClientOnly } from "@/components/common/ClientOnly";
 import { supabase } from "@/integrations/supabase/client";
@@ -350,6 +351,8 @@ function HomePage() {
         </div>
       </section>
 
+
+      <PropertyOfWeek />
 
       {/* DESTACADAS */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">

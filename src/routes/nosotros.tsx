@@ -41,7 +41,7 @@ function NosotrosPage() {
             Quiénes somos
           </div>
           <h1 className="mt-6 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            {COMPANY.tagline}
+            Bienes raíces en Bogotá, Chía, Cajicá, Mosquera y Cali con 23 años de experiencia
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-pretty text-lg text-muted-foreground">
             Somos {COMPANY.name}, una empresa colombiana enfocada en formar relaciones
