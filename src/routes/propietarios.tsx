@@ -77,7 +77,7 @@ const schema = z.object({
   intent: z.enum(["vender", "arrendar"]),
   propertyType: z.string().trim().min(1).max(60),
   city: z.string().trim().min(1, "Indica la ciudad").max(120),
-  message: z.string().trim().max(2000).optional(),
+  message: z.string().trim().max(1800, "Los detalles no pueden superar 1800 caracteres").optional(),
 });
 
 const BENEFITS = [
@@ -115,15 +115,19 @@ function PropietariosPage() {
     message: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
 
   const mutation = useMutation({
     mutationFn: async () => {
+      setSubmitError(null);
+      setSent(false);
       const parsed = schema.safeParse(form);
       if (!parsed.success) {
         const errs: Record<string, string> = {};
         for (const issue of parsed.error.issues) errs[issue.path.join(".")] = issue.message;
         setErrors(errs);
-        throw new Error(parsed.error.issues[0]?.message ?? "Datos inválidos");
+        throw new Error("Revisa los campos marcados en rojo.");
       }
       setErrors({});
       const d = parsed.data;
@@ -145,17 +149,22 @@ function PropietariosPage() {
       });
       if (error) {
         console.error("[propietarios] Error guardando lead:", error);
-        throw new Error(
-          "No pudimos enviar tu solicitud. Intenta de nuevo o escríbenos por WhatsApp.",
-        );
+        const msg = /email/i.test(error.message)
+          ? "El email no parece válido. Revísalo e intenta de nuevo."
+          : "No pudimos enviar tu solicitud. Intenta de nuevo en unos minutos o escríbenos por WhatsApp.";
+        throw new Error(msg);
       }
     },
     onSuccess: () => {
       trackLeadSubmit("propietarios", { source: "propietario", intent: form.intent });
       toast.success("¡Recibido! Un asesor te contactará en menos de 24 horas hábiles.");
+      setSent(true);
       setForm((f) => ({ ...f, name: "", email: "", phone: "", city: "", message: "" }));
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      setSubmitError(e.message);
+      toast.error(e.message);
+    },
   });
 
   return (
@@ -364,6 +373,16 @@ function PropietariosPage() {
                 />
               </div>
 
+              {submitError && (
+                <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                  {submitError}
+                </p>
+              )}
+              {sent && (
+                <p role="status" className="rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm text-foreground">
+                  ¡Solicitud recibida! Un asesor te contactará en menos de 24 horas hábiles.
+                </p>
+              )}
               <Button
                 type="submit"
                 size="lg"
