@@ -651,7 +651,7 @@ export function PropertyForm({ initial, mode }: Props) {
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             className="hidden"
             onChange={(e) => e.target.files && handleFiles(e.target.files)}
           />
